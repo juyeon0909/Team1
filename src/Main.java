@@ -6,3 +6,6 @@ public class Main {
 public void main(String[] args) {
     System.out.println("깃허브 협업하기");
 }
+void main(String[] args) {
+    System.out.println("헤진 메인 수정");
+}

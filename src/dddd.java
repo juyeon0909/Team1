@@ -1,5 +1,5 @@
 public class dddd {
     static void main() {
-        System.out.println("asdfasdf");
+        System.out.println("asdfasdfssss");
     }
 }

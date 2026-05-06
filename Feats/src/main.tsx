@@ -1,10 +1,12 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+// 코드 작성
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import App from './App';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+import 'bootstrap/dist/css/bootstrap.min.css'; // (step01) for 부트 스트랩
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <BrowserRouter>
     <App />
-  </StrictMode>,
+  </BrowserRouter>
 )

@@ -1,10 +1,10 @@
-package com.Plz.Eats;
+package com.Plz.Beats;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class EatsApplicationTests {
+class BeatsApplicationTests {
 
 	@Test
 	void contextLoads() {

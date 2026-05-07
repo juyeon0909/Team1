@@ -1,5 +1,6 @@
 package com.Plz.Beats.config;
 
+import com.Plz.Beats.entity.Member;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;

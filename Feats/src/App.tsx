@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 function App() {
-  const appName = "IT Academy Coffee Shop";
+  const appName = "Eats in My Fridge";
 
   const [user, setUser] = useState<User | null>(null);
 
@@ -52,7 +52,7 @@ function App() {
       <AppRoutes user={user} handleLoginSuccess={handleLoginSuccess} />
 
       <footer className="bg-dark text-light text-center py-3 mt-5">
-        <p>&copy; 2025 {appName}. All rights reserved.</p>
+        <p>&copy; 2026 {appName} ICT 인재개발원</p>
       </footer>
     </>
   );

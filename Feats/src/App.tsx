@@ -52,7 +52,7 @@ function App() {
       <AppRoutes user={user} handleLoginSuccess={handleLoginSuccess} />
 
       <footer className="bg-dark text-light text-center py-3 mt-5">
-        <p>&copy; 2026 {appName} ICT 인재개발원</p>
+        {/* <p>&copy; 2026 {appName} ICT 인재개발원</p> */}
       </footer>
     </>
   );

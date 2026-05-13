@@ -7,22 +7,7 @@ function App() {
         <>
             <div className="page">
 
-                <nav className="navbar">
-                    <div className="nav-logo">
-                        <i className="ti ti-fridge" aria-hidden="true"></i>
-                        잇츠 인 마이 냉장고
-                    </div>
-                    <div className="nav-links">
-                        <a className="nav-link active">홈</a>
-                        <a className="nav-link">냉장고</a>
-                        <a className="nav-link">레시피</a>
-                    </div>
-                    <div className="nav-right">
-                        <i className="ti ti-bell" aria-hidden="true"></i>
-                        <div className="avatar">김주</div>
-                    </div>
-                </nav>
-
+            
                 <div className="hero">
                     <div className="hero-left">
                         <div className="hero-greeting">안녕하세요, 김주연님! </div>

@@ -1,0 +1,61 @@
+import './App.css';
+
+// 외부 컴포넌트 import하기
+// import 컴포넌트이름 from '경로와 파일명';
+import MenuItems from './ui/MenuItems';
+import AppRoutes from './routes/AppRoutes';
+import React, { useEffect, useState } from 'react';
+import type { User } from './types/User';
+import { useNavigate } from 'react-router-dom';
+
+
+function App() {
+  const appName = "Eats in My Fridge";
+
+  const [user, setUser] = useState<User | null>(null);
+
+  // 매개변수 2개 (동작 2개), []는 한번만 하는 것을 의미
+  useEffect(() => {
+    const loginUser = localStorage.getItem('user');
+
+    // 타입을 확인하는 함수
+    if (typeof loginUser === 'string') {
+      const parsed = JSON.parse(loginUser);
+      setUser(parsed);
+    }
+  }, []);
+
+
+
+  // 로그인 성공시 처리해야 할 동작을 명시하는 함수
+  const handleLoginSuccess = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+    console.log('로그인 성공');
+  };
+
+  const navigate = useNavigate();
+
+  // 사용자가 '로그 아웃' 메뉴 클릭
+  const handleLogout = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    setUser(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
+    console.log('로그 아웃 성공');
+    navigate('/member/login');
+  };
+
+  return (
+    <>
+      <MenuItems appName={appName} user={user} handleLogout={handleLogout} />
+      <AppRoutes user={user} handleLoginSuccess={handleLoginSuccess} />
+
+      <footer className="bg-dark text-light text-center py-3 mt-5">
+        {/* <p>&copy; 2026 {appName} ICT 인재개발원</p> */}
+      </footer>
+    </>
+  );
+}
+
+export default App;

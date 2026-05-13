@@ -24,12 +24,14 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                   <NavDropdown title={`레시피북`}>
                      <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/recipeMain/clip`)}>스크랩 목록</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
                   </NavDropdown>
                   
                   <NavDropdown title={`김주연님`}>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/recipe`)}>내 레시피</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/fruit/like`)}>좋아요</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/delete`)}>회원 탈퇴</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/logout`)}>로그아웃</NavDropdown.Item>
                   </NavDropdown>
                </>
@@ -42,12 +44,14 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                   <NavDropdown title={`레시피북`}>
                      <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/recipeMain/clip`)}>스크랩 목록</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
                   </NavDropdown>
                   
                   <NavDropdown title={`김주연님`}>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/recipe`)}>내 레시피</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/fruit/like`)}>좋아요</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/delete`)}>회원 탈퇴</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/logout`)}>로그아웃</NavDropdown.Item>
                   </NavDropdown>
                </>
@@ -60,13 +64,16 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                   <NavDropdown title={`레시피북`}>
                      <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/recipeMain/clip`)}>스크랩 목록</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
                   </NavDropdown>
                   
                   <NavDropdown title={`김주연님`}>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/recipe`)}>내 레시피</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/fruit/like`)}>좋아요</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/delete`)}>회원 탈퇴</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/logout`)}>로그아웃</NavDropdown.Item>
+                     
                   </NavDropdown>
                   <Nav.Link onClick={() => navigate(`/member/login`)}>로그인</Nav.Link>
                </>

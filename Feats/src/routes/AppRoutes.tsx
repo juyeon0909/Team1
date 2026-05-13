@@ -12,7 +12,8 @@ import MyPageInfo from '../pages/MyPageInfo';
 import MyPageRecipe from '../pages/MyPageRecipe';
 import MyPageLike from '../pages/MyPageLike';
 import Logout from '../pages/Logout';
-
+import Delete from '../pages/Delete';
+import RecipeRegister from '../pages/reciperegister';
 
 interface AppProps {
   user: User | null;
@@ -28,11 +29,13 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/product/edit' element={<FridgeEdit />} />
       <Route path='/product/register' element={<FridgeRegister />} />
       <Route path='/recipeMain' element={<RecipeMain />} />
+      <Route path='/recipeMain/register' element={<RecipeRegister />} />
       <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
       <Route path='/mypage/recipe' element={<MyPageRecipe />} />
       <Route path='/fruit/like' element={<MyPageLike />} />
       <Route path='/logout' element={<Logout />} />
+      <Route path='/delete' element={<Delete />} />
     </Routes>
   );
 }

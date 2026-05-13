@@ -3,9 +3,8 @@ function App() {
 
     return (
         <>
-            JSX 영역
+            냉장고 등록 영역
         </>
     );
 };
-
 export default App;

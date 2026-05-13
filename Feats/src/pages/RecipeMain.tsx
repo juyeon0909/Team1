@@ -3,7 +3,7 @@ function App() {
 
     return (
         <>
-            JSX 영역
+            레시피메인 영역
         </>
     );
 };

@@ -3,7 +3,7 @@ function App() {
 
     return (
         <>
-            JSX 영역
+            로그아웃 영역
         </>
     );
 };

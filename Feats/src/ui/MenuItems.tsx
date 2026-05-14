@@ -75,7 +75,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
    };
 
    return (
-      <Navbar style={{ backgroundColor: '#0cc282' }} variant="dark" expand="lg">
+      <Navbar style={{ backgroundColor: '#0F6E56' }} variant="dark" expand="lg">
          <Container>
            <Nav className="me-auto" style={{ color: 'white' }}>
                {/* 하이퍼링크 : Nav.Link는 다른 페이지로 이동할 때 사용됩니다.  */}

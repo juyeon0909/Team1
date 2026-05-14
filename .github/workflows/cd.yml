@@ -30,5 +30,10 @@ jobs:
             -e DB_PORT="${{ secrets.DB_PORT }}" \
             -e DB_NAME="${{ secrets.DB_NAME }}" \
             -e DB_USER_NAME="${{ secrets.DB_USER_NAME }}" \
-            -e DB_PWD="${{ secrets.DB_PWD }}" \
+            -e DB_PASSWORD="${{ secrets.DB_PWD }}" \
+            -e JWT_KEY="${{ secrets.JWT_KEY }}" \
+            -e JWT_EXPIRATION="${{ secrets.JWT_EXPIRATION }}" \
+            -e S3_KEY="${{ secrets.S3_KEY }}" \
+            -e S3_SECRET_KEY="${{ secrets.S3_SECRET_KEY }}" \
+            -e BUCKET_NAME="${{ secrets.BUCKET_NAME }}" \
             "${{ secrets.DOCKER_IMAGE }}"

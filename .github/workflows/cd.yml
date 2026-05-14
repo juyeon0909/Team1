@@ -30,5 +30,5 @@ jobs:
             -e DB_PORT="${{ secrets.DB_PORT }}" \
             -e DB_NAME="${{ secrets.DB_NAME }}" \
             -e DB_USER_NAME="${{ secrets.DB_USER_NAME }}" \
-            -e DB_PASSWORD="${{ secrets.DB_PWD }}" \
+            -e DB_PWD="${{ secrets.DB_PWD }}" \
             "${{ secrets.DOCKER_IMAGE }}"

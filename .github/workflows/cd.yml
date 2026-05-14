@@ -23,11 +23,12 @@ jobs:
             docker pull "${{ secrets.DOCKER_IMAGE }}"
             docker stop "${{ secrets.DOCKER_CONTAINER }}" || true
             docker rm "${{ secrets.DOCKER_CONTAINER }}" || true
-            docker run -d --name "${{ secrets.DOCKER_CONTAINER }}" \
+            docker run -d \
+            --name "${{ secrets.DOCKER_CONTAINER }}" \
             -p 80:9000 \
             -e DB_ENDPOINT="${{ secrets.DB_ENDPOINT }}" \
             -e DB_PORT="${{ secrets.DB_PORT }}" \
             -e DB_NAME="${{ secrets.DB_NAME }}" \
-            -e DB_USERNAME="${{ secrets.DB_USERNAME }}" \
+            -e DB_USER_NAME="${{ secrets.DB_USER_NAME }}" \
             -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
             "${{ secrets.DOCKER_IMAGE }}"

@@ -13,7 +13,7 @@ const FridgeRegister = () => {
     alert(`${id}번 재료(${name})가 저장되었습니다.`);
     navigate('/product/insert'); // 저장 후 목록으로 돌아가기
   };
-
+// commit 테스트.
   return (
     <div style={{ padding: '20px' }}>
       <h3>재료 등록 (ID: {id})</h3>

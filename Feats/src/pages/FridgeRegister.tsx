@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 const FridgeRegister = () => {
   const { id } = useParams(); // 어떤 재료인지 ID만 확인
   const navigate = useNavigate();
- // git push 오류나서 주석 추가
+ // git push 오류나서 주석 추가하기.
   // 입력값 관리를 위한 간단한 상태
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -44,5 +44,3 @@ const FridgeRegister = () => {
     </div>
   );
 };
-
-export default FridgeRegister;

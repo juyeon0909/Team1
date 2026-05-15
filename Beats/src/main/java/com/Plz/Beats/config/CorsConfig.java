@@ -22,6 +22,7 @@ public class CorsConfig {
                 "http://127.0.0.1:5173"
         ));
 
+
         // 허용 HTTP 메소드
         configuration.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"

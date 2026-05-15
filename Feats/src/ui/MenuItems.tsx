@@ -23,6 +23,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                   {/* 관리자는 모든 사람의 주문 내역 확인 */}
                   <NavDropdown title={`레시피북`}>
                      <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/recipeMain/clip`)}>스크랩 목록</NavDropdown.Item>
                   </NavDropdown>
                   
@@ -41,6 +42,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                   {/* 관리자는 모든 사람의 주문 내역 확인 */}
                   <NavDropdown title={`레시피북`}>
                      <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/recipeMain/`)}>레시피 등록</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/recipeMain/clip`)}>스크랩 목록</NavDropdown.Item>
                   </NavDropdown>
                   
@@ -59,9 +61,10 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                   {/* 관리자는 모든 사람의 주문 내역 확인 */}
                   <NavDropdown title={`레시피북`}>
                      <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/recipeMain/`)}>레시피 등록</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/recipeMain/clip`)}>스크랩 목록</NavDropdown.Item>
                   </NavDropdown>
-                  
+                  {/* 테스트를 위해서 일단 무조건 보이게 설정 */}
                   <NavDropdown title={`김주연님`}>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/recipe`)}>내 레시피</NavDropdown.Item>

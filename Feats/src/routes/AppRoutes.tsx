@@ -6,12 +6,14 @@ import type { User } from "../types/User";
 import FridgeMainPage from './../pages/FridgeMainPage';
 import FridgeEdit from './../pages/FridgeEdit';
 import FridgeRegister from './../pages/FridgeRegister';
-import RecipeMain from '../pages/recipeMain';
-import RecipeMainClip from '../pages/recipeMainClip';
+import RecipeMain from '../pages/RecipeMain';
+import RecipeMainClip from '../pages/RecipeMainClip';
 import MyPageInfo from '../pages/MyPageInfo';
 import MyPageRecipe from '../pages/MyPageRecipe';
 import MyPageLike from '../pages/MyPageLike';
 import Logout from '../pages/Logout';
+import RecipeRegister from '../pages/RecipeRegister'
+import RecipeEdit from '../pages/RecipeEdit'
 
 
 interface AppProps {

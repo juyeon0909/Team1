@@ -37,7 +37,7 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/fruit/like' element={<MyPageLike />} />
       <Route path='/logout' element={<Logout />} />
       <Route path='/delete' element={<Delete />} />
-      <Route path='/recipeMain/register' element={<RecipeEdit />} />
+      <Route path='/recipeMain/edit' element={<RecipeEdit />} />
     </Routes>
   );
 }

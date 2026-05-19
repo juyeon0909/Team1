@@ -25,7 +25,7 @@ function App({ user, handleLoginSuccess }: AppProps) {
     <Routes>
       <Route path='/member/signup' element={<SignupPage />} />
       <Route path='/member/login' element={<LoginPage onLogin={handleLoginSuccess} />} />
-      <Route path='/' element={<MainPage/>}/>
+      <Route path='/' element={<MainPage />} />
       <Route path='/product/insert' element={<FridgeMainPage />} />
       <Route path='/product/edit' element={<FridgeEdit />} />
       <Route path='/product/register' element={<FridgeRegister />} />

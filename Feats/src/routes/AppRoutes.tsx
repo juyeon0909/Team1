@@ -13,11 +13,16 @@ import MyPageRecipe from '../pages/MyPageRecipe';
 import MyPageLike from '../pages/MyPageLike';
 import Logout from '../pages/Logout';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import Delete from '../pages/Delete';
 import RecipeRegister from '../pages/reciperegister';
 =======
 import RecipeRegister from '../pages/RecipeRegister'
 import RecipeEdit from '../pages/RecipeEdit'
+=======
+import RecipeRegister from '../pages/RecipeRegister';
+import RecipeEdit from '../pages/RecipeEdit';
+>>>>>>> 4238b0d63bf75f2eb6f5de035700c753e9be1356
 
 >>>>>>> cf415908a59aa57ffc29ae97182df91a7b390c1e
 
@@ -41,7 +46,12 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/mypage/recipe' element={<MyPageRecipe />} />
       <Route path='/fruit/like' element={<MyPageLike />} />
       <Route path='/logout' element={<Logout />} />
+<<<<<<< HEAD
       <Route path='/delete' element={<Delete />} />
+=======
+      <Route path='/recipeMain/register' element={<RecipeEdit />} />
+
+>>>>>>> 4238b0d63bf75f2eb6f5de035700c753e9be1356
     </Routes>
   );
 }

@@ -12,8 +12,8 @@ import MyPageInfo from '../pages/MyPageInfo';
 import MyPageRecipe from '../pages/MyPageRecipe';
 import MyPageLike from '../pages/MyPageLike';
 import Logout from '../pages/Logout';
-import RecipeRegister from '../pages/RecipeRegister'
-import RecipeEdit from '../pages/RecipeEdit'
+import RecipeRegister from '../pages/RecipeRegister';
+import RecipeEdit from '../pages/RecipeEdit';
 
 
 interface AppProps {
@@ -35,6 +35,8 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/mypage/recipe' element={<MyPageRecipe />} />
       <Route path='/fruit/like' element={<MyPageLike />} />
       <Route path='/logout' element={<Logout />} />
+      <Route path='/recipeMain/register' element={<RecipeEdit />} />
+
     </Routes>
   );
 }

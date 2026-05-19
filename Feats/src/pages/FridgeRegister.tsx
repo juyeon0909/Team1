@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 const FridgeRegister = () => {
   const { id } = useParams(); // 어떤 재료인지 ID만 확인
   const navigate = useNavigate();
- // git push 오류나서 주석 추가하기.
+  // git push 오류나서 주석 추가하기.
   // 입력값 관리를 위한 간단한 상태
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -13,7 +13,7 @@ const FridgeRegister = () => {
     alert(`${id}번 재료(${name})가 저장되었습니다.`);
     navigate('/product/insert'); // 저장 후 목록으로 돌아가기
   };
-// commit 테스트.
+  // commit 테스트.
   return (
     <div style={{ padding: '20px' }}>
       <h3>재료 등록 (ID: {id})</h3>
@@ -44,3 +44,5 @@ const FridgeRegister = () => {
     </div>
   );
 };
+
+export default FridgeRegister;

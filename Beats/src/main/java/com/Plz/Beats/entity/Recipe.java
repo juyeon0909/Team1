@@ -1,5 +1,6 @@
 package com.Plz.Beats.entity;
 import com.Plz.Beats.constant.ApprovalStatus;
+import com.Plz.Beats.constant.Category;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;

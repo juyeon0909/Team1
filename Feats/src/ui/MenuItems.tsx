@@ -1,7 +1,15 @@
+import React, { useState } from "react";
+import "../components/MenuItems.css";
 import { NavDropdown, Navbar, Container, Nav } from "react-bootstrap";
 
 import { useNavigate } from "react-router-dom";
 import type { User } from "../types/User";
+
+/* ============================================================
+   타입 정의
+   - 원본 HTML에 하드코딩돼 있던 값들을 타입으로 정리.
+   - 추후 Spring Boot API 응답을 이 타입에 맞춰 매핑하면 됨.
+   ============================================================ */
 
 type MenuItemsProps = {
    appName: string;
@@ -12,13 +20,16 @@ type MenuItemsProps = {
 function App({ appName, user, handleLogout }: MenuItemsProps) {
    console.log('xxx 프롭스 : ' + appName);
    const navigate = useNavigate();
+   const USER_NAME = "김주연";
+   const NAV_USER_LABEL = "김주";
 
    // user 프롭스를 사용하여 상단에 보이는 풀다운 메뉴를 적절히 분기 처리합니다.
-   const renderMenu = () => {
+   const Navbar: React.FC = () => {
       switch (user?.role) {
          case 'ADMIN':
             return (
                <>
+<<<<<<< HEAD
                   <Nav.Link onClick={() => navigate(`/product/insert`)}>냉장고</Nav.Link>
                   {/* 관리자는 모든 사람의 주문 내역 확인 */}
                   <NavDropdown title={`레시피북`}>
@@ -28,6 +39,23 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                   </NavDropdown>
                   
                   <NavDropdown title={`김주연님`}>
+=======
+                  <Nav className="nav-links">
+                     <Nav.Link onClick={() => navigate(`/`)} className="active">
+                        홈
+                     </Nav.Link>
+                     <Nav.Link onClick={() => navigate(`/product/insert`)}>냉장고</Nav.Link>
+
+                     <NavDropdown title={`레시피`}>
+                        <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
+                        <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
+                     </NavDropdown>
+
+                     <Nav.Link onClick={() => navigate(`/recipeMain/clip`)}>스크랩</Nav.Link>
+
+                  </Nav>
+                  <NavDropdown className="nav-user" title={NAV_USER_LABEL}>
+>>>>>>> cf415908a59aa57ffc29ae97182df91a7b390c1e
                      <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/recipe`)}>내 레시피</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/fruit/like`)}>좋아요</NavDropdown.Item>
@@ -39,6 +67,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
          case 'USER':
             return (
                <>
+<<<<<<< HEAD
                    <Nav.Link onClick={() => navigate(`/product/insert`)}>냉장고</Nav.Link>
                   {/* 관리자는 모든 사람의 주문 내역 확인 */}
                   <NavDropdown title={`레시피북`}>
@@ -48,6 +77,23 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                   </NavDropdown>
                   
                   <NavDropdown title={`김주연님`}>
+=======
+                  <Nav className="nav-links">
+                     <Nav.Link onClick={() => navigate(`/`)} className="active">
+                        홈
+                     </Nav.Link>
+                     <Nav.Link onClick={() => navigate(`/product/insert`)}>냉장고</Nav.Link>
+
+                     <NavDropdown title={`레시피`}>
+                        <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
+                        <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
+                     </NavDropdown>
+
+                     <Nav.Link onClick={() => navigate(`/recipeMain/clip`)}>스크랩</Nav.Link>
+
+                  </Nav>
+                  <NavDropdown className="nav-user" title={NAV_USER_LABEL}>
+>>>>>>> cf415908a59aa57ffc29ae97182df91a7b390c1e
                      <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/recipe`)}>내 레시피</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/fruit/like`)}>좋아요</NavDropdown.Item>
@@ -59,6 +105,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
          default:
             return (
                <>
+<<<<<<< HEAD
                 <Nav.Link onClick={() => navigate(`/product/insert`)}>냉장고</Nav.Link>
                   {/* 관리자는 모든 사람의 주문 내역 확인 */}
                   <NavDropdown title={`레시피북`}>
@@ -68,6 +115,23 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                   </NavDropdown>
                   
                   <NavDropdown title={`김주연님`}>
+=======
+                  <Nav className="nav-links">
+                     <Nav.Link onClick={() => navigate(`/`)} className="active">
+                        홈
+                     </Nav.Link>
+                     <Nav.Link onClick={() => navigate(`/product/insert`)}>냉장고</Nav.Link>
+
+                     <NavDropdown title={`레시피`}>
+                        <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
+                        <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
+                     </NavDropdown>
+
+                     <Nav.Link onClick={() => navigate(`/recipeMain/clip`)}>스크랩</Nav.Link>
+
+                  </Nav>
+                  <NavDropdown className="nav-user" title={NAV_USER_LABEL}>
+>>>>>>> cf415908a59aa57ffc29ae97182df91a7b390c1e
                      <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/recipe`)}>내 레시피</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/fruit/like`)}>좋아요</NavDropdown.Item>
@@ -82,18 +146,13 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
    };
 
    return (
-      <Navbar style={{ backgroundColor: '#0cc282' }} variant="dark" expand="lg">
-         <Container>
-           <Nav className="me-auto" style={{ color: 'white' }}>
-               {/* 하이퍼링크 : Nav.Link는 다른 페이지로 이동할 때 사용됩니다.  */}
-               <Nav.Link onClick={() => navigate(`/`)} style={{ color: 'white' }} >잇츠 인 마이 냉장고</Nav.Link>
-
-               {renderMenu()}
-
-               
-            </Nav>
-         </Container>
-      </Navbar >
+      <Container fluid className="imf-nav me-auto">
+         <div className="nav-logo" onClick={() => navigate(`/`)} style={{ cursor: "pointer" }}>
+            <span className="carrot">🥕</span>
+            <span className="nav-logo-text">잇츠 인 마이 냉장고</span>
+         </div>
+         <Navbar />
+      </Container>
    );
 }
 

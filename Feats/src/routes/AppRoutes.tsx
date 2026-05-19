@@ -6,14 +6,20 @@ import type { User } from "../types/User";
 import FridgeMainPage from './../pages/FridgeMainPage';
 import FridgeEdit from './../pages/FridgeEdit';
 import FridgeRegister from './../pages/FridgeRegister';
-import RecipeMain from '../pages/recipeMain';
-import RecipeMainClip from '../pages/recipeMainClip';
+import RecipeMain from '../pages/RecipeMain';
+import RecipeMainClip from '../pages/RecipeMainClip';
 import MyPageInfo from '../pages/MyPageInfo';
 import MyPageRecipe from '../pages/MyPageRecipe';
 import MyPageLike from '../pages/MyPageLike';
 import Logout from '../pages/Logout';
+<<<<<<< HEAD
 import Delete from '../pages/Delete';
 import RecipeRegister from '../pages/reciperegister';
+=======
+import RecipeRegister from '../pages/RecipeRegister'
+import RecipeEdit from '../pages/RecipeEdit'
+
+>>>>>>> cf415908a59aa57ffc29ae97182df91a7b390c1e
 
 interface AppProps {
   user: User | null;
@@ -24,7 +30,7 @@ function App({ user, handleLoginSuccess }: AppProps) {
     <Routes>
       <Route path='/member/signup' element={<SignupPage />} />
       <Route path='/member/login' element={<LoginPage onLogin={handleLoginSuccess} />} />
-      <Route path='/' element={<MainPage/>}/>
+      <Route path='/' element={<MainPage />} />
       <Route path='/product/insert' element={<FridgeMainPage />} />
       <Route path='/product/edit' element={<FridgeEdit />} />
       <Route path='/product/register' element={<FridgeRegister />} />

@@ -1,0 +1,211 @@
+/* ============================================================
+   MenuItems.css  —  네비게이션 바 전용 스타일
+   ------------------------------------------------------------
+   주의 1) 이 컴포넌트는 react-bootstrap(Nav, Nav.Link,
+           NavDropdown)을 사용합니다. 이 컴포넌트들은 실제로
+           아래와 같은 부트스트랩 기본 클래스로 렌더링됩니다.
+             <Nav>          -> <div class="nav ...">
+             <Nav.Link>     -> <a   class="nav-link ...">
+             <NavDropdown>  -> <div class="dropdown nav-item ...">
+                                  <a class="dropdown-toggle nav-link">제목</a>
+                                  <div class="dropdown-menu">
+                                    <a class="dropdown-item">...</a>
+           그래서 원본의 `.nav-links a` 같은 선택자는 그대로는
+           안 먹고, 부트스트랩이 만든 클래스를 함께 겨냥해야
+           하며, 부트스트랩 기본값을 덮으려면 특이도(우선순위)가
+           더 높아야 합니다.
+   주의 2) 변수를 :root에 둬서 .imf-root 래퍼가 없어도 동작
+           하게 했습니다. (지난 안내와 동일한 원칙)
+           만약 MainPage.css 등에서 이미 :root에 같은 변수를
+           정의했다면 중복이니, 변수는 한 곳(공용 파일)에만
+           두는 것을 권장합니다. 여기서는 컴포넌트 단독 동작을
+           위해 포함했습니다.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   [자체완결용 변수] 이 블록이 있어야 theme.css 로드 여부와
+   상관없이 네비가 정상 표시됩니다. 사용자분의 프로젝트 파일에는
+   이 블록이 빠져 있어서 색이 전부 깨졌습니다 (흰 배경/파란 로고/
+   안 보이는 메뉴). theme.css 가 확실히 로드됨을 확인한 뒤에는
+   값이 동일하므로 이 블록을 지워도 됩니다.
+   ------------------------------------------------------------ */
+:root {
+    --green: #6abf69;
+    --green-dark: #4cae4c;
+    --green-light: #e8f5e9;
+    --border: #b5d9b5;
+    --white: #ffffff;
+    --text-dark: #1e2a1e;
+    --text-mid: #4a5e4a;
+}
+
+/* ── 네비게이션 바 컨테이너 ──
+   원본의 <nav> 역할. 로고 | 메뉴 | 유저 를 가로 배치. */
+.imf-nav {
+    background: var(--green);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding: 0 48px;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* ── 로고 ── */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    margin-right: auto;
+    /* 나머지 메뉴를 오른쪽으로 밀어냄 */
+    cursor: pointer;
+    flex-shrink: 0;
+    /* 좁아져도 짓눌리지 않게 */
+    white-space: nowrap;
+    /* 글자 세로 꺾임 방지 */
+}
+
+.nav-logo .carrot {
+    font-size: 28px;
+    line-height: 1;
+}
+
+/* 로고 텍스트 (현재 <Nav.Link>로 렌더되어 .nav-link가 붙음).
+   TSX에서 이 요소의 className을 'nav-logo-text'로 바꿔주세요. */
+.nav-logo-text.nav-link,
+.nav-logo-text {
+    color: var(--white) !important;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    padding: 0 !important;
+    /* 부트스트랩 .nav-link 기본 padding 제거 */
+    white-space: nowrap;
+}
+
+/* ── 메뉴 링크 묶음 ──
+   <Nav className="nav-links">  ->  class="nav nav-links" */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+}
+
+/* 일반 메뉴 링크: 부트스트랩 .nav-link 와, 직접 쓴 <a> 둘 다 겨냥 */
+.nav-links .nav-link,
+.nav-links>a {
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 15px;
+    font-weight: 500;
+    padding: 0 !important;
+    /* .nav-link 기본 좌우 padding 제거 */
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s, font-weight 0.2s;
+    background: none;
+    white-space: nowrap;
+}
+
+.nav-links .nav-link:hover,
+.nav-links>a:hover,
+.nav-links>a.active {
+    color: var(--white);
+    font-weight: 700;
+}
+
+/* '레시피' 드롭다운 토글도 흰색으로 통일 */
+.nav-links .dropdown-toggle.nav-link {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.nav-links .dropdown-toggle.nav-link:hover {
+    color: var(--white);
+}
+
+/* 드롭다운 펼침 메뉴 (부트스트랩 .dropdown-menu) */
+.nav-links .dropdown-menu,
+.nav-user .dropdown-menu {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 4px 20px rgba(100, 180, 100, 0.18);
+}
+
+.dropdown-menu .dropdown-item {
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background: var(--green-light);
+    color: var(--green-dark);
+}
+
+/* ── 유저 메뉴 (오른쪽 알약 버튼) ──
+   <NavDropdown className="nav-user">
+     -> 루트 div: class="dropdown nav-item nav-user"
+     -> 토글  a : class="dropdown-toggle nav-link" */
+.nav-user {
+    list-style: none;
+}
+
+.nav-user .dropdown-toggle {
+    background: rgba(255, 255, 255, 0.22);
+    color: var(--white);
+    border: none;
+    border-radius: 20px;
+    padding: 6px 18px !important;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.nav-user .dropdown-toggle:hover,
+.nav-user .dropdown-toggle:focus {
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ※ 푸터(.imf-footer) 스타일은 이 파일에서 제거했습니다.
+   footer 요소가 display:flex 인 .imf-nav 안에 있으면 레이아웃이
+   깨지므로, footer는 네비게이션 컴포넌트에서 빼고 페이지 최하단
+   레이아웃으로 옮긴 뒤 거기에서 따로 스타일링하세요. */
+
+/* ============================================================
+   반응형
+   ============================================================ */
+@media (max-width: 960px) {
+    .imf-nav {
+        padding: 0 24px;
+        gap: 20px;
+    }
+
+    .nav-links {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .imf-nav {
+        height: 56px;
+        padding: 0 16px;
+        gap: 12px;
+    }
+
+    .nav-logo-text.nav-link,
+    .nav-logo-text {
+        font-size: 16px;
+    }
+
+    .nav-links {
+        gap: 14px;
+    }
+
+    .nav-links .nav-link,
+    .nav-links>a {
+        font-size: 13px;
+    }
+}

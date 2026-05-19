@@ -5,10 +5,31 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter
-@Setter
-@ToString
 @Entity
-@Table(name = "scraps")
-public class Scrap {
+@Table(name = "recipe_scraps")
+@Getter
+@NoArgsConstructor
+public class RecipeScrap {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recipe_id", nullable = false)
+    private Recipe recipe;
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    public RecipeScrap(User user, Recipe recipe) {
+        this.user = user;
+        this.recipe = recipe;
+        this.createdAt = LocalDateTime.now();
+    }
 }

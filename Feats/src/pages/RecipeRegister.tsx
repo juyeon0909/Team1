@@ -218,21 +218,7 @@ const RecipeRegister = () => {
           />
         </div>
 
-        {/* 7. 레시피 링크 */}
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>
-            레시피 링크 <span style={subLabelStyle}>유튜브·릴스·쇼츠 등</span>
-          </label>
-          <input
-            style={inputStyle}
-            type="url"
-            value={recipeLink}
-            onChange={(e) => setRecipeLink(e.target.value)}
-            placeholder="https://..."
-          />
-        </div>
-
-        {/* 8. 조리 방법 */}
+        {/* 7. 조리 방법 */}
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>조리 방법</label>
           <textarea

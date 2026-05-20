@@ -89,28 +89,6 @@ const RecipeMain = () => {
 
   return (
     <div style={{ fontFamily: 'sans-serif', background: '#f8f9fa', minHeight: '100vh', color: '#111' }}>
-
-      {/* ─── 공통 상단 네비게이션 바 ─── */}
-      <nav style={{
-        background: '#fff', borderBottom: '0.5px solid #eee',
-        padding: '0 40px', height: '56px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: 500, color: '#0F6E56', cursor: 'pointer' }} onClick={() => setView('list')}>
-          <span></span> 잇츠 인 마이 냉장고
-        </div>
-        <div style={{ display: 'flex', gap: '28px' }}>
-          <span style={{ fontSize: '14px', color: '#666', cursor: 'pointer' }}>홈</span>
-          <span style={{ fontSize: '14px', color: '#1D9E75', fontWeight: 500, borderBottom: '2px solid #1D9E75', paddingBottom: '2px', cursor: 'pointer' }} onClick={() => setView('list')}>레시피</span>
-          <span style={{ fontSize: '14px', color: '#666', cursor: 'pointer' }}>냉장고</span>
-          <span style={{ fontSize: '14px', color: '#666', cursor: 'pointer' }}>스크랩</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={{ cursor: 'pointer', fontSize: '18px' }}></span>
-          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#E1F5EE', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 500, color: '#085041', justifyContent: 'center' }}>김주</div>
-        </div>
-      </nav>
-
       {/* ─── VIEW 1: 레시피 목록 화면 ─── */}
       {view === 'list' && (
         <div>

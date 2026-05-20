@@ -37,7 +37,7 @@ const RecipeRegister = () => {
   };
 
   const onSave = () => {
-    alert('레시피 수정 신청이 완료되었습니다. 관리자 승인 후 공개됩니다.');
+    alert('레시피 등록 신청이 완료되었습니다. 관리자 승인 후 공개됩니다.');
     navigate('/RecipeMain');
   };
 
@@ -106,7 +106,7 @@ const RecipeRegister = () => {
       {/* 등록 메인 폼 카드 */}
       <div style={cardStyle}>
         <div style={{ fontSize: '18px', fontWeight: '500', color: 'var(--color-text-primary, #111)', marginBottom: '22px' }}>
-          {id ? `레시피 수정 (ID: ${id})` : '레시피 등록'}
+          {id ? `레시피 등록 (ID: ${id})` : '레시피 등록'}
         </div>
 
         {/* 1. 이미지 업로드 영역 추가 */}
@@ -236,7 +236,7 @@ const RecipeRegister = () => {
             padding: '10px 14px', fontSize: '12px', color: '#633806', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start'
           }}>
             <i className="ti ti-info-circle" style={{ fontSize: '15px', flexShrink: 0, marginTop: '1px' }}></i>
-            수정된 레시피는 관리자 승인 후 공개됩니다.
+            등록된 레시피는 관리자 승인 후 공개됩니다.
           </div>
         )}
 
@@ -260,7 +260,7 @@ const RecipeRegister = () => {
               background: '#1D9E75', color: '#fff', border: 'none', fontWeight: '500'
             }}
           >
-            {id ? '저장하기' : '수정 신청'}
+            {id ? '저장하기' : '등록 신청'}
           </button>
         </div>
       </div>

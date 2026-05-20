@@ -80,9 +80,21 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                      <Nav.Link onClick={() => navigate(`/recipeMain`)}>
                         레시피
                      </Nav.Link>
+                     <NavDropdown title={`레시피`}>
+                        <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
+                        <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
+                     </NavDropdown>
+                     <Nav.Link onClick={() => navigate(`/recipeMain/clip`)}>스크랩</Nav.Link>
+
                      <Nav.Link onClick={() => navigate(`/member/login`)}>로그인</Nav.Link>
                   </Nav>
-                  
+                  <NavDropdown className="nav-user" title={NAV_USER_LABEL}>
+                     <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/mypage/recipe`)}>내 레시피</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/fruit/like`)}>좋아요</NavDropdown.Item>
+                     <NavDropdown.Item onClick={handleLogout}>로그아웃</NavDropdown.Item>
+                  </NavDropdown>
+
                </>
             );
       }

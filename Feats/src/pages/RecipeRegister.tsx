@@ -1,11 +1,271 @@
-function App() {
-    console.log('자바스크립트 코딩 영역');
+import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
-    return (
-        <>
-            레시피 등록 영역
-        </>
-    );
+const RecipeRegister = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  // 1. 💡 HTML 가이드에 맞춘 상태 변수 분리
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
+  const [cookingTime, setCookingTime] = useState("");
+  const [intro, setIntro] = useState("");
+  const [mustIngredients, setMustIngredients] = useState("");
+  const [optIngredients, setOptIngredients] = useState("");
+  const [recipeLink, setRecipeLink] = useState("");
+  const [method, setMethod] = useState("");
+
+  // 이미지 상태 관리
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview("");
+  };
+
+  const onSave = () => {
+    alert('레시피 등록 신청이 완료되었습니다. 관리자 승인 후 공개됩니다.');
+    navigate('/RecipeMain');
+  };
+
+  // 🎨 HTML 가이드라인 기반의 인라인 스타일 가이드 적용
+  const pageContainerStyle = {
+    padding: '28px 40px',
+    background: 'var(--color-background-tertiary, #f8f9fa)',
+    minHeight: 'calc(100vh - 56px)',
+    fontFamily: 'var(--font-sans, sans-serif)',
+  };
+
+  const backLinkStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '20px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    color: 'var(--color-text-secondary, #666)',
+  };
+
+  const cardStyle = {
+    maxWidth: '600px',
+    margin: '0 auto',
+    background: 'var(--color-background-primary, #fff)',
+    border: '0.5px solid var(--color-border-tertiary, #eee)',
+    borderRadius: 'var(--border-radius-lg, 8px)',
+    padding: '28px 32px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+  };
+
+  const labelStyle = {
+    display: 'block',
+    fontSize: '12px',
+    color: 'var(--color-text-secondary, #555)',
+    marginBottom: '5px',
+    fontWeight: '500',
+  };
+
+  const subLabelStyle = {
+    fontSize: '11px',
+    color: 'var(--color-text-tertiary, #999)',
+    marginLeft: '4px',
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '9px 12px',
+    fontSize: '13px',
+    border: '0.5px solid var(--color-border-secondary, #ccc)',
+    borderRadius: 'var(--border-radius-md, 6px)',
+    background: 'var(--color-background-secondary, #fafafa)',
+    color: 'var(--color-text-primary, #111)',
+    outline: 'none',
+    boxSizing: 'border-box' as const,
+  };
+
+  return (
+    <div style={pageContainerStyle}>
+      {/* 상단 목록 이동 버튼 */}
+      <div style={backLinkStyle} onClick={() => navigate('/RecipeMain')}>
+        <i className="ti ti-arrow-left" style={{ fontSize: '16px' }}></i>
+        <span>{id ? '레시피 상세로' : '레시피 목록으로'}</span>
+      </div>
+
+      {/* 등록 메인 폼 카드 */}
+      <div style={cardStyle}>
+        <div style={{ fontSize: '18px', fontWeight: '500', color: 'var(--color-text-primary, #111)', marginBottom: '22px' }}>
+          {id ? `레시피 등록 (ID: ${id})` : '레시피 등록'}
+        </div>
+
+        {/* 1. 이미지 업로드 영역 추가 */}
+        <div style={{ marginBottom: '14px' }}>
+          <label style={labelStyle}>요리 대표 이미지</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            style={{ marginBottom: '8px', fontSize: '12px' }}
+          />
+          {imagePreview ? (
+            <div style={{ position: 'relative', borderRadius: '6px', overflow: 'hidden', border: '0.5px solid #eee' }}>
+              <img src={imagePreview} alt="대표 이미지" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                style={{
+                  position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', color: '#fff',
+                  border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', fontSize: '11px'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <div style={{ padding: '20px', background: '#fafafa', border: '1px dashed #ccc', borderRadius: '6px', textAlign: 'center', color: '#999', fontSize: '12px' }}>
+              권장 비율 정방형 또는 4:3 (선택사항)
+            </div>
+          )}
+        </div>
+
+        {/* 2. 레시피 이름 */}
+        <div style={{ marginBottom: '14px' }}>
+          <label style={labelStyle}>레시피 이름 *</label>
+          <input
+            style={inputStyle}
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="예: 두부 계란찜"
+          />
+        </div>
+
+        {/* 3. 카테고리 & 조리 시간 (1줄 2개 배치) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+          <div>
+            <label style={labelStyle}>카테고리 *</label>
+            <select
+              style={inputStyle}
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              <option value="">선택하세요</option>
+              <option>한식</option><option>양식</option><option>일식</option>
+              <option>중식</option><option>간식</option><option>야식</option>
+              <option>다이어트</option><option>밀프랩</option>
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>조리 시간</label>
+            <input
+              style={inputStyle}
+              type="text"
+              value={cookingTime}
+              onChange={(e) => setCookingTime(e.target.value)}
+              placeholder="예: 15분"
+            />
+          </div>
+        </div>
+
+        {/* 4. 간단 소개 */}
+        <div style={{ marginBottom: '14px' }}>
+          <label style={labelStyle}>간단 소개</label>
+          <input
+            style={inputStyle}
+            type="text"
+            value={intro}
+            onChange={(e) => setIntro(e.target.value)}
+            placeholder="레시피를 한 줄로 소개해주세요"
+          />
+        </div>
+
+        {/* 5. 필수 재료 */}
+        <div style={{ marginBottom: '14px' }}>
+          <label style={labelStyle}>
+            필수 재료 <span style={subLabelStyle}>쉼표로 구분</span>
+          </label>
+          <input
+            style={inputStyle}
+            type="text"
+            value={mustIngredients}
+            onChange={(e) => setMustIngredients(e.target.value)}
+            placeholder="예: 두부, 계란, 대파"
+          />
+        </div>
+
+        {/* 6. 선택 재료 */}
+        <div style={{ marginBottom: '14px' }}>
+          <label style={labelStyle}>
+            선택 재료 <span style={subLabelStyle}>쉼표로 구분</span>
+          </label>
+          <input
+            style={inputStyle}
+            type="text"
+            value={optIngredients}
+            onChange={(e) => setOptIngredients(e.target.value)}
+            placeholder="예: 참기름, 소금"
+          />
+        </div>
+
+        {/* 7. 조리 방법 */}
+        <div style={{ marginBottom: '14px' }}>
+          <label style={labelStyle}>조리 방법</label>
+          <textarea
+            style={{ ...inputStyle, minHeight: '100px', resize: 'vertical', fontFamily: 'inherit', lineHeight: '1.5' }}
+            value={method}
+            onChange={(e) => setMethod(e.target.value)}
+            placeholder={`조리 순서를 입력해주세요&#10;1. 두부를 먹기 좋은 크기로 썰어요&#10;2. ...`.replace('&#10;', '\n')}
+          />
+        </div>
+
+        {/* 안내 문구 배너 */}
+        {!id && (
+          <div style={{
+            background: '#FAEEDA', border: '0.5px solid #FAC775', borderRadius: 'var(--border-radius-md, 6px)',
+            padding: '10px 14px', fontSize: '12px', color: '#633806', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start'
+          }}>
+            <i className="ti ti-info-circle" style={{ fontSize: '15px', flexShrink: 0, marginTop: '1px' }}></i>
+            등록된 레시피는 관리자 승인 후 공개됩니다.
+          </div>
+        )}
+
+        {/* 하단 제어 버튼 */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{
+              padding: '8px 18px', fontSize: '13px', borderRadius: 'var(--border-radius-md, 6px)', cursor: 'pointer',
+              border: '0.5px solid var(--color-border-secondary, #ccc)', background: 'var(--color-background-primary, #fff)', color: 'var(--color-text-secondary, #666)'
+            }}
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={onSave}
+            style={{
+              padding: '8px 18px', fontSize: '13px', borderRadius: 'var(--border-radius-md, 6px)', cursor: 'pointer',
+              background: '#1D9E75', color: '#fff', border: 'none', fontWeight: '500'
+            }}
+          >
+            {id ? '저장하기' : '등록 신청'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
-export default App;
+export default RecipeRegister;

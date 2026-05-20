@@ -15,7 +15,7 @@ import Logout from '../pages/Logout';
 import Delete from '../pages/Delete';
 import RecipeRegister from '../pages/RecipeRegister'
 import RecipeEdit from '../pages/RecipeEdit'
-
+import MyPageLike from '../pages/MyPageLike'
 interface AppProps {
   user: User | null;
   handleLoginSuccess: (userData: User) => void;
@@ -23,6 +23,8 @@ interface AppProps {
 function App({ user, handleLoginSuccess }: AppProps) {
   return (
     <Routes>
+          <Route path='/fruit/like' element={<MyPageLike>} />
+          /* 경로 자꾸 오류나서 임의로 fruit-like  만듬 수정 되면 삭제하거나 변경하기.. */
       <Route path='/member/signup' element={<SignupPage />} />
       <Route path='/member/login' element={<LoginPage onLogin={handleLoginSuccess} />} />
       <Route path='/' element={<MainPage />} />

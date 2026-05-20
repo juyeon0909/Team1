@@ -1,7 +1,7 @@
 // src/recipeData.ts
 
 // 1. 이 구조(타입)는 DB가 들어와도 안 바뀝니다. (그대로 유지)
-export interface Recipe {
+export type Recipe = {
   id: number;
   name: string;
   cat: string;

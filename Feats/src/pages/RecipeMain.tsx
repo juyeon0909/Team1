@@ -1,12 +1,12 @@
-import React, { useState, useMemo, useEffect } from 'react'; // 💡 useEffect 추가
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { INITIAL_RECIPES, Recipe } from '../types/RecipeData';
+import { INITIAL_RECIPES } from "../types/RecipeData";
+import type { Recipe } from "../types/RecipeData";
 
 const RecipeMain = () => {
   const navigate = useNavigate();
 
-  // 2. 리액트 상태(State) 선언
-  // 💡 수정: 브라우저 저장소(localStorage)에 기존 데이터가 있다면 불러오고, 없다면 초깃값을 씁니다.
+  // 1. 리액트 상태(State) 선언 (로컬스토리지 연동 완벽)
   const [recipes, setRecipes] = useState<Recipe[]>(() => {
     const localData = localStorage.getItem('user_recipes');
     return localData ? JSON.parse(localData) : INITIAL_RECIPES;
@@ -14,6 +14,9 @@ const RecipeMain = () => {
 
   const [view, setView] = useState<'list' | 'detail'>('list');
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
+
+  // 💡 [추가] 드롭다운 열림/닫힘 상태 관리
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // 필터용 상태
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,22 +30,22 @@ const RecipeMain = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 6;
 
-  // 💡 추가: 하트나 스크랩이 변경되어 recipes 상태가 바뀔 때마다 자동으로 브라우저 저장소에 동기화합니다.
+  // 상태가 바뀔 때마다 자동으로 브라우저 저장소에 동기화
   useEffect(() => {
     localStorage.setItem('user_recipes', JSON.stringify(recipes));
   }, [recipes]);
 
-  // 좋아요(하트) 토글 기능 함수
+  // 좋아요(하트) 토글 기능 함수 (상세 페이지 대응 완벽 보완)
   const toggleHeart = (id: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setRecipes(prevRecipes =>
       prevRecipes.map(r => {
         if (r.id === id) {
-          const isHearted = !r.isHearted;
+          const nextIsHearted = !r.isHearted;
           return {
             ...r,
-            isHearted,
-            heart: isHearted ? r.heart + 1 : r.heart - 1
+            isHearted: nextIsHearted,
+            heart: nextIsHearted ? r.heart + 1 : r.heart - 1
           };
         }
         return r;
@@ -66,7 +69,7 @@ const RecipeMain = () => {
     );
   };
 
-  // 3. 검색 및 필터링 검색 로직
+  // 2. 검색 및 필터링 검색 로직
   const filteredRecipes = useMemo(() => {
     return recipes.filter(r => {
       if (urgentOnly && !r.urgent) return false;
@@ -103,7 +106,10 @@ const RecipeMain = () => {
     return { bg: '#BA7517', text: '#fff' };
   };
 
-  const currentRecipe = recipes.find(r => r.id === selectedRecipeId) || recipes[0];
+  // 안전한 현재 레시피 매칭 처리 (데이터 폭발 방지)
+  const currentRecipe = useMemo(() => {
+    return recipes.find(r => r.id === selectedRecipeId) || recipes[0] || null;
+  }, [recipes, selectedRecipeId]);
 
   return (
     <div style={{ fontFamily: 'sans-serif', background: '#f8f9fa', minHeight: '100vh', color: '#111' }}>
@@ -115,27 +121,7 @@ const RecipeMain = () => {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div style={{ fontSize: '20px', fontWeight: 500 }}>레시피</div>
 
-              {/* 상단 버튼 레이아웃 영역 */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button
-                  onClick={() => navigate('/recipeMain/hearts')}
-                  style={{ background: '#fff', border: '0.5px solid #ccc', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', cursor: 'pointer' }}
-                >
-                  ❤️ 좋아요 목록
-                </button>
-                <button
-                  onClick={() => navigate('/recipeMain/scraps')}
-                  style={{ background: '#fff', border: '0.5px solid #ccc', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', cursor: 'pointer' }}
-                >
-                  ★ 스크랩 목록
-                </button>
-                <button
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#1D9E75', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
-                  onClick={() => navigate('/recipeMain/register')}
-                >
-                   레시피 등록
-                </button>
-              </div>
+
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
@@ -317,7 +303,7 @@ const RecipeMain = () => {
       )}
 
       {/* ─── VIEW 2: 레시피 상세 화면 ─── */}
-      {view === 'detail' && (
+      {view === 'detail' && currentRecipe && (
         <div style={{ padding: '28px 40px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', cursor: 'pointer' }} onClick={() => setView('list')}>
             <span>⬅️</span>
@@ -337,7 +323,7 @@ const RecipeMain = () => {
                 <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: '#666', alignItems: 'center' }}>
                   <span>⏱️ {currentRecipe.time}분</span>
                   <span
-                    onClick={() => toggleHeart(currentRecipe.id)}
+                    onClick={(e) => toggleHeart(currentRecipe.id, e)}
                     style={{ cursor: 'pointer', color: currentRecipe.isHearted ? '#E05D5D' : '#666', display: 'flex', alignItems: 'center', gap: '4px' }}
                   >
                     {currentRecipe.isHearted ? '❤️' : '🤍'} {currentRecipe.heart} 좋아요
@@ -414,7 +400,7 @@ const RecipeMain = () => {
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
-                  onClick={() => toggleScrap(currentRecipe.id)}
+                  onClick={(e) => toggleScrap(currentRecipe.id, e)}
                   style={{
                     flex: 1, padding: '10px',
                     background: currentRecipe.isScrapped ? '#BA7517' : '#1D9E75',
@@ -428,7 +414,7 @@ const RecipeMain = () => {
                   onClick={() => navigate('/recipeMain/edit')}
                   style={{ padding: '10px 14px', background: '#fff', color: '#555', border: '0.5px solid #ccc', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}
                 >
-                  ️ 수정
+                  ⚙️ 수정
                 </button>
               </div>
             </div>

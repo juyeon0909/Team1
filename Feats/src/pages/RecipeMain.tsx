@@ -367,7 +367,9 @@ const RecipeMain = () => {
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button style={{ flex: 1, padding: '10px', background: '#1D9E75', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+                <button
+                onClick={() => navigate('/recipeMain/clip')}
+                style={{ flex: 1, padding: '10px', background: '#1D9E75', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
                   📌 스크랩
                 </button>
                 <button

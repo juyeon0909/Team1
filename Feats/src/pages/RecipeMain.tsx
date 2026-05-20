@@ -296,7 +296,6 @@ const RecipeMain = () => {
                 <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: '#666' }}>
                   <span>⏱️ {currentRecipe.time}분</span>
                   <span>❤️ {currentRecipe.heart} 스크랩</span>
-                  <span>⭐ {currentRecipe.star} (리뷰 42)</span>
                   <span>👤 김주연</span>
                 </div>
               </div>
@@ -321,7 +320,6 @@ const RecipeMain = () => {
               </div>
 
               <div style={{ background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', padding: '20px 24px' }}>
-                <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '14px' }}>리뷰 (42)</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
                   <div style={{ paddingBottom: '14px', borderBottom: '0.5px solid #eee' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
@@ -358,7 +356,6 @@ const RecipeMain = () => {
               </div>
 
               <div style={{ background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', padding: '18px 20px' }}>
-                <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '12px' }}>참고 영상</div>
                 <div style={{ background: '#fafafa', borderRadius: '6px', padding: '14px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
                   <span style={{ fontSize: '24px' }}>📺</span>
                   <div>
@@ -374,7 +371,7 @@ const RecipeMain = () => {
                   📌 스크랩
                 </button>
                 <button
-                  onClick={() => navigate('/recipeMain/register')}
+                  onClick={() => navigate('/recipeMain/edit')}
                   style={{ padding: '10px 14px', background: '#fff', color: '#555', border: '0.5px solid #ccc', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}
                 >
                   ️ 수정

@@ -37,7 +37,7 @@ const RecipeEdit = () => {
   };
 
   const onSave = () => {
-    alert('레시피 등록 신청이 완료되었습니다. 관리자 승인 후 공개됩니다.');
+    alert('레시피 수정 신청이 완료되었습니다. 관리자 승인 후 공개됩니다.');
     navigate('/RecipeMain');
   };
 
@@ -106,7 +106,7 @@ const RecipeEdit = () => {
       {/* 등록 메인 폼 카드 */}
       <div style={cardStyle}>
         <div style={{ fontSize: '18px', fontWeight: '500', color: 'var(--color-text-primary, #111)', marginBottom: '22px' }}>
-          {id ? `레시피 수정 (ID: ${id})` : '레시피 등록'}
+          {id ? `레시피 수정 (ID: ${id})` : '레시피 수정'}
         </div>
 
         {/* 1. 이미지 업로드 영역 추가 */}
@@ -218,21 +218,7 @@ const RecipeEdit = () => {
           />
         </div>
 
-        {/* 7. 레시피 링크 */}
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>
-            레시피 링크 <span style={subLabelStyle}>유튜브·릴스·쇼츠 등</span>
-          </label>
-          <input
-            style={inputStyle}
-            type="url"
-            value={recipeLink}
-            onChange={(e) => setRecipeLink(e.target.value)}
-            placeholder="https://..."
-          />
-        </div>
-
-        {/* 8. 조리 방법 */}
+        {/* 7. 조리 방법 */}
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>조리 방법</label>
           <textarea
@@ -250,7 +236,7 @@ const RecipeEdit = () => {
             padding: '10px 14px', fontSize: '12px', color: '#633806', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start'
           }}>
             <i className="ti ti-info-circle" style={{ fontSize: '15px', flexShrink: 0, marginTop: '1px' }}></i>
-            등록된 레시피는 관리자 승인 후 공개됩니다.
+            수정된 레시피는 관리자 승인 후 공개됩니다.
           </div>
         )}
 
@@ -274,7 +260,7 @@ const RecipeEdit = () => {
               background: '#1D9E75', color: '#fff', border: 'none', fontWeight: '500'
             }}
           >
-            {id ? '저장하기' : '등록 신청'}
+            {id ? '저장하기' : '수정 신청'}
           </button>
         </div>
       </div>

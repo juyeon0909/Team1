@@ -1,38 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react'; // 💡 useEffect 추가
 import { useNavigate } from 'react-router-dom';
-
-// 1. 데이터 구조 정의
-interface Recipe {
-  id: number;
-  name: string;
-  cat: string;
-  time: number;
-  match: number;
-  emoji: string;
-  bg: string;
-  desc: string;
-  tags: string[];
-  heart: number;
-  star: number;
-  urgent: boolean;
-}
-
-const INITIAL_RECIPES: Recipe[] = [
-  { id: 1, name: '두부 계란찜', cat: '한식', time: 15, match: 100, emoji: '🍳', bg: '#E1F5EE', desc: '부드러운 두부와 계란의 초간단 한식 반찬', tags: ['초간단', '15분'], heart: 234, star: 4.8, urgent: true },
-  { id: 2, name: '대파 된장찌개', cat: '한식', time: 20, match: 85, emoji: '🥘', bg: '#FAEEDA', desc: '구수한 된장과 신선한 대파의 조화', tags: ['국물', '20분'], heart: 189, star: 4.6, urgent: true },
-  { id: 3, name: '애호박 볶음밥', cat: '한식', time: 10, match: 70, emoji: '🍜', bg: '#EAF3DE', desc: '냉장고 속 애호박을 활용한 간편 볶음밥', tags: ['간편식', '10분'], heart: 412, star: 4.7, urgent: true },
-  { id: 4, name: '치즈 오믈렛', cat: '양식', time: 10, match: 85, emoji: '🧀', bg: '#FCEBEB', desc: '촉촉하고 부드러운 프렌치 스타일 오믈렛', tags: ['양식', '10분'], heart: 305, star: 4.9, urgent: false },
-  { id: 5, name: '된장 비빔밥', cat: '한식', time: 15, match: 70, emoji: '🍚', bg: '#FBEAF0', desc: '각종 나물과 된장으로 만드는 영양 비빔밥', tags: ['한식', '15분'], heart: 98, star: 4.4, urgent: false },
-  { id: 6, name: '계란국', cat: '한식', time: 10, match: 100, emoji: '🍲', bg: '#E6F1FB', desc: '간단하게 뚝딱 만드는 따뜻한 계란국', tags: ['국물', '10분'], heart: 156, star: 4.5, urgent: true },
-  { id: 7, name: '파스타', cat: '양식', time: 20, match: 60, emoji: '🍝', bg: '#E1F5EE', desc: '집에서 즐기는 토마토 파스타', tags: ['양식', '20분'], heart: 280, star: 4.7, urgent: false },
-  { id: 8, name: '두부 스테이크', cat: '양식', time: 15, match: 85, emoji: '🥩', bg: '#FAEEDA', desc: '두부으로 만드는 든든한 채식 스테이크', tags: ['양식', '15분'], heart: 210, star: 4.6, urgent: true },
-  { id: 9, name: '냉파 볶음', cat: '한식', time: 10, match: 100, emoji: '🥬', bg: '#EAF3DE', desc: '냉장고 파 털어 만드는 쫄깃한 볶음', tags: ['간편', '10분'], heart: 88, star: 4.3, urgent: true },
-];
+import { INITIAL_RECIPES, Recipe } from '../types/RecipeData';
 
 const RecipeMain = () => {
   const navigate = useNavigate();
 
   // 2. 리액트 상태(State) 선언
+  // 💡 수정: 브라우저 저장소(localStorage)에 기존 데이터가 있다면 불러오고, 없다면 초깃값을 씁니다.
+  const [recipes, setRecipes] = useState<Recipe[]>(() => {
+    const localData = localStorage.getItem('user_recipes');
+    return localData ? JSON.parse(localData) : INITIAL_RECIPES;
+  });
+
   const [view, setView] = useState<'list' | 'detail'>('list');
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
 
@@ -48,9 +27,48 @@ const RecipeMain = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 6;
 
+  // 💡 추가: 하트나 스크랩이 변경되어 recipes 상태가 바뀔 때마다 자동으로 브라우저 저장소에 동기화합니다.
+  useEffect(() => {
+    localStorage.setItem('user_recipes', JSON.stringify(recipes));
+  }, [recipes]);
+
+  // 좋아요(하트) 토글 기능 함수
+  const toggleHeart = (id: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setRecipes(prevRecipes =>
+      prevRecipes.map(r => {
+        if (r.id === id) {
+          const isHearted = !r.isHearted;
+          return {
+            ...r,
+            isHearted,
+            heart: isHearted ? r.heart + 1 : r.heart - 1
+          };
+        }
+        return r;
+      })
+    );
+  };
+
+  // 스크랩(별) 토글 기능 함수
+  const toggleScrap = (id: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setRecipes(prevRecipes =>
+      prevRecipes.map(r => {
+        if (r.id === id) {
+          return {
+            ...r,
+            isScrapped: !r.isScrapped
+          };
+        }
+        return r;
+      })
+    );
+  };
+
   // 3. 검색 및 필터링 검색 로직
   const filteredRecipes = useMemo(() => {
-    return INITIAL_RECIPES.filter(r => {
+    return recipes.filter(r => {
       if (urgentOnly && !r.urgent) return false;
       if (activeCategory !== '전체' && r.cat !== activeCategory) return false;
 
@@ -70,7 +88,7 @@ const RecipeMain = () => {
       }
       return true;
     });
-  }, [searchQuery, activeCategory, activeMatch, activeTime, urgentOnly]);
+  }, [recipes, searchQuery, activeCategory, activeMatch, activeTime, urgentOnly]);
 
   // 페이지네이션 계산
   const totalPages = Math.max(1, Math.ceil(filteredRecipes.length / perPage));
@@ -85,7 +103,7 @@ const RecipeMain = () => {
     return { bg: '#BA7517', text: '#fff' };
   };
 
-  const currentRecipe = INITIAL_RECIPES.find(r => r.id === selectedRecipeId) || INITIAL_RECIPES[0];
+  const currentRecipe = recipes.find(r => r.id === selectedRecipeId) || recipes[0];
 
   return (
     <div style={{ fontFamily: 'sans-serif', background: '#f8f9fa', minHeight: '100vh', color: '#111' }}>
@@ -96,12 +114,28 @@ const RecipeMain = () => {
           <div style={{ background: '#fff', borderBottom: '0.5px solid #eee', padding: '24px 40px 0' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div style={{ fontSize: '20px', fontWeight: 500 }}>레시피</div>
-              <button
-                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#1D9E75', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
-                onClick={() => navigate('/recipeMain/register')}
-              >
-                 레시피 등록
-              </button>
+
+              {/* 상단 버튼 레이아웃 영역 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button
+                  onClick={() => navigate('/recipeMain/hearts')}
+                  style={{ background: '#fff', border: '0.5px solid #ccc', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', cursor: 'pointer' }}
+                >
+                  ❤️ 좋아요 목록
+                </button>
+                <button
+                  onClick={() => navigate('/recipeMain/scraps')}
+                  style={{ background: '#fff', border: '0.5px solid #ccc', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', cursor: 'pointer' }}
+                >
+                  ★ 스크랩 목록
+                </button>
+                <button
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#1D9E75', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+                  onClick={() => navigate('/recipeMain/register')}
+                >
+                   레시피 등록
+                </button>
+              </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
@@ -232,11 +266,19 @@ const RecipeMain = () => {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '10px', borderTop: '0.5px solid #eee' }}>
                         <div style={{ display: 'flex', gap: '10px', fontSize: '12px', color: '#999' }}>
                           <span>⏱️ {r.time}분</span>
-                          <span>❤️ {r.heart}</span>
+                          <span
+                            onClick={(e) => toggleHeart(r.id, e)}
+                            style={{ cursor: 'pointer', color: r.isHearted ? '#E05D5D' : '#999', fontWeight: r.isHearted ? 'bold' : 'normal' }}
+                          >
+                            {r.isHearted ? '❤️' : '🤍'} {r.heart}
+                          </span>
                           <span>⭐ {r.star}</span>
                         </div>
-                        <div style={{ fontSize: '12px', color: '#999', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                          📌 스크랩
+                        <div
+                          onClick={(e) => toggleScrap(r.id, e)}
+                          style={{ fontSize: '12px', color: r.isScrapped ? '#BA7517' : '#999', display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer', fontWeight: r.isScrapped ? 'bold' : 'normal' }}
+                        >
+                          {r.isScrapped ? '★' : '☆'} 스크랩
                         </div>
                       </div>
                     </div>
@@ -285,7 +327,6 @@ const RecipeMain = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', maxWidth: '960px', margin: '0 auto' }}>
             {/* 좌측 콘텐츠 영역 */}
             <div>
-              {/* 💡 [버그 수정] margin-bottom -> marginBottom */}
               <div style={{ height: '220px', background: currentRecipe.bg, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '72px', marginBottom: '20px' }}>
                 {currentRecipe.emoji}
               </div>
@@ -293,9 +334,14 @@ const RecipeMain = () => {
               <div style={{ background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', padding: '20px 24px', marginBottom: '16px' }}>
                 <div style={{ fontSize: '20px', fontWeight: 500, marginBottom: '8px' }}>{currentRecipe.name}</div>
                 <div style={{ fontSize: '13px', color: '#666', marginBottom: '14px' }}>{currentRecipe.desc}</div>
-                <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: '#666' }}>
+                <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: '#666', alignItems: 'center' }}>
                   <span>⏱️ {currentRecipe.time}분</span>
-                  <span>❤️ {currentRecipe.heart} 스크랩</span>
+                  <span
+                    onClick={() => toggleHeart(currentRecipe.id)}
+                    style={{ cursor: 'pointer', color: currentRecipe.isHearted ? '#E05D5D' : '#666', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    {currentRecipe.isHearted ? '❤️' : '🤍'} {currentRecipe.heart} 좋아요
+                  </span>
                   <span>👤 김주연</span>
                 </div>
               </div>
@@ -368,9 +414,15 @@ const RecipeMain = () => {
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
-                onClick={() => navigate('/recipeMain/clip')}
-                style={{ flex: 1, padding: '10px', background: '#1D9E75', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
-                  📌 스크랩
+                  onClick={() => toggleScrap(currentRecipe.id)}
+                  style={{
+                    flex: 1, padding: '10px',
+                    background: currentRecipe.isScrapped ? '#BA7517' : '#1D9E75',
+                    color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer',
+                    transition: 'background 0.2s'
+                  }}
+                >
+                  {currentRecipe.isScrapped ? '★ 스크랩 취소' : '📌 스크랩'}
                 </button>
                 <button
                   onClick={() => navigate('/recipeMain/edit')}

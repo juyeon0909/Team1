@@ -1,4 +1,4 @@
-function App() {
+function RecipeMainClip() {
     console.log('자바스크립트 코딩 영역');
 
     return (

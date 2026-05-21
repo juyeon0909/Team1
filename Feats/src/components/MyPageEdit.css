@@ -19,7 +19,7 @@
 }
 
 /* 브레드크럼 (상단 경로 내비게이션) */
-.breadcrumb {
+.breadcrumb { 
     font-size: 0.9rem;
     color: var(--text-mid);
     margin-bottom: 0.5rem;

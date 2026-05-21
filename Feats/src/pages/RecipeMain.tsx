@@ -36,6 +36,14 @@ const RecipeMain = () => {
   const [view, setView] = useState<'list' | 'detail'>('list');
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
 
+  // 🛠️ [신규 추가] 요리하기 팝업창 모달 상태 및 재료 입력 상태
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mustIngredients, setMustIngredients] = useState([
+    { name: '두부', quantity: '1모' },
+    { name: '계란', quantity: '2개' },
+    { name: '대파', quantity: '1/4대' }
+  ]);
+
   // 필터용 상태
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('추천순');
@@ -87,8 +95,23 @@ const RecipeMain = () => {
 
   const currentRecipe = INITIAL_RECIPES.find(r => r.id === selectedRecipeId) || INITIAL_RECIPES[0];
 
+  // 🛠️ [신규 추가] 모달 안에서 요리 시작을 누를 때 실행되는 함수
+  const handleCookStart = () => {
+    console.log("최종 사용할 재료 및 수량 데이터:", mustIngredients);
+    alert('요리를 시작합니다! 메인 목록으로 돌아갑니다.');
+    setIsModalOpen(false); // 팝업 닫기
+    setView('list');       // 목록 화면으로 전환
+  };
+
+  // 🛠️ [신규 추가] 팝업 안에서 인풋 값 변경 시 상태 업데이트 핸들러
+  const handleQuantityChange = (index: number, value: string) => {
+    const updated = [...mustIngredients];
+    updated[index].quantity = value;
+    setMustIngredients(updated);
+  };
+
   return (
-    <div style={{ fontFamily: 'sans-serif', background: '#f8f9fa', minHeight: '100vh', color: '#111' }}>
+    <div style={{ fontFamily: 'sans-serif', background: '#f8f9fa', minHeight: '100vh', color: '#111', position: 'relative' }}>
       {/* ─── VIEW 1: 레시피 목록 화면 ─── */}
       {view === 'list' && (
         <div>
@@ -285,7 +308,6 @@ const RecipeMain = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', maxWidth: '960px', margin: '0 auto' }}>
             {/* 좌측 콘텐츠 영역 */}
             <div>
-              {/* 💡 [버그 수정] margin-bottom -> marginBottom */}
               <div style={{ height: '220px', background: currentRecipe.bg, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '72px', marginBottom: '20px' }}>
                 {currentRecipe.emoji}
               </div>
@@ -340,7 +362,10 @@ const RecipeMain = () => {
                 <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '14px' }}>재료</div>
                 <div style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>필수 재료</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', marginBottom: '14px', fontSize: '13px', color: '#333' }}>
-                  <div>• 두부 1모</div><div>• 계란 2개</div><div>• 대파 1/4대</div>
+                  {/* 동기화된 필수 재료 데이터 매핑 */}
+                  {mustIngredients.map((ing, idx) => (
+                    <div key={idx}>• {ing.name} {ing.quantity}</div>
+                  ))}
                 </div>
                 <div style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>선택 재료</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', fontSize: '13px', color: '#333' }}>
@@ -366,19 +391,83 @@ const RecipeMain = () => {
                 </div>
               </div>
 
+              {/* 하단 버튼 제어 영역 */}
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button
-                onClick={() => navigate('/recipeMain/clip')}
-                style={{ flex: 1, padding: '10px', background: '#1D9E75', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
-                  📌 스크랩
+                  onClick={() => navigate('/recipeMain/clip')}
+                  style={{ flex: 1, padding: '10px', background: '#1D9E75', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}
+                >
+                  스크랩
+                </button>
+                {/* 💡 [변경] 외부 페이지 이동 대신 현재 뷰에서 바로 모달(isModalOpen)을 True로 전환합니다. */}
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  style={{ flex: 1, padding: '10px', background: '#0BA574', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  요리하기
                 </button>
                 <button
                   onClick={() => navigate('/recipeMain/edit')}
                   style={{ padding: '10px 14px', background: '#fff', color: '#555', border: '0.5px solid #ccc', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}
                 >
-                  ️ 수정
+                  수정
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── 🛠️ [신규 추가] 재료 및 수량 확인 팝업창 (Modal) ─── */}
+      {isModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }}>
+          <div style={{
+            background: '#fff', padding: '24px', borderRadius: '12px', width: '360px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+          }}>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '14px', color: '#333' }}>
+              🍳 사용할 재료 및 수량 확인
+            </div>
+            <p style={{ fontSize: '13px', color: '#666', marginBottom: '16px' }}>
+              요리에 사용할 재료의 수량을 최종 확인해 주세요.
+            </p>
+
+            {/* 재료 리스트 수정용 input 필드 */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+              {mustIngredients.map((item, index) => (
+                <div key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#444' }}>• {item.name}</span>
+                  <input
+                    type="text"
+                    value={item.quantity}
+                    onChange={(e) => handleQuantityChange(index, e.target.value)}
+                    style={{
+                      width: '100px', padding: '6px 8px', fontSize: '13px',
+                      border: '1px solid #ddd', borderRadius: '4px', textAlign: 'right'
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* 모달 제어 버튼 */}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                style={{ flex: 1, padding: '10px 0', background: '#eee', color: '#444', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+              >
+                취소
+              </button>
+              <button
+                onClick={handleCookStart}
+                style={{ flex: 1.5, padding: '10px 0', background: '#0BA574', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}
+              >
+                확인 및 요리시작
+              </button>
+              {/* 일단 팝엉창으로 띄움. */}
             </div>
           </div>
         </div>

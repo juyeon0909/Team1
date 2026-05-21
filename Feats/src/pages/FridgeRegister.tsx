@@ -110,7 +110,7 @@ const FridgeRegister: React.FC = () => {
             취소
           </button>
           <button onClick={handleSave} className="btn-save">
-            냉장고에 저장
+            저장
           </button>
         </div>
 

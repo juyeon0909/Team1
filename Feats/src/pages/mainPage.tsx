@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "../components/mainPage.css";
+import { useNavigate } from "react-router-dom";
 
 /* ============================================================
    타입 정의
@@ -48,6 +49,7 @@ interface HeroStat {
    ============================================================ */
 
 const USER_NAME = "김주연";
+
 
 
 const HERO_STATS: HeroStat[] = [
@@ -129,7 +131,10 @@ const HeroCard: React.FC = () => (
     </div>
 );
 
-const AlertBar: React.FC = () => (
+const AlertBar: React.FC = () => {
+    const navigate = useNavigate();
+    
+    return (
     <div className="alert-bar">
         <span className="label">오늘 소비가 권장되는 재료:</span>
         <div className="tags">
@@ -139,11 +144,17 @@ const AlertBar: React.FC = () => (
                 </span>
             ))}
         </div>
-        <a className="alert-link" href="#">
+        <div 
+            style={{cursor: 'pointer', marginLeft:'auto', fontSize: '90%'}}
+            onClick={() => navigate('/recipeMain')}
+            
+            >
             관련 레시피 보기 →
-        </a>
+        </div>
+
     </div>
 );
+};
 
 const ExpiringIngredients: React.FC = () => (
     <div className="section-card">
@@ -177,6 +188,7 @@ const ExpiringIngredients: React.FC = () => (
 const RecommendedRecipes: React.FC = () => {
     // 카테고리 탭 선택 상태 (원본 HTML의 JS 동작을 React state로 변환)
     const [activeCategory, setActiveCategory] = useState<string>("전체");
+    
     // 검색어 입력 상태 (입력은 동작하나, 실제 검색/필터 로직은
     // 백엔드 스펙 미확정으로 제외 — 입력값만 제어 컴포넌트로 보관)
     const [query, setQuery] = useState<string>("");

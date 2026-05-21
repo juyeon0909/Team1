@@ -83,30 +83,8 @@ export default function RecipeMainClip() {
     );
   }, [recipes, curFilter, curSearch]);
 
-  return (
-    // 💡 부트스트랩 의존성 없이도 무조건 화면 중앙에 노출되도록 스타일 보안관 장착
-    <div style={{ maxWidth: '1000px', margin: '40px auto', padding: '0 20px', display: 'block', minHeight: '500px' }}>
-
-      {/* 🟢 상단 타이틀 영역 (캡처와 동일하게 구현) */}
-      <div style={{ marginBottom: '20px', textAlign: 'left' }}>
-        <span style={{ fontSize: '13px', color: '#888' }}>내 정보 &gt; <span style={{ color: '#6abf69', fontWeight: 'bold' }}>스크랩 내역</span></span>
-        <h1 style={{ fontSize: '28px', color: '#6abf69', fontWeight: 'bold', marginTop: '5px' }}>스크랩 내역</h1>
-      </div>
-
-      {/* ⚪ 메인 카드 레이아웃 */}
-      <div className="card" style={{ border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', overflow: 'hidden', background: '#fff', display: 'block' }}>
-
-        {/* 카드 헤더 (아이콘 + 제목 + 개수 뱃지) */}
-        <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '16px 20px', backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-          <div style={{ fontSize: '18px' }}>🔖</div>
-          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#334155' }}>스크랩한 레시피</h2>
-          <span style={{ background: '#6abf69', color: '#fff', padding: '2px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>
-            {filteredRecipes.length}개
-          </span>
-        </div>
-
-        {/* 카드 바디 (필터 & 그리드) */}
-        <div className="card-body" style={{ padding: '20px', display: 'block' }}>
+    return (
+        <>
 
           {/* 상단 필터 탭 & 검색바 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>

@@ -64,7 +64,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                   <NavDropdown className="nav-user" title={NAV_USER_LABEL}>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/recipe`)}>내 레시피</NavDropdown.Item>
-                     <NavDropdown.Item onClick={() => navigate(`/fruit/like`)}>좋아요</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/mypage/like`)}>좋아요</NavDropdown.Item>
                      <NavDropdown.Item onClick={handleLogout}>로그아웃</NavDropdown.Item>
                   </NavDropdown>
                </>
@@ -91,7 +91,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                   <NavDropdown className="nav-user" title={NAV_USER_LABEL}>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/recipe`)}>내 레시피</NavDropdown.Item>
-                     <NavDropdown.Item onClick={() => navigate(`/fruit/like`)}>좋아요</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/mypage/like`)}>좋아요</NavDropdown.Item>
                      <NavDropdown.Item onClick={handleLogout}>로그아웃</NavDropdown.Item>
                   </NavDropdown>
 

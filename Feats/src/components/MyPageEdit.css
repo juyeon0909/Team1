@@ -1,0 +1,265 @@
+:root {
+    --green: #6abf69;
+    --green-dark: #4cae4c;
+    --green-light: #e8f5e9;
+    --red:         #e05a5a;
+    --red-light:   #fff0f0;
+    --border: #b5d9b5;
+    --white: #ffffff;
+    --text-dark: #1e2a1e;
+    --text-mid: #4a5e4a;
+    --text-light:  #9ab8ae;
+    --white:       #ffffff;
+    --shadow:      0 4px 24px rgba(29, 158, 117, 0.10);
+}
+
+
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
+/* 브레드크럼 (상단 경로 내비게이션) */
+.breadcrumb {
+    font-size: 0.9rem;
+    color: var(--text-mid);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.breadcrumb .link {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.breadcrumb .link:hover {
+    color: var(--green-dark);
+    text-decoration: underline;
+}
+
+.breadcrumb .cur {
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.page-title span {
+    color: var(--green);
+}
+
+/* ==========================================================================
+   2. 상단 탭 (닉네임 수정 / 비밀번호 변경)
+   ========================================================================== */
+.edit-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--green-light);
+    padding-bottom: 1px;
+}
+
+.edit-tab {
+    background: none;
+    border: none;
+    padding: 0.75rem 1.2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-mid);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.edit-tab:hover {
+    color: var(--green-dark);
+}
+
+.edit-tab.active {
+    color: var(--green);
+}
+
+/* 활성화 탭 하단 라인 처리 */
+.edit-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--green);
+}
+
+/* ==========================================================================
+   3. 카드 컴포넌트 & 폼 레이아웃
+   ========================================================================== */
+.card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--green-light);
+    background: none;
+}
+
+.card-header .icon {
+    font-size: 1.5rem;
+}
+
+.card-header h2 {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+/* 폼 필드 구성 */
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.form-field label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-mid);
+}
+
+.form-field input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dark);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-field input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(106, 191, 105, 0.15);
+}
+
+.form-field input::placeholder {
+    color: var(--text-light);
+}
+
+/* 입력 안내 및 유효성 메시지 */
+.hint {
+    font-size: 0.85rem;
+    color: var(--text-mid);
+    margin-top: 0.25rem;
+}
+
+.hint.ok {
+    color: var(--green-dark);
+    font-weight: 500;
+}
+
+.hint.err {
+    color: var(--red);
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   4. 비밀번호 강도 미터 (Password Strength)
+   ========================================================================== */
+.pw-strength-box {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+}
+
+.pw-bar {
+    flex: 1;
+    max-width: 60px;
+    height: 6px;
+    background-color: var(--green-light);
+    border-radius: 3px;
+    transition: background-color 0.3s ease;
+}
+
+/* 비밀번호 점수별 바 컬러 매칭 */
+.pw-bar.weak {
+    background-color: var(--red);
+}
+
+.pw-bar.mid {
+    background-color: #f5a623;
+}
+
+.pw-bar.strong {
+    background-color: var(--green);
+}
+
+.pw-lbl {
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-left: 0.5rem;
+}
+
+/* ==========================================================================
+   5. 버튼 레이아웃 및 스타일
+   ========================================================================== */
+.btn-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+
+.btn-go {
+    background-color: var(--green);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-go:hover {
+    background-color: var(--green-dark);
+}
+
+.btn-go:active {
+    transform: scale(0.98);
+}
+
+.btn-back {
+    background-color: var(--white);
+    color: var(--text-mid);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-back:hover {
+    background-color: var(--green-light);
+    color: var(--green-dark);
+}

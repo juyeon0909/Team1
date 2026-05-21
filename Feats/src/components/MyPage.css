@@ -73,7 +73,7 @@ body {
   overflow: hidden;
 }
 
-.profile-con {
+.profile-container {
   position: relative;
   width: 80px; height: 80px;
   flex-shrink: 0;
@@ -144,13 +144,4 @@ body {
 .withdraw-box { text-align: right; margin-top: 16px; padding: 0 8px; }
 .withdraw-link { font-size: 13px; color: var(--text-light); text-decoration: none; cursor: pointer; }
 .withdraw-link:hover { color: var(--red); }
-
-/*내 정보 수정*/
-.edit-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
-.edit-tab {
-  padding: 8px 20px; border-radius: 20px; font-size: 13.5px; font-weight: 600;
-  cursor: pointer; border: 1.5px solid var(--border); background: var(--white);
-  color: var(--text-mid); font-family: inherit; transition: all 0.15s;
-}
-.edit-tab.active, .edit-tab:hover { background: var(--green); color: var(--white); border-color: var(--green); }
 

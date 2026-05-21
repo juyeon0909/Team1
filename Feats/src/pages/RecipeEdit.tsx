@@ -4,16 +4,35 @@ import { useNavigate, useParams } from 'react-router-dom';
 const RecipeEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  // 1. 💡 HTML 가이드에 맞춘 상태 변수 분리
+{/* 커밋 체쿠  */}
+  // 1. 상태 변수 분리 및 필수재료 배열화
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [cookingTime, setCookingTime] = useState("");
   const [intro, setIntro] = useState("");
-  const [mustIngredients, setMustIngredients] = useState("");
+
+  // 필수 재료를 객체 배열로 변경
+  const [mustIngredients, setMustIngredients] = useState([{ name: "", quantity: "" }]);
+
   const [optIngredients, setOptIngredients] = useState("");
   const [recipeLink, setRecipeLink] = useState("");
   const [method, setMethod] = useState("");
+
+  // 필수 재료 관련 핸들러들
+  const handleIngredientChange = (index: number, field: 'name' | 'quantity', value: string) => {
+    const newIngredients = [...mustIngredients];
+    newIngredients[index][field] = value;
+    setMustIngredients(newIngredients);
+  };
+
+  const addIngredientRow = () => {
+    setMustIngredients([...mustIngredients, { name: "", quantity: "" }]);
+  };
+
+  const removeIngredientRow = (index: number) => {
+    if (mustIngredients.length === 1) return;
+    setMustIngredients(mustIngredients.filter((_, i) => i !== index));
+  };
 
   // 이미지 상태 관리
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -37,11 +56,13 @@ const RecipeEdit = () => {
   };
 
   const onSave = () => {
+    // 💡 백엔드에 보낼 때는 mustIngredients 배열 전체를 넘겨주시면 됩니다.
+    console.log("저장될 필수 재료 데이터: ", mustIngredients);
     alert('레시피 수정 신청이 완료되었습니다. 관리자 승인 후 공개됩니다.');
     navigate('/RecipeMain');
   };
 
-  // 🎨 HTML 가이드라인 기반의 인라인 스타일 가이드 적용
+  // 🎨 인라인 스타일 가이드
   const pageContainerStyle = {
     padding: '28px 40px',
     background: 'var(--color-background-tertiary, #f8f9fa)',
@@ -97,19 +118,17 @@ const RecipeEdit = () => {
 
   return (
     <div style={pageContainerStyle}>
-      {/* 상단 목록 이동 버튼 */}
       <div style={backLinkStyle} onClick={() => navigate('/RecipeMain')}>
         <i className="ti ti-arrow-left" style={{ fontSize: '16px' }}></i>
         <span>{id ? '레시피 상세로' : '레시피 목록으로'}</span>
       </div>
 
-      {/* 등록 메인 폼 카드 */}
       <div style={cardStyle}>
         <div style={{ fontSize: '18px', fontWeight: '500', color: 'var(--color-text-primary, #111)', marginBottom: '22px' }}>
           {id ? `레시피 수정 (ID: ${id})` : '레시피 수정'}
         </div>
 
-        {/* 1. 이미지 업로드 영역 추가 */}
+
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>요리 대표 이미지</label>
           <input
@@ -139,7 +158,7 @@ const RecipeEdit = () => {
           )}
         </div>
 
-        {/* 2. 레시피 이름 */}
+
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>레시피 이름 *</label>
           <input
@@ -151,7 +170,7 @@ const RecipeEdit = () => {
           />
         </div>
 
-        {/* 3. 카테고리 & 조리 시간 (1줄 2개 배치) */}
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
           <div>
             <label style={labelStyle}>카테고리 *</label>
@@ -178,7 +197,7 @@ const RecipeEdit = () => {
           </div>
         </div>
 
-        {/* 4. 간단 소개 */}
+
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>간단 소개</label>
           <input
@@ -190,21 +209,54 @@ const RecipeEdit = () => {
           />
         </div>
 
-        {/* 5. 필수 재료 */}
+
         <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>
-            필수 재료 <span style={subLabelStyle}>쉼표로 구분</span>
-          </label>
-          <input
-            style={inputStyle}
-            type="text"
-            value={mustIngredients}
-            onChange={(e) => setMustIngredients(e.target.value)}
-            placeholder="예: 두부, 계란, 대파"
-          />
+          <label style={labelStyle}>필수 재료 및 용량 *</label>
+
+          {mustIngredients.map((item, index) => (
+            <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+              <input
+                style={inputStyle}
+                type="text"
+                value={item.name}
+                onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
+                placeholder="예: 두부"
+              />
+              <input
+                style={inputStyle}
+                type="text"
+                value={item.quantity}
+                onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
+                placeholder="예: 150g, 1개"
+              />
+              {mustIngredients.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeIngredientRow(index)}
+                  style={{
+                    background: '#fff', border: '0.5px solid #ccc', color: '#ff4d4f',
+                    padding: '8px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={addIngredientRow}
+            style={{
+              background: 'none', border: '1px dashed #1D9E75', color: '#1D9E75',
+              padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', width: '100%', marginTop: '4px'
+            }}
+          >
+            + 재료 추가
+          </button>
         </div>
 
-        {/* 6. 선택 재료 */}
+
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>
             선택 재료 <span style={subLabelStyle}>쉼표로 구분</span>
@@ -218,18 +270,18 @@ const RecipeEdit = () => {
           />
         </div>
 
-        {/* 7. 조리 방법 */}
+
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>조리 방법</label>
           <textarea
             style={{ ...inputStyle, minHeight: '100px', resize: 'vertical', fontFamily: 'inherit', lineHeight: '1.5' }}
             value={method}
             onChange={(e) => setMethod(e.target.value)}
-            placeholder={`조리 순서를 입력해주세요&#10;1. 두부를 먹기 좋은 크기로 썰어요&#10;2. ...`.replace('&#10;', '\n')}
+            placeholder={`조리 순서를 입력해주세요\n1. 두부를 먹기 좋은 크기로 썰어요\n2. ...`}
           />
         </div>
 
-        {/* 안내 문구 배너 */}
+
         {!id && (
           <div style={{
             background: '#FAEEDA', border: '0.5px solid #FAC775', borderRadius: 'var(--border-radius-md, 6px)',
@@ -240,7 +292,7 @@ const RecipeEdit = () => {
           </div>
         )}
 
-        {/* 하단 제어 버튼 */}
+
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
           <button
             type="button"

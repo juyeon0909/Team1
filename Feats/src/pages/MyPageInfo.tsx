@@ -7,7 +7,7 @@ import customAxios from './../api/axiosInstance'; // 사용자 정의 axios 인�
 import { API_BASE_URL } from "../config/config";
 
 function App() {
-    console.log('자바스크립트 코딩 영역');
+    console.log('자바스크립트 코딩 영역'); 
     const navigate = useNavigate();
 
     const [user, setUser] = useState({

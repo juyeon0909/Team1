@@ -18,7 +18,7 @@ export default function EditPage({ nickname, triggerToast }: EditPageProps) {
   const [formValues, setFormValues] = useState({
     currentPassword: '',
     newNickname: '',
-    newPassword: '',
+    newPassword: '', 
     confirmPassword: ''
   });
 

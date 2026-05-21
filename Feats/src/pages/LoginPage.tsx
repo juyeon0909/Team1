@@ -401,7 +401,7 @@ function LoginPage({ onLogin }: Props) {
 
       {/* LEFT: 브랜드 섹션 */}
       <div className="login-brand-section">
-        <div className="brand-badge">🧊 냉장고 속 재료로 요리하기</div>
+        <div className="brand-badge"> 냉장고 속 재료로 요리하기</div>
 
         <div className="brand-logo-img">
           <svg viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">

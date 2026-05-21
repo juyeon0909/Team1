@@ -17,6 +17,8 @@ import Logout from '../pages/Logout';
 import Delete from '../pages/Delete';
 import RecipeRegister from '../pages/RecipeRegister'
 import RecipeEdit from '../pages/RecipeEdit'
+import FindPassword from '../pages/FindPassword.tsx'
+
 
 interface AppProps {
   user: User | null;
@@ -42,10 +44,10 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/logout' element={<Logout />} />
       <Route path='/delete' element={<Delete />} />
       <Route path='/recipeMain/edit' element={<RecipeEdit />} />
-
+      <Route path='/member/find-password' element={<FindPassword />} />
     </Routes>
   );
 }
 
-
+{/* 커밋 체쿠  */}
 export default App;

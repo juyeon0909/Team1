@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 const RecipeEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
+{/* 커밋 체쿠 */}
   // 1. 상태 변수 분리 및 필수재료 배열화
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");

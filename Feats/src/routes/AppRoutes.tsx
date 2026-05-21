@@ -17,6 +17,7 @@ import RecipeRegister from '../pages/RecipeRegister'
 import RecipeEdit from '../pages/RecipeEdit'
 import FindPassword from '../pages/FindPassword.tsx'
 
+
 interface AppProps {
   user: User | null;
   handleLoginSuccess: (userData: User) => void;
@@ -44,5 +45,5 @@ function App({ user, handleLoginSuccess }: AppProps) {
   );
 }
 
-
+{/* 커밋 체쿠 */}
 export default App;

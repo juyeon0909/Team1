@@ -452,7 +452,7 @@ const RecipeMain = () => {
                 </div>
               ))}
             </div>
-{/* 커밋 체쿠 */}
+{/* 커밋 체쿠     */}
             {/* 모달 제어 버튼 */}
             <div style={{ display: 'flex', gap: '8px' }}>
               <button

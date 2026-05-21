@@ -19,7 +19,7 @@ import java.time.LocalDate;
 public class Member {
     // 밑에 어노테이션 3개는 바로 밑에 변수에만 적용됨
     @Id // 프라이머리 키
-    @GeneratedValue(strategy = GenerationType.AUTO) // 숫자 생성할때 AUTO로 생성하겠다.
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // 숫자 생성할때 AUTO로 생성하겠다.
 
     @Column(name = "member_id") // pk 컬럼 이름 : 테이블단수명_id
     private Long id ;

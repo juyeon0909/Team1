@@ -1,63 +1,109 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Button, Table, Badge, Stack } from 'react-bootstrap';
-// 💡 레시피 데이터 양식을 매칭하기 위해 임포트 (경로가 다르면 프로젝트에 맞게 수정해주세요)
-import { INITIAL_RECIPES } from "../types/RecipeData";
-import type { Recipe } from "../types/RecipeData";
+import React, { useState, useEffect, type ChangeEvent } from 'react';
+import { Container } from 'react-bootstrap';
 import "../components/MyPage.css";
+import { useNavigate } from 'react-router-dom';
+import axios from "axios";
+import customAxios from './../api/axiosInstance'; // 사용자 정의 axios 인스턴스
+import { API_BASE_URL } from "../config/config";
 
 function App() {
     console.log('자바스크립트 코딩 영역');
+    const navigate = useNavigate();
 
-    // 'likes' 상태를 추가하여 좋아요 내역 화면으로 전환할 수 있게 합니다.
-    const [currentPage, setCurrentPage] = useState('info'); // 'info', 'edit', 'withdraw', 'qna', 'likes'
-    const [editTab, setEditTab] = useState('nickname');
-    const [profileimage] = useState<string | null>(null);
-    const [nickname, setNickname] = useState<string>('김주연');
+    const [user, setUser] = useState({
+    nickname: '',
+    profileimage: null as string | null,
+    email: ''
+    });
 
-    // 💡 [추가] 좋아요 한 레시피들을 저장할 상태
-    const [likedRecipes, setLikedRecipes] = useState<Recipe[]>([]);
+    const [errors, setErrors] = useState({
+        profileimage: '',
+        general: ''
+    });
 
-    // 💡 [추가] 사용자가 'likes' 화면을 켜면 로컬스토리지에서 하트 누른 레시피만 뽑아옵니다.
     useEffect(() => {
-        if (currentPage === 'likes') {
-            const localData = localStorage.getItem('user_recipes');
-            const allRecipes: Recipe[] = localData ? JSON.parse(localData) : INITIAL_RECIPES;
-            // 하트(isHearted) 상태가 true인 것만 필터링
-            setLikedRecipes(allRecipes.filter(r => r.isHearted === true));
-        }
-    }, [currentPage]);
+        const fetchUserInfo = async () => {
+            try {
+                // 백엔드의 내 정보 조회 API 엔드포인트
+                const url = `${API_BASE_URL}/user/me`;
+                const response = await customAxios.get(url);
 
-    // 💡 [추가] 좋아요 내역에서 하트를 다시 누르면 취소되면서 사라지는 함수
-    const handleRemoveLike = (id: number, e: React.MouseEvent) => {
-        e.stopPropagation();
-        const localData = localStorage.getItem('user_recipes');
-        const allRecipes: Recipe[] = localData ? JSON.parse(localData) : INITIAL_RECIPES;
-
-        const updatedRecipes = allRecipes.map(r => {
-            if (r.id === id) {
-                return { ...r, isHearted: false, heart: r.heart - 1 };
+                // 서버가 준 진짜 데이터(닉네임, 이미지 등)로 상태 변경!
+                // 백엔드가 주는 데이터 구조(예: response.data.nickname)에 맞게 맞추시면 됩니다.
+                setUser({
+                    nickname: response.data.nickname || '이름 없음',
+                    profileimage: response.data.profileimage || null,
+                    email: response.data.email || '이메일 정보 없음'
+                });
+            } catch (error) {
+                console.error('유저 정보 불러오기 실패:', error);
+                setErrors(prev => ({ ...prev, general: '회원 정보를 불러오지 못했습니다.' }));
             }
-            return r;
-        });
+        };
 
-        localStorage.setItem('user_recipes', JSON.stringify(updatedRecipes));
-        setLikedRecipes(updatedRecipes.filter(r => r.isHearted === true));
+        fetchUserInfo();
+    }, []);
+
+    const uploadProfileImage = async (base64Image: string) => {
+        // 에러 초기화
+        setErrors({ profileimage: '', general: '' });
+
+        try {
+            // 백엔드 프로필 이미지 변경 엔드포인트 (실제 API 주소에 맞게 수정 가능)
+            const url = `${API_BASE_URL}/user/update-profileimage`;
+
+            // base64 데이터를 담아 서버로 전송
+            const response = await customAxios.post(url, { profileimage: base64Image });
+
+            // 성공하면 화면 상태 갱신 및 알림 (서버에서 반환한 URL이 있다면 response.data... 등으로 대체 가능)
+            setUser(prev => ({ ...prev, profileimage: base64Image }));
+            alert('프로필 사진이 성공적으로 변경되었습니다! ✅');
+
+        } catch (error) {
+            console.error('프로필 이미지 업로드 실패:', error);
+
+            if (axios.isAxiosError(error) && error.response) {
+                // 백엔드에서 보낸 구체적인 에러 메시지가 있다면 세팅
+                setErrors({
+                    profileimage: error.response.data?.errors?.profileimage || '',
+                    general: error.response.data?.message || '프로필 사진 변경 중 오류가 발생했습니다.'
+                });
+            } else {
+                setErrors(prev => ({ ...prev, general: '서버와의 통신 중 오류가 발생했습니다.' }));
+            }
+        }
     };
 
-    const handleProfileImageChange = () => {
-        // 프로필 이미지 변경 로직
+    const handleProfileImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const { name, files } = event.target;
+
+        if (!files || files.length === 0) {
+            alert('이미지 파일을 선택해주셔야 합니다');
+            return;
+        }
+
+        const file = files[0]; // 선택한 첫 번째 파일
+        const reader = new FileReader();
+
+        reader.readAsDataURL(file);
+
+        reader.onloadend = () => {
+            const result = reader.result as string;
+
+            // 3. 파일 읽기가 끝나면 base64 결과물을 들고 서버 업로드 함수 실행
+            uploadProfileImage(result);
+        };
     };
 
     return (
         <Container className="py-4">
             {/* 1. 내 정보 페이지 ('info') 일 때만 렌더링 */}
-            {currentPage === 'info' && (
-                <div id="page-info" className="page active">
 
+                <div id="page-info" className="page active">
+                    
                     <div className="page-header">
                         <div>
                             <h2 style={{ color: '#6abf69', fontWeight: 'bold', margin: 0 }}>
-                                마이페이지 <span>›</span>
                                 <span className="cur" style={{ color: 'var(--green)' }}> 내 정보</span>
                             </h2>
                         </div>
@@ -65,37 +111,48 @@ function App() {
 
                     <div className="mb-4">
                         <h1 className="page-title" style={{ fontWeight: 'bold', margin: 0 }}>
-                            안녕하세요, <span>{nickname}</span>님 👋
+                            안녕하세요, <span>{user.nickname}</span>님 👋
                         </h1>
                     </div>
 
                     <div className="profile">
                         <div className="profile-container">
                             <div className="profile-lg">
-                                {profileimage ? <img src={profileimage} alt="프로필 사진"/> : (nickname ? nickname.charAt(0) : '?')}
+                                {user.profileimage ? (
+                                    <img src={user.profileimage} alt="프로필 사진"/>
+                                ) : (
+                                    user.nickname ? user.nickname.charAt(0) : '?'
+                                )}
                             </div>
                             <label className="profile-edit-btn" htmlFor="profile-uploader" title="프로필 사진 변경">📸</label>
-                            <input type="file" id="profile-uploader" accept="image/*" style={{ display: 'none' }} onChange={handleProfileImageChange} />
+                            <input 
+                                type="file" 
+                                id="profile-uploader"
+                                name="profileimage"
+                                accept="image/*" 
+                                style={{ display: 'none' }} 
+                                onChange={handleProfileImageChange} 
+                            />
                         </div>
                         <div className="profile-info">
-                            <div className="profile-name">{nickname}</div>
-                            <div className="profile-email">kimjuyeon@example.com</div>
+                            <div className="profile-name">{user.nickname}</div>
+                            <div className="profile-email">{user.email || '이메일 정보 없음'}</div>
                             <span className="profile-hero-badge">일반 회원</span>
                         </div>
                     </div>
 
                     <div className="menu-grid">
                         {/* 1. 정보 수정 */}
-                        <button className="menu-btn" onClick={() => setCurrentPage("edit")}>
+                        <button className="menu-btn" onClick={() => navigate('/mypage/edit')}>
                             <div className="m-icon">✏️</div>
                             <div className="m-info">
                                 <div className="m-lbl">정보 수정</div>
                                 <div className="m-sub">닉네임 및 비밀번호 변경</div>
                             </div>
                         </button>
-
+                    
                         {/* 2. 내 레시피 */}
-                        <button className="menu-btn" onClick={() => setCurrentPage("my-recipes")}>
+                        <button className="menu-btn" onClick={() => navigate('/mypage/recipe')}>
                             <div className="m-icon">🍳</div>
                             <div className="m-info">
                                 <div className="m-lbl">내 레시피</div>
@@ -103,8 +160,8 @@ function App() {
                             </div>
                         </button>
 
-                        {/* 3. 좋아요 내역 (정상 작동하도록 바인딩 완료) */}
-                        <button className="menu-btn" onClick={() => setCurrentPage("likes")}>
+                        {/* 3. 좋아요 내역 */}
+                        <button className="menu-btn" onClick={() => navigate('/mypage/like')}>
                             <div className="m-icon">❤️</div>
                             <div className="m-info">
                                 <div className="m-lbl">좋아요 내역</div>
@@ -113,7 +170,7 @@ function App() {
                         </button>
 
                         {/* 4. 문의하기 */}
-                        <button className="menu-btn" onClick={() => setCurrentPage("qna")}>
+                        <button className="menu-btn" onClick={() => navigate('/mypage/qna')}>
                             <div className="m-icon">💬</div>
                             <div className="m-info">
                                 <div className="m-lbl">문의하기</div>
@@ -122,83 +179,13 @@ function App() {
                         </button>
                     </div>
 
+                    {/* 요청하신 코드로 변경 및 부모(info) 안쪽 제자리 배치 완료 */}
                     <div className="withdraw-box">
-                        <span className="withdraw-link" onClick={() => setCurrentPage('withdraw')}>회원 탈퇴를 원하시나요?</span>
-                    </div>
+                        <span className="withdraw-link" onClick={() => navigate('/mypage/qna')}>회원 탈퇴를 원하시나요?</span>
+                    </div> 
                 </div>
-            )}
 
-            {/* 2. 정보 수정 페이지 ('edit') */}
-            {currentPage === 'edit' && (
-                <div id="page-edit" className="page active">
-                    <h2>정보 수정 페이지</h2>
-                    <p>여기에 닉네임 및 비밀번호 변경 폼을 작성하세요.</p>
-                    <Button variant="secondary" onClick={() => setCurrentPage('info')}>뒤로가기</Button>
-                </div>
-            )}
-
-            {/* 💡 3. [새로 추가] 좋아요 내역 구현 페이지 ('likes') */}
-            {currentPage === 'likes' && (
-                <div id="page-likes" className="page active">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                        <Button variant="light" onClick={() => setCurrentPage('info')} style={{ fontSize: '16px' }}>
-                            ⬅️ 뒤로가기
-                        </Button>
-                        <h2 style={{ color: '#6abf69', fontWeight: 'bold', margin: 0 }}>
-                            마이페이지 › <span style={{ color: 'var(--green)' }}>좋아요 내역 ({likedRecipes.length})</span>
-                        </h2>
-                    </div>
-
-                    {likedRecipes.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '50px 0', background: '#fff', borderRadius: '8px', border: '0.5px solid #eee' }}>
-                            <span style={{ fontSize: '40px' }}>🤍</span>
-                            <div style={{ marginTop: '12px', color: '#666', fontSize: '14px' }}>좋아요 한 레시피가 없습니다.</div>
-                        </div>
-                    ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
-                            {likedRecipes.map(r => (
-                                <div key={r.id} style={{ background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', overflow: 'hidden' }}>
-                                    <div style={{ height: '110px', background: r.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px' }}>
-                                        {r.emoji}
-                                    </div>
-                                    <div style={{ padding: '12px' }}>
-                                        <div style={{ fontSize: '14px', fontWeight: 500, color: '#111', marginBottom: '4px' }}>{r.name}</div>
-                                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px', height: '32px', overflow: 'hidden' }}>{r.desc}</div>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '0.5px solid #eee', fontSize: '12px' }}>
-                                            <span style={{ color: '#999' }}>⏱️ {r.time}분</span>
-                                            <span onClick={(e) => handleRemoveLike(r.id, e)} style={{ cursor: 'pointer', color: '#E05D5D', fontWeight: 'bold' }}>
-                                                ❤️ {r.heart} 취소
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* 4. 문의하기 페이지 ('qna') */}
-            {currentPage === 'qna' && (
-                <div id="page-qna" className="page active">
-                    <h2>문의하기</h2>
-                    <p>서비스 이용 중 불편한 점이나 제안 사항을 남겨주세요.</p>
-                    <Button variant="secondary" onClick={() => setCurrentPage('info')}>뒤로가기</Button>
-                </div>
-            )}
-
-            {/* 5. 회원 탈퇴 페이지 ('withdraw') */}
-            {currentPage === 'withdraw' && (
-                <div id="page-withdraw" className="page active">
-                    <h2>회원 탈퇴</h2>
-                    <p>정말로 탈퇴하시겠습니까? 작성하신 레시피와 모든 정보가 삭제됩니다.</p>
-                    <Stack direction="horizontal" gap={2}>
-                        <Button variant="danger">탈퇴하기</Button>
-                        <Button variant="secondary" onClick={() => setCurrentPage('info')}>취소</Button>
-                    </Stack>
-                </div>
-            )}
-
+            
         </Container>
     );
 }

@@ -9,13 +9,18 @@ import FridgeRegister from './../pages/FridgeRegister';
 import RecipeMain from '../pages/RecipeMain';
 import RecipeMainClip from '../pages/RecipeMainClip';
 import MyPageInfo from '../pages/MyPageInfo';
+// import MyPageEdit from '../pages/MyPageEdit';
 import MyPageRecipe from '../pages/MyPageRecipe';
 import MyPageLike from '../pages/MyPageLike';
+import MyPageQna from '../pages/MyPageQna';
 import Logout from '../pages/Logout';
 import Delete from '../pages/Delete';
 import RecipeRegister from '../pages/RecipeRegister'
 import RecipeEdit from '../pages/RecipeEdit'
-import MyPageLike from '../pages/MyPageLike'
+import FindPassword from '../pages/FindPassword.tsx'
+
+
+
 interface AppProps {
   user: User | null;
   handleLoginSuccess: (userData: User) => void;
@@ -23,8 +28,6 @@ interface AppProps {
 function App({ user, handleLoginSuccess }: AppProps) {
   return (
     <Routes>
-          <Route path='/fruit/like' element={<MyPageLike>} />
-          /* 경로 자꾸 오류나서 임의로 fruit-like  만듬 수정 되면 삭제하거나 변경하기.. */
       <Route path='/member/signup' element={<SignupPage />} />
       <Route path='/member/login' element={<LoginPage onLogin={handleLoginSuccess} />} />
       <Route path='/' element={<MainPage />} />
@@ -35,15 +38,18 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
       <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
+      {/* <Route path='/mypage/edit' element={<MyPageEdit />} /> */}
       <Route path='/mypage/recipe' element={<MyPageRecipe />} />
       <Route path='/mypage/like' element={<MyPageLike />} />
+      <Route path='/mypage/qna' element={<MyPageQna />} />
       <Route path='/logout' element={<Logout />} />
       <Route path='/delete' element={<Delete />} />
       <Route path='/recipeMain/edit' element={<RecipeEdit />} />
+      <Route path='/member/find-password' element={<FindPassword />} />
 
     </Routes>
   );
 }
 
-
+{/* 커밋 체쿠  */ }
 export default App;

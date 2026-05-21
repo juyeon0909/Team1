@@ -1,0 +1,243 @@
+/* 전체 페이지 레이아웃 */
+.login-page-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+}
+
+/* 왼쪽 브랜드 영역 */
+.login-brand-section {
+  flex: 1;
+  background-color: #1a9d60;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .login-brand-section {
+    display: none;
+  }
+}
+
+.brand-badge {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  margin-bottom: 28px;
+  letter-spacing: 0.3px;
+}
+
+.brand-logo-img {
+  width: 100px;
+  height: 120px;
+  margin-bottom: 24px;
+}
+
+.brand-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.brand-subtitle {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  line-height: 1.8;
+  margin-bottom: 32px;
+}
+
+.brand-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.brand-tag {
+  background-color: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+/* 오른쪽 로그인 폼 영역 */
+.login-form-section {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 80px;
+}
+
+@media (max-width: 992px) {
+  .login-form-section {
+    padding: 60px 48px;
+  }
+}
+
+@media (max-width: 576px) {
+  .login-form-section {
+    padding: 40px 24px;
+  }
+}
+
+/* 폼 헤더 */
+.login-form-header {
+  margin-bottom: 32px;
+}
+
+.login-form-header h2 {
+  font-size: 1.9rem;
+  color: #111111;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.login-form-header p {
+  color: #666666;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* 탭 */
+.login-tab-group {
+  display: flex;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+
+.login-tab {
+  flex: 1;
+  background: #f5f5f5;
+  border: none;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #888888;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.login-tab.active {
+  background-color: #ffffff;
+  color: #111111;
+  font-weight: 700;
+}
+
+.login-tab-border-right {
+  border-right: 1px solid #cccccc;
+}
+
+/* 인풋 */
+.custom-input-group {
+  margin-bottom: 20px;
+}
+
+.custom-input-label {
+  display: block;
+  font-weight: 600;
+  color: #222222;
+  margin-bottom: 8px;
+  font-size: 0.92rem;
+}
+
+.custom-form-control {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid #cccccc;
+  border-radius: 6px;
+  font-size: 0.97rem;
+  color: #111111;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.custom-form-control:focus {
+  border-color: #1a9d60;
+  box-shadow: 0 0 0 3px rgba(26, 157, 96, 0.12);
+}
+
+.custom-form-control::placeholder {
+  color: #bbbbbb;
+}
+
+/* 패스워드리스 인풋 (읽기 전용 안내 느낌) */
+.custom-form-passwordless {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid #6abf69;
+  border-radius: 6px;
+  font-size: 0.97rem;
+  background-color: #6abf69;
+  color: #555555;
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* 로그인 버튼 */
+.btn-submit-green {
+  width: 100%;
+  background-color: #1a9d60;
+  color: #ffffff;
+  border: none;
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 8px;
+  margin-bottom: 24px;
+  transition: background-color 0.2s, transform 0.1s;
+  letter-spacing: 0.3px;
+}
+
+.btn-submit-green:hover {
+  background-color: #158a52;
+}
+
+.btn-submit-green:active {
+  transform: scale(0.99);
+}
+
+/* 하단 링크 */
+.login-footer-links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  color: #777777;
+}
+
+.login-link-highlight {
+  color: #1a9d60;
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.login-link-highlight:hover {
+  text-decoration: underline;
+}
+
+.login-link-plain {
+  color: #555555;
+  text-decoration: none;
+}

@@ -5,6 +5,6 @@
 
 // export 키워드를 적어 주어야 외부에서 이 파일을 접근할 수 있습니다.
 export const API_BASE_URL: string =
-    import.meta.env.VITE_API_BASE_URL ?? "http://localhost:9000/api";
+    import.meta.env.VITE_API_BASE_URL ?? "https://eatsfridge.site/api";
 
 // 앞으로 http://localhost:9000를 적지 말고, API_BASE_URL를 사용하면 됩니다.

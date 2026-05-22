@@ -15,6 +15,9 @@ interface Recipe {
   author: string;
   likes: number;
   liked: boolean;
+  star?: number;       // 확장성을 위해 추가 (선택사항)
+  urgent?: boolean;    // 임박재료 활용 여부 (선택사항)
+  scrappedAt?: string; // 정렬용 날짜 데이터 (선택사항)
 }
 
 const THUMB_BG: Record<string, string> = {
@@ -25,23 +28,25 @@ const THUMB_BG: Record<string, string> = {
   다이어트: '#f3e5f5',
 };
 
+const SORT_OPTIONS = ['최신 등록순', '인기순', '요리시간 짧은순'];
 const FILTER_CATEGORIES = ['all', '한식', '양식', '일식', '중식', '다이어트'];
 
 export default function LikedRecipes() {
-  console.log('자바스크립트 코딩 영역 - 레시피 페이지에서 넘어온 좋아요 내역 확인');
   const navigate = useNavigate();
 
   // 상태 관리
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [curFilter, setCurFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('최신 등록순');
   const [curSearch, setCurSearch] = useState<string>('');
+  const [removingId, setRemovingId] = useState<number | null>(null); // 애니메이션용 상태
 
   // 에러 및 토스트 상태
   const [error, setError] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string>('');
   const [showToast, setShowToast] = useState<boolean>(false);
 
-  // 1. 최신 목록 데이터 로드
+  // 1. 데이터 로드
   useEffect(() => {
     const fetchLikedRecipes = async () => {
       try {
@@ -50,12 +55,13 @@ export default function LikedRecipes() {
         setRecipes(response.data || []);
       } catch (error) {
         console.error('좋아요 내역 불러오기 실패:', error);
-        setError('좋아요 내역을 불러오지 못했습니다.');
+        setError('좋아요 내역을 불러오지 못했습니다. 임시 데이터를 표시합니다.');
 
-        // 🛠️ API 연결 전 대안용 로컬 더미 데이터 테스트 활성화 (필요시 주석 제거)
+        // 로컬 더미 데이터 테스트 (첫 번째 코드 스타일의 필드 보완)
         setRecipes([
-          { id: 1, emoji: '🍳', title: '두부 계란찜', category: '한식', time: '15분', diff: '쉬움', author: '김주연', likes: 234, liked: true },
-          { id: 4, emoji: '🧀', title: '치즈 오믈렛', category: '양식', time: '10분', diff: '쉬움', author: '김주연', likes: 305, liked: true }
+          { id: 1, emoji: '🍳', title: '두부 계란찜', category: '한식', time: '15분', diff: '쉬움', author: '김주연', likes: 234, liked: true, urgent: true, star: 4.8, scrappedAt: '2026.05.10' },
+          { id: 4, emoji: '🧀', title: '치즈 오믈렛', category: '양식', time: '10분', diff: '쉬움', author: '김주연', likes: 305, liked: true, urgent: false, star: 4.9, scrappedAt: '2026.05.08' },
+          { id: 3, emoji: '🍜', title: '애호박 볶음밥', category: '한식', time: '10분', diff: '보통', author: '이철수', likes: 120, liked: true, urgent: true, star: 4.5, scrappedAt: '2026.05.05' }
         ]);
       }
     };
@@ -75,49 +81,68 @@ export default function LikedRecipes() {
     setShowToast(true);
   };
 
-  // 2. 내역 페이지에서 바로 '좋아요 취소' 처리 함수
+  // 2. 애니메이션이 포함된 좋아요 취소 처리 함수
   const handleToggleLike = async (id: number, title: string, e: React.MouseEvent) => {
     e.stopPropagation(); // 카드 클릭 상세 이동 방지
-    try {
-      const url = `${API_BASE_URL}/recipe/${id}/like`;
-      await customAxios.post(url);
+    
+    // 0.3초간 페이드아웃 효과를 주기 위해 제거할 ID 저장
+    setRemovingId(id);
 
-      // 리스트에서 자연스럽게 사라지도록 필터링 처리
-      setRecipes((prev) => prev.filter((r) => r.id !== id));
-      triggerToast(`"${title}" 좋아요를 취소했습니다.`);
-    } catch (error) {
-      console.error('좋아요 취소 요청 실패:', error);
-      alert('처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
-    }
+    setTimeout(async () => {
+      try {
+        const url = `${API_BASE_URL}/recipe/${id}/like`;
+        await customAxios.post(url);
+
+        // 실제 리스트에서 제거 및 상태 초기화
+        setRecipes((prev) => prev.filter((r) => r.id !== id));
+        triggerToast(`"${title}" 좋아요를 취소했습니다.`);
+      } catch (error) {
+        console.error('좋아요 취소 요청 실패:', error);
+        alert('처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
+        setRemovingId(null); // 실패 시 되돌림
+      }
+    }, 300); // CSS transition 시간과 맞춰줍니다.
   };
 
-  // 필터 및 검색 최적화 적용
+  // 3. 필터, 검색 및 정렬 적용 (useMemo 최적화)
   const filteredRecipes = useMemo(() => {
-    return recipes.filter(
-      (r) =>
-        (curFilter === 'all' || r.category === curFilter) &&
-        r.title.toLowerCase().includes(curSearch.toLowerCase())
-    );
-  }, [recipes, curFilter, curSearch]);
+    return recipes
+      .filter((r) => {
+        const matchesCategory = curFilter === 'all' || r.category === curFilter;
+        const matchesSearch = r.title.toLowerCase().includes(curSearch.toLowerCase());
+        return matchesCategory && matchesSearch;
+      })
+      .sort((a, b) => {
+        if (sortBy === '인기순') {
+          return b.likes - a.likes;
+        }
+        if (sortBy === '요리시간 짧은순') {
+          const timeA = parseInt(a.time) || 0;
+          const timeB = parseInt(b.time) || 0;
+          return timeA - timeB;
+        }
+        // 기본: 최신 등록순 (id 역순 혹은 scrappedAt 기준)
+        if (a.scrappedAt && b.scrappedAt) {
+          return b.scrappedAt.localeCompare(a.scrappedAt);
+        }
+        return b.id - a.id;
+      });
+  }, [recipes, curFilter, curSearch, sortBy]);
 
   return (
     <Container className="py-4">
       <div id="page-liked" className="page active">
+        
         {/* 네비게이션 브레드크럼 */}
-        <div className="page-header">
-          <div>
-            <div className="breadcrumb" style={{ display: 'flex', gap: '6px', fontSize: '13px', marginBottom: '8px' }}>
-              <span className="link" style={{ cursor: 'pointer' }} onClick={() => navigate('/mypage/info')}>
-                내 정보
-              </span>
-              <span>›</span>
-              <span className="cur" style={{ color: 'var(--green)', fontWeight: 'bold' }}>좋아요 내역</span>
-            </div>
-
-            <h2 style={{ color: '#6abf69', fontWeight: 'bold', margin: 0 }}>
-              좋아요 내역
-            </h2>
+        <div className="page-header" style={{ marginBottom: '20px' }}>
+          <div className="breadcrumb" style={{ display: 'flex', gap: '6px', fontSize: '13px', marginBottom: '8px' }}>
+            <span className="link" style={{ cursor: 'pointer', color: '#888' }} onClick={() => navigate('/mypage/info')}>
+              내 정보
+            </span>
+            <span style={{ color: '#ccc' }}>›</span>
+            <span className="cur" style={{ color: '#6abf69', fontWeight: 'bold' }}>좋아요 내역</span>
           </div>
+          <h2 style={{ color: '#6abf69', fontWeight: 'bold', margin: 0 }}>좋아요 내역</h2>
         </div>
 
         {error && (
@@ -127,41 +152,57 @@ export default function LikedRecipes() {
         )}
 
         {/* 메인 리스트 카드 */}
-        <div className="card mt-4">
-          <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div className="icon">❤️</div>
-            <h2 style={{ margin: 0, fontSize: '18px' }}>좋아요 누른 레시피</h2>
-            <span className="badge-cnt" style={{ background: '#6abf69', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '12px' }}>
-              {filteredRecipes.length}개
-            </span>
+        <div className="card mt-4" style={{ borderRadius: '12px', border: '1px solid #eef2f5', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+          <div className="card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', borderBottom: '1px solid #f1f5f9', padding: '16px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div className="icon" style={{ fontSize: '18px' }}>❤️</div>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#333' }}>좋아요 누른 레시피</h3>
+              <span className="badge-cnt" style={{ background: '#6abf69', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>
+                {filteredRecipes.length}개
+              </span>
+            </div>
+            
+            {/* 첫 번째 코드의 정렬 셀렉트 박스 도입 */}
+            <select
+              className="scrap-sort-select"
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value)}
+              style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '13px', color: '#555', outline: 'none' }}
+            >
+              {SORT_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
+            </select>
           </div>
 
-          <div className="card-body">
+          <div className="card-body" style={{ padding: '20px' }}>
             {/* 상단 필터 탭 & 검색바 */}
             <div className="list-top" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-              <div className="tabs-filter" style={{ display: 'flex', gap: '6px' }}>
+              <div className="tabs-filter" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                 {FILTER_CATEGORIES.map((cat) => (
                   <button
                     key={cat}
                     className={`tab-f ${curFilter === cat ? 'active' : ''}`}
                     onClick={() => setCurFilter(cat)}
                     style={{
-                      padding: '6px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '13px', cursor: 'pointer',
-                      background: curFilter === cat ? '#6abf69' : '#fff', color: curFilter === cat ? '#fff' : '#555'
+                      padding: '6px 14px', border: '1px solid #eee', borderRadius: '20px', fontSize: '13px', cursor: 'pointer',
+                      background: curFilter === cat ? '#6abf69' : '#f8fafc', 
+                      color: curFilter === cat ? '#fff' : '#64748b',
+                      fontWeight: curFilter === cat ? 'bold' : 'normal',
+                      transition: 'all 0.2s'
                     }}
                   >
                     {cat === 'all' ? '전체' : cat}
                   </button>
                 ))}
               </div>
-              <div className="box-search" style={{ display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #ddd', borderRadius: '4px', padding: '4px 10px', background: '#fff' }}>
-                <span style={{ fontSize: '14px' }}>🔍</span>
+              
+              <div className="box-search" style={{ display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '6px 12px', background: '#fff', minWidth: '240px' }}>
+                <span style={{ fontSize: '14px', color: '#94a3b8' }}>🔍</span>
                 <input
                   type="text"
-                  placeholder="결과 내 검색..."
+                  placeholder="결과 내 레시피 검색..."
                   value={curSearch}
                   onChange={(e: ChangeEvent<HTMLInputElement>) => setCurSearch(e.target.value)}
-                  style={{ border: 'none', outline: 'none', fontSize: '13px' }}
+                  style={{ border: 'none', outline: 'none', fontSize: '13px', width: '100%', color: '#333' }}
                 />
               </div>
             </div>
@@ -169,37 +210,72 @@ export default function LikedRecipes() {
             {/* 그리드 레이아웃 */}
             <div className="grid-recipes" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
               {filteredRecipes.length === 0 ? (
-                <div className="state-empty" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px 0', color: '#999' }}>
-                  <div className="e-ico" style={{ fontSize: '32px', marginBottom: '10px' }}>💡</div>
-                  <div className="e-ttl" style={{ fontSize: '15px', fontWeight: 'bold', color: '#555' }}>해당하는 레시피가 없습니다</div>
-                  <div className="e-sub" style={{ fontSize: '13px', marginTop: '4px' }}>레시피 보러가기 페이지에서 마음에 드는 음식을 찜해보세요!</div>
+                <div className="state-empty" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 0', color: '#999' }}>
+                  <div className="e-ico" style={{ fontSize: '40px', marginBottom: '12px' }}>💔</div>
+                  <div className="e-ttl" style={{ fontSize: '16px', fontWeight: 'bold', color: '#475569' }}>해당하는 레시피가 없습니다</div>
+                  <div className="e-sub" style={{ fontSize: '13px', marginTop: '6px', color: '#94a3b8' }}>마음에 드는 음식을 리스트에서 찜해보세요!</div>
+                  <button 
+                    onClick={() => navigate('/recipeMain')}
+                    style={{ marginTop: '16px', padding: '8px 16px', background: '#6abf69', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}
+                  >
+                    레시피 둘러보기
+                  </button>
                 </div>
               ) : (
                 filteredRecipes.map((r) => (
                   <div
                     key={r.id}
-                    className="item-card"
-                    onClick={() => navigate(`/recipeMain/${r.id}`)} // 클릭 시 레시피 리스트로 이동 (혹은 상세 뷰 연동 경로 지정)
-                    style={{ border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', background: '#fff', position: 'relative' }}
+                    className={`item-card ${removingId === r.id ? 'removing' : ''}`}
+                    onClick={() => navigate(`/recipeMain/${r.id}`)}
+                    style={{ 
+                      border: '1px solid #f1f5f9', 
+                      borderRadius: '10px', 
+                      overflow: 'hidden', 
+                      cursor: 'pointer', 
+                      background: '#fff', 
+                      position: 'relative',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.01)',
+                      transition: 'transform 0.2s, opacity 0.3s',
+                      opacity: removingId === r.id ? 0 : 1, // 사라지는 애니메이션 투명도 조절
+                      transform: removingId === r.id ? 'scale(0.95)' : 'none'
+                    }}
                   >
+                    {/* 카드 썸네일 영역 */}
                     <div
                       className="item-thumb"
-                      style={{ backgroundColor: THUMB_BG[r.category] || '#f5f5f5', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', position: 'relative' }}
+                      style={{ backgroundColor: THUMB_BG[r.category] || '#f5f5f5', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '52px', position: 'relative' }}
                     >
                       {r.emoji}
+                      
+                      {/* 태그 컴포넌트 추가 (임박재료 활용이 활성화되어 있을 때만 렌더) */}
+                      {r.urgent && (
+                        <span style={{ position: 'absolute', bottom: '10px', left: '10px', background: '#ef4444', color: '#fff', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                          임박재료
+                        </span>
+                      )}
+
                       <button
                         className="btn-heart"
                         onClick={(e) => handleToggleLike(r.id, r.title, e)}
-                        style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}
+                        style={{ position: 'absolute', top: '10px', right: '10px', background: '#fff', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}
+                        title="좋아요 취소"
                       >
                         ❤️
                       </button>
                     </div>
-                    <div style={{ padding: '12px' }}>
+
+                    {/* 카드 본문 영역 */}
+                    <div style={{ padding: '14px' }}>
                       <span style={{ fontSize: '11px', color: '#6abf69', fontWeight: 'bold' }}>[{r.category}]</span>
-                      <h4 style={{ margin: '4px 0 8px 0', fontSize: '14px', fontWeight: 'bold', color: '#333' }}>{r.title}</h4>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#999' }}>
-                        <span>⏱️ {r.time}</span>
+                      <h4 style={{ margin: '4px 0 8px 0', fontSize: '14px', fontWeight: 'bold', color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {r.title}
+                      </h4>
+                      
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b' }}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <span>⏱️ {r.time}</span>
+                          {r.star && <span style={{ color: '#f59e0b' }}>⭐ {r.star}</span>}
+                        </div>
                         <span>👤 {r.author}</span>
                       </div>
                     </div>
@@ -214,9 +290,9 @@ export default function LikedRecipes() {
       {/* 실시간 알림 토스트 UI */}
       {showToast && (
         <div style={{
-          position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(0,0,0,0.75)', color: '#fff', padding: '10px 20px', borderRadius: '20px',
-          fontSize: '13px', zIndex: 2000, boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+          position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(30, 41, 59, 0.9)', color: '#fff', padding: '10px 22px', borderRadius: '30px',
+          fontSize: '13px', zIndex: 2000, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', fontWeight: '500'
         }}>
           {toastMessage}
         </div>

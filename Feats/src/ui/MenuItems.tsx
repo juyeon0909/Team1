@@ -77,9 +77,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                         홈
                      </Nav.Link>
                      <Nav.Link onClick={() => navigate(`/product/insert`)}>냉장고</Nav.Link>
-                     <Nav.Link onClick={() => navigate(`/recipeMain`)}>
-                        레시피
-                     </Nav.Link>
+                     
                      <NavDropdown title={`레시피`}>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>

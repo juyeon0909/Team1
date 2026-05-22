@@ -10,7 +10,7 @@ interface EditPageProps {
   triggerToast: (msg: string) => void;
 }
 
-export default function EditPage({ nickname, triggerToast }: EditPageProps) {
+function MyPageEdit({ nickname, triggerToast }: EditPageProps) {
   const navigate = useNavigate();
   const [editTab, setEditTab] = useState<'nickname' | 'password'>('nickname');
 
@@ -297,3 +297,5 @@ export default function EditPage({ nickname, triggerToast }: EditPageProps) {
     </div>
   );
 }
+
+export default MyPageEdit;

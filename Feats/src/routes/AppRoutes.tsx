@@ -9,7 +9,7 @@ import FridgeRegister from './../pages/FridgeRegister';
 import RecipeMain from '../pages/RecipeMain';
 import RecipeMainClip from '../pages/RecipeMainClip';
 import MyPageInfo from '../pages/MyPageInfo';
-// import MyPageEdit from '../pages/MyPageEdit';
+import MyPageEdit from '../pages/MyPageEdit';
 import MyPageRecipe from '../pages/MyPageRecipe';
 import MyPageLike from '../pages/MyPageLike';
 import MyPageQna from '../pages/MyPageQna';
@@ -38,7 +38,7 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/recipeMain' element={<RecipeMain />} />
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
-      {/* <Route path='/mypage/edit' element={<MyPageEdit />} /> */}
+      <Route path="/mypage/edit" element={<MyPageEdit nickname="홍길동" triggerToast={(msg) => console.log(msg)} />} />
       <Route path='/mypage/recipe' element={<MyPageRecipe />} />
       <Route path='/mypage/like' element={<MyPageLike />} />
       <Route path='/mypage/qna' element={<MyPageQna />} />

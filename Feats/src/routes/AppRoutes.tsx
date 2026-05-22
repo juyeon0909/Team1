@@ -9,7 +9,7 @@ import FridgeRegister from './../pages/FridgeRegister';
 import RecipeMain from '../pages/RecipeMain';
 import RecipeMainClip from '../pages/RecipeMainClip';
 import MyPageInfo from '../pages/MyPageInfo';
-import MyPageEdit from '../pages/MyPageEdit';
+// import MyPageEdit from '../pages/MyPageEdit';
 import MyPageRecipe from '../pages/MyPageRecipe';
 import MyPageLike from '../pages/MyPageLike';
 import MyPageQna from '../pages/MyPageQna';
@@ -18,6 +18,7 @@ import Delete from '../pages/Delete';
 import RecipeRegister from '../pages/RecipeRegister'
 import RecipeEdit from '../pages/RecipeEdit'
 import FindPassword from '../pages/FindPassword.tsx'
+
 
 
 interface AppProps {
@@ -33,11 +34,11 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/product/insert' element={<FridgeMainPage />} />
       <Route path='/product/edit' element={<FridgeEdit />} />
       <Route path='/product/register' element={<FridgeRegister />} />
+      <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/recipeMain' element={<RecipeMain />} />
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
-      <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
-      <Route path='/mypage/edit' element={<MyPageEdit />} />
+      {/* <Route path='/mypage/edit' element={<MyPageEdit />} /> */}
       <Route path='/mypage/recipe' element={<MyPageRecipe />} />
       <Route path='/mypage/like' element={<MyPageLike />} />
       <Route path='/mypage/qna' element={<MyPageQna />} />
@@ -45,9 +46,10 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/delete' element={<Delete />} />
       <Route path='/recipeMain/edit' element={<RecipeEdit />} />
       <Route path='/member/find-password' element={<FindPassword />} />
+
     </Routes>
   );
 }
 
-{/* 커밋 체쿠  */}
+{/* 커밋 체쿠  */ }
 export default App;

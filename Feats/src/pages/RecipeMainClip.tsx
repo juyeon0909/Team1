@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
- import '../components/RecipeMainClip.css';
+import '../components/RecipeMainClip.css';
 
 interface ScrapedRecipe {
   id: number;

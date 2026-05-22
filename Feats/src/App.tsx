@@ -6,7 +6,7 @@ import MenuItems from './ui/MenuItems';
 import AppRoutes from './routes/AppRoutes';
 import React, { useEffect, useState } from 'react';
 import type { User } from './types/User';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 
 function App() {
@@ -35,6 +35,9 @@ function App() {
   };
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const hideNav = ['/member/login', '/member/signup'].includes(location.pathname);
 
   // 사용자가 '로그 아웃' 메뉴 클릭
   const handleLogout = (event: React.MouseEvent<HTMLElement>) => {
@@ -48,7 +51,7 @@ function App() {
 
   return (
     <>
-      <MenuItems appName={appName} user={user} handleLogout={handleLogout} />
+      {!hideNav && <MenuItems appName={appName} user={user} handleLogout={handleLogout} />}
       <AppRoutes user={user} handleLoginSuccess={handleLoginSuccess} />
 
       <footer className="bg-dark text-light text-center py-3 mt-5">

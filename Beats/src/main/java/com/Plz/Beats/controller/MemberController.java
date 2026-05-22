@@ -3,7 +3,7 @@ package com.Plz.Beats.controller;
 import com.Plz.Beats.config.JwtTokenProvider;
 import com.Plz.Beats.dto.LoginDto;
 import com.Plz.Beats.entity.Member;
-import com.Plz.Beats.service.MemberDetailsServices;
+import com.Plz.Beats.service.MemberDetailsService;
 import com.Plz.Beats.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService ;
-    private final MemberDetailsServices memberDetailsServices;
+    private final MemberDetailsService memberDetailsServices;
     private final JwtTokenProvider jwtTokenProvider ;
     private final PasswordEncoder passwordEncoder;
 

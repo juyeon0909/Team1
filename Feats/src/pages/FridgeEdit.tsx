@@ -72,7 +72,7 @@ const FridgeEdit: React.FC = () => {
             className="fridge-form-input"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="예: 서울우유, 대파 등"
+            placeholder="예: 우유, 대파 등"
           />
         </div>
 

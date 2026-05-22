@@ -1,0 +1,264 @@
+/* src/components/FridgeStorage.css */
+
+.storage-page-container {
+  padding: 24px;
+  max-width: 1200px; /* 전체 너비를 널찍하게 주어 세 칸이 이쁘게 배치되도록 설정 */
+  margin: 0 auto;
+  background-color: var(--white, #fff);
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/*  상단 검색 섹션 */
+.storage-search-section {
+  display: flex;
+  justify-content: center;   /* ⭐ 검색창을 무조건 화면 '정중앙'으로 정렬 */
+  align-items: center;
+  position: relative;        /* ⭐ 등록 버튼을 우상단 끝에 absolute로 박기 위한 기준 */
+  width: 100%;
+  margin-bottom: 24px;       /* 아래 표(Grid)와의 간격 */
+  padding: 5px 0;
+}
+
+.storage-search-box {
+  position: relative;
+  width: 100%;
+  max-width: 600px;          /* ⭐ 가운데 이쁘게 모이도록 최대 너비 제한 */
+  display: flex;
+  align-items: center;
+}
+
+.storage-search-input {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  font-size: 15px;
+  border: 1px solid var(--border, #eee);
+  border-radius: 30px;
+  outline: none;
+  background-color: #fafafa;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  transition: all 0.2s;
+}
+
+.storage-search-input:focus {
+  border-color: var(--green, #0BA574);
+  background-color: var(--white, #fff);
+  box-shadow: 0 0 0 3px rgba(11, 165, 116, 0.15);
+}
+
+/* 검색창 내부 아이콘 및 버튼 위치 조정 */
+.search-icon {
+  position: absolute;
+  left: 16px;
+  font-size: 18px;
+  color: var(--text-light, #888);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #bbb;
+  cursor: pointer;
+}
+
+/* 재료 등록 */
+.storage-add-btn {
+  position: absolute;        /* ⭐ 검색창 흐름과 상관없이 독립적으로 배치 */
+  right: 0;                  /* ⭐ 아래쪽 표(Grid) 우상단 끝라인에 정확히 일치 */
+  
+  padding: 11px 18px;        /* 검색창보다 미세하게 슬림하게 조절하여 자그마한 느낌 강조 */
+  background-color: var(--white, #fff); /* ⚪ 순수 흰색 바탕 */
+  
+  /* 💡 [글씨색 변경] 초록색 말고 깔끔하고 고급스러운 다크 그레이/블랙 톤으로 교정 */
+  color: var(--text-dark, #333333); 
+  
+  border: 1px solid var(--green, #0BA574); /* 🟢 테두리는 팀 시그니처 초록색 유지 */
+  border-radius: 30px;       /* 검색창 라운드와 통일감 공유 */
+  font-size: 14px;
+  font-weight: 600;          /* 얇았던 100 폰트 두께를 선명하게 600으로 보완 */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  transition: all 0.2s;
+}
+
+/* 💡 마우스 오버 시 반전 효과 */
+.storage-add-btn:hover {
+  background-color: var(--green, #0BA574); /* 🟢 배경이 팀 초록색으로 변경 */
+  color: var(--white, #fff);               /* ⚪ 글씨는 흰색으로 반전 */
+  box-shadow: 0 0 0 3px rgba(11, 165, 116, 0.15);
+}
+
+.add-icon-small {
+  font-size: 15px;
+  font-weight: 500;
+  display: inline-block;
+  transform: translateY(-0.5px);
+}
+
+/* 🗂️ 3단 보관실 레이아웃 그리드 */
+.storage-rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 냉동, 냉장, 상온 3칸 균등 분할 */
+  gap: 20px;
+  align-items: start;
+}
+
+/* 모바일/태블릿 반응형 대응 (화면이 좁아지면 아래로 1줄씩 정렬) */
+@media (max-width: 900px) {
+  .storage-rooms-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 개별 보관실 큰 카드 박스 */
+.storage-room-card {
+  background-color: var(--white, #fff);
+  border-radius: 16px;
+  border: 1px solid var(--border, #eee);
+  box-shadow: var(--card-shadow, 0 4px 12px rgba(0,0,0,0.05));
+  overflow: hidden;
+  height: 580px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 보관실 각각의 상단 헤더 공통 */
+.room-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  color: var(--text-dark, #222);
+  border-bottom: 1px solid var(--border, #eee);
+}
+
+.room-emoji {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.room-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+  flex: 1;
+}
+
+.room-count {
+  font-size: 13px;
+  font-weight: bold;
+  background-color: rgba(0,0,0,0.05);
+  padding: 2px 8px;
+  border-radius: 12px;
+  color: var(--text-mid, #666);
+}
+
+/* 개별 보관실 고유 테마 컬러 포인트 (옵션) */
+.frozen-theme { background-color: #f2f9ff; border-bottom-color: #d2e8ff; }
+.refrigerated-theme { background-color: #f0fbf7; border-bottom-color: #d1f2e5; }
+.room-theme { background-color: #fdfaf5; border-bottom-color: #f7edd6; }
+
+/* 📜 [핵심] 정해진 공간 안에서만 따로따로 스크롤되는 영역 */
+.room-list-scroll {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;   /* 💡 데이터가 많아지면 이 구역 내에서만 따로 스크롤이 생성됨 */
+  padding: 12px;
+}
+
+/* 스크롤바 커스텀 (더 정갈하고 얇게 가꾸기) */
+.room-list-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.room-list-scroll::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border-radius: 4px;
+}
+
+/* 🥩 개별 재료 가로 줄 (Row) */
+.storage-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.storage-item-row:last-child {
+  margin-bottom: 0;
+}
+
+/* 🟢 유통기한 정상 (넉넉함) */
+.expiry-normal {
+  background-color: #fafafa;
+  border-color: #f0f0f0;
+}
+
+/* 🟠 유통기한 일주일 이하 (주황 경고) */
+.expiry-warning {
+  background-color: #fff6eb !important; /* 주황색 틴트 배경 */
+  border-color: #ffe0b3 !important;
+  color: #c46200;
+}
+.expiry-warning .item-name-link {
+  color: #c46200 !important;
+  font-weight: bold;
+}
+
+/* 🔴 유통기한 사흘 이내 (빨강 위험) */
+.expiry-danger {
+  background-color: #fff0f0 !important; /* 빨간색 틴트 배경 */
+  border-color: #ffcccc !important;
+  color: #d93838;
+}
+.expiry-danger .item-name-link {
+  color: #d93838 !important;
+  font-weight: bold;
+}
+
+/* 클릭하면 수정창으로 가는 재료명 링크 스타일 */
+.item-name-link {
+  flex: 2;
+  color: var(--text-dark, #333);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.item-name-link:hover {
+  text-decoration: underline; /* 마우스 올리면 밑줄 쫙 그어지며 클릭 유도 */
+}
+
+.item-quantity {
+  flex: 1;
+  text-align: right;
+  color: var(--text-mid, #666);
+  padding-right: 10px;
+}
+
+.item-expiry {
+  flex: 1.5;
+  text-align: right;
+  font-size: 13px;
+  color: var(--text-light, #888);
+  font-variant-numeric: tabular-nums; /* 숫자 폭 고정해서 가독성 유지 */
+}
+
+/* 데이터 없을 때 문구 */
+.empty-item-text {
+  text-align: center;
+  color: #bbb;
+  font-size: 13px;
+  padding: 30px 0;
+  margin: 0;
+}

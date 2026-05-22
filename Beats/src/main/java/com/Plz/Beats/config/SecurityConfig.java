@@ -42,17 +42,31 @@ public class SecurityConfig {
         };
 
         http
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(formLogin -> formLogin.disable())
+
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+
+                // 💡 3. [협업용 병합] 팀원들의 규칙과 유저님의 규칙을 아름답게 합쳤습니다.
                 .authorizeHttpRequests(auth -> auth
+                        // A. 기존 팀원들이 열어둔 주소들을 한 방에 프리패스 시켜줍니다.
                         .requestMatchers(permitUrls).permitAll()
+
+                        // B. 혹시 몰라 팀원들 배열에 없던 'join' 주소도 안전하게 추가해줍니다.
+                        .requestMatchers("/api/member/join").permitAll()
+
+                        // C. 유저님이 만드신 냉장고 API는 USER와 ADMIN만 통과하도록 성벽을 칩니다.
+                        .requestMatchers("/api/product/**").hasAnyAuthority("USER", "ADMIN")
+
+                        // D. 그 외의 모든 요청은 로그인 인증 필요
                         .anyRequest().authenticated()
                 );
 
-        // JWT 필터 등록 (JwtAuthenticationFilter에 생성되어있음)
+        // 💡 4. [기존 유지] JWT 필터 등록
         http.addFilterBefore(
                 new JwtAuthenticationFilter(jwtTokenProvider),
                 UsernamePasswordAuthenticationFilter.class

@@ -46,10 +46,9 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/delete' element={<Delete />} />
       <Route path='/recipeMain/edit' element={<RecipeEdit />} />
       <Route path='/member/find-password' element={<FindPassword />} />
-
     </Routes>
   );
 }
 
-{/* 커밋 체쿠  */ }
+{/* 커밋 체쿠 나나난  */ }
 export default App;

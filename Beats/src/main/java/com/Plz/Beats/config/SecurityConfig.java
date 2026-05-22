@@ -36,8 +36,8 @@ public class SecurityConfig {
                 "/fruit/**",
                 "/css/**",
                 "/js/**",
-                "/member/signup",
-                "/member/login",
+                "/api/member/signup",
+                "/api/member/login",
                 "/product/**",
                 "/first",
                 "/"

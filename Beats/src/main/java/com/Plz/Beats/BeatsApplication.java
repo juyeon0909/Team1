@@ -12,7 +12,7 @@ public class BeatsApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(BeatsApplication.class, args);
-
+//submaster
 	}
 
 

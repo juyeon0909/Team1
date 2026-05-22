@@ -380,7 +380,7 @@ function LoginPage({ onLogin }: Props) {
 
     try {
       const response = await axios.post<LoginResponse>(
-        "/member/login",
+        "${API_BASE_URL}/member/login",
         { email, password },
         { headers: { "Content-Type": "application/json" } }
       );

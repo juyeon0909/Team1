@@ -25,7 +25,7 @@ function App() {
         const fetchUserInfo = async () => {
             try {
                 // 백엔드의 내 정보 조회 API 엔드포인트
-                const url = `${API_BASE_URL}/user/me`; 
+                const url = `${API_BASE_URL}/user/me`;
                 const response = await customAxios.get(url);
 
                 // 서버가 준 진짜 데이터(닉네임, 이미지 등)로 상태 변경!
@@ -50,18 +50,18 @@ function App() {
 
         try {
             // 백엔드 프로필 이미지 변경 엔드포인트 (실제 API 주소에 맞게 수정 가능)
-            const url = `${API_BASE_URL}/user/update-profileimage`; 
-            
+            const url = `${API_BASE_URL}/user/update-profileimage`;
+
             // base64 데이터를 담아 서버로 전송
             const response = await customAxios.post(url, { profileimage: base64Image });
 
             // 성공하면 화면 상태 갱신 및 알림 (서버에서 반환한 URL이 있다면 response.data... 등으로 대체 가능)
             setUser(prev => ({ ...prev, profileimage: base64Image }));
             alert('프로필 사진이 성공적으로 변경되었습니다! ✅');
-            
+
         } catch (error) {
             console.error('프로필 이미지 업로드 실패:', error);
-            
+
             if (axios.isAxiosError(error) && error.response) {
                 // 백엔드에서 보낸 구체적인 에러 메시지가 있다면 세팅
                 setErrors({
@@ -89,7 +89,7 @@ function App() {
 
         reader.onloadend = () => {
             const result = reader.result as string;
-            
+
             // 3. 파일 읽기가 끝나면 base64 결과물을 들고 서버 업로드 함수 실행
             uploadProfileImage(result);
         };
@@ -98,7 +98,7 @@ function App() {
     return (
         <Container className="py-4">
             {/* 1. 내 정보 페이지 ('info') 일 때만 렌더링 */}
-        
+
                 <div id="page-info" className="page active">
                     
                     <div className="page-header">
@@ -128,7 +128,7 @@ function App() {
                             <input 
                                 type="file" 
                                 id="profile-uploader"
-                                name="profileimage" 
+                                name="profileimage"
                                 accept="image/*" 
                                 style={{ display: 'none' }} 
                                 onChange={handleProfileImageChange} 
@@ -184,7 +184,7 @@ function App() {
                         <span className="withdraw-link" onClick={() => navigate('/mypage/qna')}>회원 탈퇴를 원하시나요?</span>
                     </div> 
                 </div>
-            
+
             
         </Container>
     );

@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 public class Storage_item {
     //보관함 식재료 id
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "storage_item_id")
     private Long id;
 

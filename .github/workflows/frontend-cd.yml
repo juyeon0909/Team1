@@ -1,0 +1,55 @@
+name: Frontend CD
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'Feats/**'
+      - '.github/workflows/frontend-cd.yml'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 소스 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: Feats/package-lock.json
+
+      - name: 의존성 설치
+        working-directory: Feats
+        run: npm ci
+
+      - name: 프로덕션 빌드
+        working-directory: Feats
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: /api
+
+      # ★ 새로 추가: EC2의 기존 파일 정리
+      - name: EC2 기존 파일 정리
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            rm -rf /var/www/eatsfridge/*
+            rm -rf /var/www/eatsfridge/.[!.]*  || true
+
+      - name: EC2로 빌드 결과물 전송
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          source: "Feats/dist/*"
+          target: "/var/www/eatsfridge"
+          strip_components: 2
+          # rm: true   ← 제거됨

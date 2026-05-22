@@ -1,0 +1,363 @@
+/* ── 전체 페이지 ── */
+.scrap-page {
+  font-family: sans-serif;
+  background: #f8f9fa;
+  min-height: 100vh;
+  color: #111;
+}
+
+/* ── 서브 헤더 ── */
+.scrap-header {
+  background: #fff;
+  border-bottom: 0.5px solid #eee;
+  padding: 24px 40px 0;
+}
+
+.scrap-header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.scrap-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  margin-right: 4px;
+}
+
+.scrap-back-btn:hover {
+  color: #1a9d60;
+}
+
+.scrap-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111;
+  margin: 0;
+}
+
+.scrap-count-badge {
+  background: #1a9d60;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.scrap-subtitle {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 18px;
+}
+
+/* ── 검색 + 정렬 ── */
+.scrap-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.scrap-search-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fafafa;
+  border: 0.5px solid #ccc;
+  border-radius: 8px;
+  padding: 9px 14px;
+}
+
+.scrap-search-box input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  width: 100%;
+  color: #111;
+}
+
+.scrap-search-box input::placeholder {
+  color: #bbb;
+}
+
+.scrap-sort-select {
+  font-size: 13px;
+  color: #555;
+  border: 0.5px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+}
+
+/* ── 카테고리 탭 ── */
+.scrap-category-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.scrap-cat-tab {
+  font-size: 13px;
+  padding: 8px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #666;
+  font-weight: 400;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+
+.scrap-cat-tab.active {
+  color: #1a9d60;
+  font-weight: 500;
+  border-bottom: 2px solid #1a9d60;
+}
+
+/* ── 본문 ── */
+.scrap-body {
+  padding: 28px 40px;
+}
+
+.scrap-result-info {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 18px;
+}
+
+.scrap-result-info strong {
+  color: #111;
+  font-weight: 500;
+}
+
+/* ── 카드 그리드 ── */
+.scrap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+/* ── 카드 ── */
+.scrap-card {
+  background: #fff;
+  border: 0.5px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.scrap-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  transform: translateY(-2px);
+}
+
+.scrap-card.removing {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* 카드 이미지 */
+.scrap-card-img {
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.scrap-card-emoji {
+  font-size: 48px;
+}
+
+/* 일치율 배지 */
+.scrap-match-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.badge-match-full {
+  background: #1a9d60;
+  color: #fff;
+}
+
+.badge-match-high {
+  background: #639922;
+  color: #fff;
+}
+
+.badge-match-mid {
+  background: #BA7517;
+  color: #fff;
+}
+
+/* 빨간 하트 버튼 */
+.scrap-heart-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+  backdrop-filter: blur(4px);
+}
+
+.scrap-heart-btn:hover {
+  transform: scale(1.15);
+  background: rgba(255, 255, 255, 1);
+}
+
+.scrap-heart-btn.liked {
+  /* 하트 이모지로 표현하므로 별도 색상 불필요 */
+}
+
+/* 카드 바디 */
+.scrap-card-body {
+  padding: 14px 16px;
+}
+
+.scrap-card-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111;
+  margin-bottom: 6px;
+}
+
+.scrap-card-desc {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+/* 태그 */
+.scrap-card-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.scrap-tag {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #fafafa;
+  color: #666;
+  border: 0.5px solid #eee;
+}
+
+.scrap-tag-cat {
+  background: #E8F5EE;
+  color: #1a9d60;
+  border-color: #b2dfc8;
+}
+
+.scrap-tag-urgent {
+  background: #FCEBEB;
+  color: #791F1F;
+  border-color: #f0c0c0;
+}
+
+/* 카드 푸터 */
+.scrap-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 0.5px solid #eee;
+}
+
+.scrap-card-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: #999;
+}
+
+.scrap-card-date {
+  font-size: 11px;
+  color: #bbb;
+}
+
+/* ── 빈 상태 ── */
+.scrap-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.scrap-empty-icon {
+  font-size: 52px;
+  margin-bottom: 16px;
+}
+
+.scrap-empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px;
+}
+
+.scrap-empty-sub {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 24px;
+}
+
+.scrap-go-btn {
+  background: #1a9d60;
+  color: #fff;
+  border: none;
+  padding: 11px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.scrap-go-btn:hover {
+  background: #158a52;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 768px) {
+  .scrap-header {
+    padding: 20px 20px 0;
+  }
+
+  .scrap-body {
+    padding: 20px;
+  }
+
+  .scrap-grid {
+    grid-template-columns: 1fr;
+  }
+}

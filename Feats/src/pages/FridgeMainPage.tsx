@@ -20,20 +20,20 @@ const FridgeMainPage = () => {
           <h2 style={{ color: '#1a5d3b', fontWeight: 'bold', margin: 0 }}>내 냉장고 보관함</h2>
           <p className="text-muted mb-0 small">현재 보관 중인 재료 리스트입니다.</p>
         </div>
-        
+
         {/* 수정과 등록을 작게 배치 */}
         <Stack direction="horizontal" gap={2}>
-          <Button 
-            variant="outline-secondary" 
-            size="sm" 
+          <Button
+            variant="outline-secondary"
+            size="sm"
             onClick={() => navigate('/product/edit')}
             style={{ fontSize: '0.85rem' }}
           >
             ✏️ 정보 수정
           </Button>
-          <Button 
-            variant="success" 
-            size="sm" 
+          <Button
+            variant="success"
+            size="sm"
             onClick={() => navigate('/product/register')}
             style={{ backgroundColor: '#1a5d3b', border: 'none', fontSize: '0.85rem' }}
           >
@@ -68,7 +68,7 @@ const FridgeMainPage = () => {
             ))}
           </tbody>
         </Table>
-        
+
         {dummyIngredients.length === 0 && (
           <div className="text-center py-5 text-muted">
             냉장고가 비어있습니다. 새로운 재료를 등록해 보세요!

@@ -34,9 +34,9 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/product/insert' element={<FridgeMainPage />} />
       <Route path='/product/edit' element={<FridgeEdit />} />
       <Route path='/product/register' element={<FridgeRegister />} />
+      <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/recipeMain' element={<RecipeMain />} />
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
-      <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
       {/* <Route path='/mypage/edit' element={<MyPageEdit />} /> */}
       <Route path='/mypage/recipe' element={<MyPageRecipe />} />

@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useEffect, type ChangeEvent } from 'react';
 import { Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import customAxios from './../api/axiosInstance'; 
+import customAxios from './../api/axiosInstance';
 import { API_BASE_URL } from '../config/config';
-import '../components/MyPage.css'; 
+import '../components/MyPage.css';
 
 interface Recipe {
   id: number;
@@ -35,7 +35,7 @@ export default function LikedRecipes() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [curFilter, setCurFilter] = useState<string>('all');
   const [curSearch, setCurSearch] = useState<string>('');
-  
+
   // 에러 및 토스트 상태
   const [error, setError] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string>('');
@@ -45,13 +45,13 @@ export default function LikedRecipes() {
   useEffect(() => {
     const fetchLikedRecipes = async () => {
       try {
-        const url = `${API_BASE_URL}/user/likes`; 
+        const url = `${API_BASE_URL}/user/likes`;
         const response = await customAxios.get(url);
         setRecipes(response.data || []);
       } catch (error) {
         console.error('좋아요 내역 불러오기 실패:', error);
         setError('좋아요 내역을 불러오지 못했습니다.');
-        
+
         // 🛠️ API 연결 전 대안용 로컬 더미 데이터 테스트 활성화 (필요시 주석 제거)
         setRecipes([
           { id: 1, emoji: '🍳', title: '두부 계란찜', category: '한식', time: '15분', diff: '쉬움', author: '김주연', likes: 234, liked: true },
@@ -79,7 +79,7 @@ export default function LikedRecipes() {
   const handleToggleLike = async (id: number, title: string, e: React.MouseEvent) => {
     e.stopPropagation(); // 카드 클릭 상세 이동 방지
     try {
-      const url = `${API_BASE_URL}/recipe/${id}/like`; 
+      const url = `${API_BASE_URL}/recipe/${id}/like`;
       await customAxios.post(url);
 
       // 리스트에서 자연스럽게 사라지도록 필터링 처리
@@ -113,7 +113,7 @@ export default function LikedRecipes() {
               <span>›</span>
               <span className="cur" style={{ color: 'var(--green)', fontWeight: 'bold' }}>좋아요 내역</span>
             </div>
-            
+
             <h2 style={{ color: '#6abf69', fontWeight: 'bold', margin: 0 }}>
               좋아요 내역
             </h2>
@@ -135,7 +135,7 @@ export default function LikedRecipes() {
               {filteredRecipes.length}개
             </span>
           </div>
-          
+
           <div className="card-body">
             {/* 상단 필터 탭 & 검색바 */}
             <div className="list-top" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
@@ -176,9 +176,9 @@ export default function LikedRecipes() {
                 </div>
               ) : (
                 filteredRecipes.map((r) => (
-                  <div 
-                    key={r.id} 
-                    className="item-card" 
+                  <div
+                    key={r.id}
+                    className="item-card"
                     onClick={() => navigate(`/recipeMain/${r.id}`)} // 클릭 시 레시피 리스트로 이동 (혹은 상세 뷰 연동 경로 지정)
                     style={{ border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', background: '#fff', position: 'relative' }}
                   >
@@ -187,8 +187,8 @@ export default function LikedRecipes() {
                       style={{ backgroundColor: THUMB_BG[r.category] || '#f5f5f5', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', position: 'relative' }}
                     >
                       {r.emoji}
-                      <button 
-                        className="btn-heart" 
+                      <button
+                        className="btn-heart"
                         onClick={(e) => handleToggleLike(r.id, r.title, e)}
                         style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' }}
                       >

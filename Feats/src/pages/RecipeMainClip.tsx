@@ -1,162 +1,192 @@
-import React, { useState, useMemo, useEffect, type ChangeEvent } from 'react';
-import { Container } from 'react-bootstrap';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import customAxios from './../api/axiosInstance';
-import { API_BASE_URL } from '../config/config';
+ import '../components/RecipeMainClip.css';
 
-interface Recipe {
+interface ScrapedRecipe {
   id: number;
+  name: string;
+  cat: string;
+  time: number;
+  match: number;
   emoji: string;
-  title: string;
-  category: string;
-  time: string;
-  diff: string;
-  author: string;
-  likes: number;
-  liked: boolean;
+  bg: string;
+  desc: string;
+  tags: string[];
+  heart: number;
+  star: number;
+  urgent: boolean;
+  liked: boolean; // 좋아요(하트) 여부
+  scrappedAt: string; // 스크랩 날짜
 }
 
-const THUMB_BG: Record<string, string> = {
-  한식: '#e8f5e9',
-  양식: '#fce4ec',
-  일식: '#e3f2fd',
-  중식: '#fff8e1',
-  다이어트: '#f3e5f5',
-};
+const INITIAL_SCRAPPED: ScrapedRecipe[] = [
+  { id: 1, name: '두부 계란찜', cat: '한식', time: 15, match: 100, emoji: '🍳', bg: '#E1F5EE', desc: '부드러운 두부와 계란의 초간단 한식 반찬', tags: ['초간단', '15분'], heart: 234, star: 4.8, urgent: true, liked: true, scrappedAt: '2026.05.10' },
+  { id: 4, name: '치즈 오믈렛', cat: '양식', time: 10, match: 85, emoji: '🧀', bg: '#FCEBEB', desc: '촉촉하고 부드러운 프렌치 스타일 오믈렛', tags: ['양식', '10분'], heart: 305, star: 4.9, urgent: false, liked: true, scrappedAt: '2026.05.08' },
+  { id: 3, name: '애호박 볶음밥', cat: '한식', time: 10, match: 70, emoji: '🍜', bg: '#EAF3DE', desc: '냉장고 속 애호박을 활용한 간편 볶음밥', tags: ['간편식', '10분'], heart: 412, star: 4.7, urgent: true, liked: true, scrappedAt: '2026.05.05' },
+  { id: 7, name: '파스타', cat: '양식', time: 20, match: 60, emoji: '🍝', bg: '#E1F5EE', desc: '집에서 즐기는 토마토 파스타', tags: ['양식', '20분'], heart: 280, star: 4.7, urgent: false, liked: true, scrappedAt: '2026.05.01' },
+  { id: 6, name: '계란국', cat: '한식', time: 10, match: 100, emoji: '🍲', bg: '#E6F1FB', desc: '간단하게 뚝딱 만드는 따뜻한 계란국', tags: ['국물', '10분'], heart: 156, star: 4.5, urgent: true, liked: true, scrappedAt: '2026.04.28' },
+  { id: 8, name: '두부 스테이크', cat: '양식', time: 15, match: 85, emoji: '🥩', bg: '#FAEEDA', desc: '두부로 만드는 든든한 채식 스테이크', tags: ['양식', '15분'], heart: 210, star: 4.6, urgent: true, liked: true, scrappedAt: '2026.04.20' },
+];
 
-const FILTER_CATEGORIES = ['all', '한식', '양식', '일식', '중식', '다이어트'];
+const SORT_OPTIONS = ['최신 스크랩순', '별점순', '좋아요순'];
+const CATEGORIES = ['전체', '한식', '양식', '일식', '중식', '간식'];
 
-export default function RecipeMainClip() {
-  // 💡 사용자가 제공한 콘솔 위치 매칭 확인용
-  console.log('자바스크립트 코딩 영역 - 레시피 페이지에서 넘어온 스크랩 내역 확인');
-
+const RecipeScrap = () => {
   const navigate = useNavigate();
+  const [recipes, setRecipes] = useState<ScrapedRecipe[]>(INITIAL_SCRAPPED);
+  const [activeCategory, setActiveCategory] = useState('전체');
+  const [sortBy, setSortBy] = useState('최신 스크랩순');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [removingId, setRemovingId] = useState<number | null>(null);
 
-  // 상태 관리 (초기값으로 확실하게 더미 데이터를 넣어두어 서버가 꺼져있어도 화면이 뜨게 만듭니다)
-  const [recipes, setRecipes] = useState<Recipe[]>([
-    { id: 1, emoji: '🍳', title: '두부 계란찜', category: '한식', time: '15분', diff: '쉬움', author: '김주연', likes: 234, liked: true },
-    { id: 4, emoji: '🧀', title: '치즈 오믈렛', category: '양식', time: '10분', diff: '쉬움', author: '김주연', likes: 305, liked: true }
-  ]);
-
-  const [curFilter, setCurFilter] = useState<string>('all');
-  const [curSearch, setCurSearch] = useState<string>('');
-
-  // 1. 최신 목록 데이터 로드 (실패해도 기존 더미데이터 유지하도록 안전하게 변경)
-  useEffect(() => {
-    const fetchClipRecipes = async () => {
-      try {
-        const url = `${API_BASE_URL}/user/clip`;
-        const response = await customAxios.get(url);
-        // 서버 데이터가 정상적으로 존재할 때만 상태 업데이트
-        if (response.data && response.data.length > 0) {
-          setRecipes(response.data);
-        }
-      } catch (error) {
-        console.error('스크랩 내역 서버 불러오기 실패 -> 로컬 더미 데이터 고정:', error);
-        // catch 블록에서 아무것도 안 지우고 기존 더미데이터를 유지시킵니다.
-      }
-    };
-
-    fetchClipRecipes();
-  }, []);
-
-  // 2. 스크랩 취소 처리 함수
-  const handleToggleClip = async (id: number, title: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      const url = `${API_BASE_URL}/recipe/${id}/clip`;
-      await customAxios.post(url);
-      setRecipes((prev) => prev.filter((r) => r.id !== id));
-    } catch (error) {
-      console.error('스크랩 취소 요청 실패 -> 프론트 단독 강제 삭제 실행:', error);
-      // 서버 에러가 나더라도 화면에서 지워지는 모습을 볼 수 있도록 처리
-      setRecipes((prev) => prev.filter((r) => r.id !== id));
-    }
+  // 좋아요 토글 → 취소 시 즉시 목록에서 제거
+  const handleHeartToggle = (id: number) => {
+    setRemovingId(id); // 페이드 아웃 트리거
+    setTimeout(() => {
+      setRecipes(prev => prev.filter(r => r.id !== id));
+      setRemovingId(null);
+    }, 300);
   };
 
-  // 필터 및 검색 최적화 적용
-  const filteredRecipes = useMemo(() => {
-    return recipes.filter(
-      (r) =>
-        (curFilter === 'all' || r.category === curFilter) &&
-        r.title.toLowerCase().includes(curSearch.toLowerCase())
-    );
-  }, [recipes, curFilter, curSearch]);
+  // 필터 + 정렬
+  const filtered = recipes
+    .filter(r => {
+      if (activeCategory !== '전체' && r.cat !== activeCategory) return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return r.name.toLowerCase().includes(q) || r.tags.some(t => t.toLowerCase().includes(q));
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === '별점순') return b.star - a.star;
+      if (sortBy === '좋아요순') return b.heart - a.heart;
+      // 최신 스크랩순: scrappedAt 내림차순
+      return b.scrappedAt.localeCompare(a.scrappedAt);
+    });
 
-    return (
-        <>
+  const getMatchBadgeClass = (match: number) => {
+    if (match >= 100) return 'badge-match-full';
+    if (match >= 80) return 'badge-match-high';
+    return 'badge-match-mid';
+  };
 
-          {/* 상단 필터 탭 & 검색바 */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {FILTER_CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setCurFilter(cat)}
-                  style={{
-                    padding: '8px 16px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px', cursor: 'pointer',
-                    background: curFilter === cat ? '#6abf69' : '#fff',
-                    color: curFilter === cat ? '#fff' : '#64748b',
-                    fontWeight: curFilter === cat ? 'bold' : 'normal'
-                  }}
-                >
-                  {cat === 'all' ? '전체' : cat}
-                </button>
-              ))}
-            </div>
+  return (
+    <div className="scrap-page">
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '6px 12px', background: '#fff', minWidth: '240px' }}>
-              <span style={{ fontSize: '14px', color: '#94a3b8' }}>🔍</span>
-              <input
-                type="text"
-                placeholder="결과 내 검색..."
-                value={curSearch}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setCurSearch(e.target.value)}
-                style={{ border: 'none', outline: 'none', fontSize: '14px', width: '100%' }}
-              />
-            </div>
+      {/* ── 서브 헤더 ── */}
+      <div className="scrap-header">
+        <div className="scrap-header-top">
+          <button className="scrap-back-btn" onClick={() => navigate('/recipeMain')}>
+            ⬅️ <span>레시피 목록으로</span>
+          </button>
+          <h2 className="scrap-title">내 스크랩</h2>
+          <span className="scrap-count-badge">{recipes.length}개</span>
+        </div>
+        <p className="scrap-subtitle">좋아요를 누른 레시피를 모아볼 수 있어요 ❤️</p>
+
+        {/* 검색 + 정렬 */}
+        <div className="scrap-controls">
+          <div className="scrap-search-box">
+            <span>🔍</span>
+            <input
+              type="text"
+              placeholder="스크랩한 레시피 검색..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
           </div>
+          <select
+            className="scrap-sort-select"
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+          >
+            {SORT_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
+          </select>
+        </div>
 
-          {/* 그리드 카드 레이아웃 */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
-            {filteredRecipes.length === 0 ? (
-              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 0', color: '#94a3b8' }}>
-                <div style={{ fontSize: '40px', marginBottom: '12px' }}>💡</div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#475569' }}>스크랩한 레시피가 없습니다</div>
-              </div>
-            ) : (
-              filteredRecipes.map((r) => (
+        {/* 카테고리 탭 */}
+        <div className="scrap-category-tabs">
+          {CATEGORIES.map(cat => (
+            <div
+              key={cat}
+              className={`scrap-cat-tab ${activeCategory === cat ? 'active' : ''}`}
+              onClick={() => setActiveCategory(cat)}
+            >
+              {cat}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 본문 ── */}
+      <div className="scrap-body">
+        {filtered.length === 0 ? (
+          <div className="scrap-empty">
+            <div className="scrap-empty-icon">💔</div>
+            <p className="scrap-empty-title">스크랩한 레시피가 없어요</p>
+            <p className="scrap-empty-sub">마음에 드는 레시피에 ❤️를 눌러 저장해 보세요</p>
+            <button className="scrap-go-btn" onClick={() => navigate('/recipeMain')}>
+              레시피 둘러보기
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="scrap-result-info">
+              <strong>{filtered.length}개</strong>의 스크랩 레시피
+            </div>
+
+            <div className="scrap-grid">
+              {filtered.map(r => (
                 <div
                   key={r.id}
-                  onClick={() => navigate(`/recipeMain/${r.id}`)}
-                  style={{ border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden', cursor: 'pointer', background: '#fff', position: 'relative' }}
+                  className={`scrap-card ${removingId === r.id ? 'removing' : ''}`}
                 >
-                  {/* 상단 이모지 영역 */}
-                  <div style={{ backgroundColor: THUMB_BG[r.category] || '#f1f5f9', height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '52px', position: 'relative' }}>
-                    {r.emoji}
+                  {/* 카드 이미지 영역 */}
+                  <div className="scrap-card-img" style={{ background: r.bg }}>
+                    <span className="scrap-card-emoji">{r.emoji}</span>
+                    <span className={`scrap-match-badge ${getMatchBadgeClass(r.match)}`}>
+                      {r.match === 100 ? '100% 일치' : `${r.match}% 일치`}
+                    </span>
+
+                    {/* 빨간 하트 버튼 */}
                     <button
-                      onClick={(e) => handleToggleClip(r.id, r.title, e)}
-                      style={{ position: 'absolute', top: '12px', right: '12px', background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer' }}
+                      className="scrap-heart-btn liked"
+                      onClick={() => handleHeartToggle(r.id)}
+                      title="좋아요 취소"
                     >
-                      🔖
+                      ❤️
                     </button>
                   </div>
-                  {/* 하단 설명 영역 */}
-                  <div style={{ padding: '16px', textAlign: 'left' }}>
-                    <span style={{ fontSize: '12px', color: '#6abf69', fontWeight: 'bold' }}>[{r.category}]</span>
-                    <h4 style={{ margin: '6px 0 12px 0', fontSize: '15px', fontWeight: 'bold', color: '#1e293b' }}>{r.title}</h4>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#64748b' }}>
-                      <span>⏱️ {r.time}</span>
-                      <span>👤 {r.author}</span>
+
+                  {/* 카드 내용 */}
+                  <div className="scrap-card-body">
+                    <div className="scrap-card-name">{r.name}</div>
+                    <div className="scrap-card-desc">{r.desc}</div>
+
+                    <div className="scrap-card-tags">
+                      <span className="scrap-tag scrap-tag-cat">{r.cat}</span>
+                      {r.urgent && <span className="scrap-tag scrap-tag-urgent">임박재료활용</span>}
+                      {r.tags.map(t => <span key={t} className="scrap-tag">{t}</span>)}
+                    </div>
+
+                    <div className="scrap-card-footer">
+                      <div className="scrap-card-meta">
+                        <span>⏱️ {r.time}분</span>
+                        <span>❤️ {r.heart}</span>
+                        <span>⭐ {r.star}</span>
+                      </div>
+                      <span className="scrap-card-date">📌 {r.scrappedAt}</span>
                     </div>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-
-        </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default RecipeScrap;

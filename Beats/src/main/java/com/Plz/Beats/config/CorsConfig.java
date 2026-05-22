@@ -24,8 +24,8 @@ public class CorsConfig {
                 "http://127.0.0.1:3000",
                 "http://eatsfridge.site",
                 "https://eatsfridge.site",
-                "http://54.180.0.163/",
-                "https://54.180.0.163/"
+                "http://54.180.0.163",
+                "https://54.180.0.163"
         ));
 
 

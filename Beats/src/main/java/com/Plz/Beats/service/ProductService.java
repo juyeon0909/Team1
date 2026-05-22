@@ -38,6 +38,8 @@ import com.Plz.Beats.constant.Storagetype;
 import com.Plz.Beats.dto.ProductDto;
 import com.Plz.Beats.entity.Storage_item;
 import com.Plz.Beats.repository.ProductRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,16 +54,20 @@ public class ProductService {
 
     private final ProductRepository repository;
 
-    /**
-     * 1. [조회] 냉장고 전체 재료 목록 조회 (FridgeMain 화면용)
-     * MySQL의 storage_items 테이블에 있는 전재 재료를 긁어와 리액트 전송용 DTO 리스트로 가공합니다.
-     */
+//    public List<ProductDto> getAllStorageItems() {
+//        return repository.findAll().stream()
+//                .map(ProductDto::fromEntity)
+//                .collect(Collectors.toList());
+//    }
+    @PersistenceContext
+    private EntityManager entityManager;
+    // 컨트롤러에서 5L을 넘겨받을 수 있도록 매개변수(Long memberId)를 추가합니다.
+    @Transactional
     public List<ProductDto> getAllStorageItems() {
         return repository.findAll().stream()
                 .map(ProductDto::fromEntity)
                 .collect(Collectors.toList());
     }
-
     /**
      * 2. [상세] 특정 재료 1개 상세 조회 (FridgeEdit 폼 로딩용)
      * 수정을 위해 클릭한 재료의 고유 ID(storage_item_id)를 기반으로 데이터를 찾아 DTO로 반환합니다.

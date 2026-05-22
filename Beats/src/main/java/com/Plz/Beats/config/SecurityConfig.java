@@ -59,14 +59,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // A. 기존 팀원들이 열어둔 주소들을 한 방에 프리패스 시켜줍니다.
                         .requestMatchers(permitUrls).permitAll()
-
-                        // B. 혹시 몰라 팀원들 배열에 없던 'join' 주소도 안전하게 추가해줍니다.
                         .requestMatchers("/api/member/join").permitAll()
-
-                        // C. 유저님이 만드신 냉장고 API는 USER와 ADMIN만 통과하도록 성벽을 칩니다.
                         .requestMatchers("/api/product/**").hasAnyAuthority("USER", "ADMIN")
-
-                        // D. 그 외의 모든 요청은 로그인 인증 필요
+// 임시 주석              // B. 그 외의 모든 요청은 로그인 인증 필요
                         .anyRequest().authenticated()
                 );
 

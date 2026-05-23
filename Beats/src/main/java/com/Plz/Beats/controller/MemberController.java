@@ -80,7 +80,6 @@ public class MemberController {
             System.out.println(errors);
             return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
         }else{
-
             System.out.println("ok");
         }
 

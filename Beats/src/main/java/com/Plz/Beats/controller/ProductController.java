@@ -17,10 +17,14 @@ public class ProductController {
 
     @GetMapping("/list")
     public ResponseEntity<List<ProductDto>> getStorageList() {
-        List<ProductDto> list = productService.getAllStorageItems();
+        // 1. 우선 DB에 있는 모든 냉장고 아이템을 다 가져옵니다.
+        List<ProductDto> allList = productService.getAllStorageItems();
+        // 2. [임시 치트키] 가져온 전체 데이터 중, 오직 memberId가 5번인 데이터만 필터링해서 가둡니다.
+        // 자바 스트림(Stream)을 사용하면 컨트롤러 한 줄로 쉽게 가로챌 수 있습니다.
 
+        // 3. 5번 데이터만 골라담은 진짜 가방을 리액트에게 쏴줍니다.
 
-        return ResponseEntity.ok(list); // 200 OK 상태코드와 함께 안전하게 데이터를 반환합니다.
+        return ResponseEntity.ok(allList); // 200 OK 상태코드와 함께 안전하게 데이터를 반환합니다.
     }
 
     @GetMapping("/detail/{id}")

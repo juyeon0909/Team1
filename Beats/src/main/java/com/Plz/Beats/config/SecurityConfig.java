@@ -56,17 +56,17 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 💡 3. [협업용 병합] 팀원들의 규칙과 유저님의 규칙을 아름답게 합쳤습니다.
                 .authorizeHttpRequests(auth -> auth
                         // A. 기존 팀원들이 열어둔 주소들을 한 방에 프리패스 시켜줍니다.
                         .requestMatchers(permitUrls).permitAll()
                         .requestMatchers("/api/member/join").permitAll()
-                        .requestMatchers("/api/product/**").hasAnyAuthority("USER", "ADMIN")
+                        .requestMatchers("/api/product/**").permitAll()
+//                                .hasAnyRole("USER", "ADMIN")
 // 임시 주석              // B. 그 외의 모든 요청은 로그인 인증 필요
                         .anyRequest().authenticated()
                 );
 
-        // 💡 4. [기존 유지] JWT 필터 등록
+        // JWT 필터 등록
         http.addFilterBefore(
                 new JwtAuthenticationFilter(jwtTokenProvider),
                 UsernamePasswordAuthenticationFilter.class

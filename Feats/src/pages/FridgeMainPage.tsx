@@ -19,13 +19,14 @@ const FridgeMain: React.FC = () => {
   useEffect(() => {
     const fetchStorageItems = async () => {
       try {
-        const response = await axiosInstance.get<any[]>('/api/product/list');
+        const response = await axiosInstance.get<any[]>('/product/list');
+        console.log("📦 [최종 점검] 백엔드가 던져준 Real 데이터:", response.data);
         
         const formattedData = response.data.map(item => ({
           id: item.id,
-          itemname: item.itemname,
+          itemname: item.name,
           quantity: item.quantity,
-          expirationdate: item.expirationdate,
+          expirationdate: item.expiry,
           type: item.type?.toLowerCase().includes('room') ? 'room' : item.type
         }));
         

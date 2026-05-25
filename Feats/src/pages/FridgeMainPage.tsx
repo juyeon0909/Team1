@@ -6,9 +6,9 @@ import '../components/FridgeMain.css';
 interface Ingredient {
   id: number;
   itemname: string;
-  quantity: number; 
-  expirationdate: string;   
-  type: 'frozen' | 'refrigerated' | 'room'; 
+  quantity: number;
+  expirationdate: string;
+  storagetype: '냉장' | '냉동' | '실온';
 }
 
 const FridgeMain: React.FC = () => {
@@ -17,31 +17,19 @@ const FridgeMain: React.FC = () => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
 
   useEffect(() => {
-    const fetchStorageItems = async () => {
-      try {
-        const response = await axiosInstance.get<any[]>('/product/list');
-        console.log("📦 [최종 점검] 백엔드가 던져준 Real 데이터:", response.data);
-        
-        const formattedData = response.data.map(item => ({
-          id: item.id,
-          itemname: item.name,
-          quantity: item.quantity,
-          expirationdate: item.expiry,
-          type: item.type?.toLowerCase().includes('room') ? 'room' : item.type
-        }));
-        
-        setIngredients(formattedData);
-      } catch (error) {
-        console.error("냉장고 데이터를 가져오는 중 서버 에러 발생:", error);
-      }
-    };
+    const stored = localStorage.getItem('user');
+    if (!stored) return;
+    const user = JSON.parse(stored);
 
-    fetchStorageItems();
+    axiosInstance
+      .get<Ingredient[]>(`/product/list/${user.id}`)
+      .then((res) => setIngredients(res.data))
+      .catch((error) => console.error('냉장고 데이터를 가져오는 중 오류 발생:', error));
   }, []);
 
   const getExpiryClass = (expiryDateStr: string): string => {
     if (!expiryDateStr) return 'expiry-normal';
-    const today = new Date('2026-05-22'); 
+    const today = new Date();
     const expiry = new Date(expiryDateStr);
     
     const diffTime = expiry.getTime() - today.getTime();
@@ -56,9 +44,9 @@ const FridgeMain: React.FC = () => {
     item.itemname?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const frozenItems = filteredIngredients.filter((item) => item.type === 'frozen');
-  const refrigeratedItems = filteredIngredients.filter((item) => item.type === 'refrigerated');
-  const roomItems = filteredIngredients.filter((item) => item.type === 'room');
+  const frozenItems = filteredIngredients.filter((item) => item.storagetype === '냉동');
+  const refrigeratedItems = filteredIngredients.filter((item) => item.storagetype === '냉장');
+  const roomItems = filteredIngredients.filter((item) => item.storagetype === '실온');
 
   return (
     <div className="storage-page-container">

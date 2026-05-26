@@ -35,9 +35,8 @@ public class JwtTokenProvider { // JWT 생성, 검증 기능 담당자 클래스
         Claims claims = Jwts.claims().setSubject(member.getEmail());
         claims.put("role", member.getRole().name()); // 권한 정보 주입
 
-        Date now = new Date();
         return Jwts.builder()
-                .setSubject(member.getEmail()) // 토큰 주인
+                .setClaims(claims) // subject + role 포함
                 .setIssuedAt(new Date()) // 토큰 발급 시간
                 .setExpiration(new Date(System.currentTimeMillis() + expiration)) // 토큰 만료 시간
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)

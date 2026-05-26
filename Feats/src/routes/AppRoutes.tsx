@@ -51,6 +51,6 @@ function App({ user, handleLoginSuccess }: AppProps) {
     </Routes>
   );
 }
-{/* 커밋 체크 */}
+{/* 커밋 체크  */}
 {/* 커밋 체쿠 나나난  */ }
 export default App;

@@ -412,5 +412,5 @@ const RecipeMain = () => {
     </div>
   );
 };
-{/* 커밋 체크 */}
+{/* 커밋 체크  */}
 export default RecipeMain;

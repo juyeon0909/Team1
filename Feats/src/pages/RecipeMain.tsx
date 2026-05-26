@@ -402,7 +402,7 @@ const RecipeMain = () => {
                 </div>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px'  }}>
               <button onClick={() => setIsModalOpen(false)} style={{ flex: 1, padding: '10px', background: '#eee', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>취소</button>
               <button onClick={handleCookStart} style={{ flex: 1.5, padding: '10px', background: '#0BA574', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>확인 및 요리시작</button>
             </div>
@@ -412,5 +412,5 @@ const RecipeMain = () => {
     </div>
   );
 };
-
+{/* 커밋 체크 */}
 export default RecipeMain;

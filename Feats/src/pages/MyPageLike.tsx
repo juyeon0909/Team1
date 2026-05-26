@@ -3,6 +3,7 @@ import { Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import customAxios from './../api/axiosInstance';
 import '../components/MyPage.css';
+import { API_BASE_URL } from '../config/config';
 
 interface Recipe {
   id: number;
@@ -49,19 +50,14 @@ export default function LikedRecipes() {
   useEffect(() => {
     const fetchLikedRecipes = async () => {
       try {
-        const url = `/user/likes`;
+        const url = `${API_BASE_URL}/mypage/like`;;
         const response = await customAxios.get(url);
         setRecipes(response.data || []);
       } catch (error) {
         console.error('좋아요 내역 불러오기 실패:', error);
-        setError('좋아요 내역을 불러오지 못했습니다. 임시 데이터를 표시합니다.');
+        setError('좋아요 내역을 불러오지 못했습니다.');
+        setRecipes([]);
 
-        // 로컬 더미 데이터 테스트 (첫 번째 코드 스타일의 필드 보완)
-        setRecipes([
-          { id: 1, emoji: '🍳', title: '두부 계란찜', category: '한식', time: '15분', diff: '쉬움', author: '김주연', likes: 234, liked: true, urgent: true, star: 4.8, scrappedAt: '2026.05.10' },
-          { id: 4, emoji: '🧀', title: '치즈 오믈렛', category: '양식', time: '10분', diff: '쉬움', author: '김주연', likes: 305, liked: true, urgent: false, star: 4.9, scrappedAt: '2026.05.08' },
-          { id: 3, emoji: '🍜', title: '애호박 볶음밥', category: '한식', time: '10분', diff: '보통', author: '이철수', likes: 120, liked: true, urgent: true, star: 4.5, scrappedAt: '2026.05.05' }
-        ]);
       }
     };
 
@@ -89,7 +85,7 @@ export default function LikedRecipes() {
 
     setTimeout(async () => {
       try {
-        const url = `/recipe/${id}/like`;
+        const url = `${API_BASE_URL}/recipe/${id}/like`;
         await customAxios.post(url);
 
         // 실제 리스트에서 제거 및 상태 초기화

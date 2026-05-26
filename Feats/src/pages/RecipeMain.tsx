@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom'; // 💡 useParams 추가
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 
 interface Recipe {
   id: number;
@@ -49,17 +49,15 @@ const INITIAL_RECIPES: Recipe[] = [
 const RecipeMain = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { id: urlId } = useParams(); // 💡 URL 주소에서 id 파라미터 추출 (/recipeMain/:id)
+  const { id: urlId } = useParams(); // URL 주소의 ID 값 감지
 
   const [recipes, setRecipes] = useState<Recipe[]>(() => {
     const localData = localStorage.getItem('user_recipes');
     return localData ? JSON.parse(localData) : INITIAL_RECIPES;
   });
 
-  // 💡 URL 파라미터 존재 여부에 따라 보여줄 View 상태 설정
+  // 주소창에 ID 유무에 따라 리스트/상세 뷰 스위칭
   const view = urlId ? 'detail' : 'list';
-
-  // 💡 URL에 적힌 ID 번호를 숫자로 변환
   const selectedRecipeId = urlId ? parseInt(urlId, 10) : null;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -92,7 +90,6 @@ const RecipeMain = () => {
     if (localData) setRecipes(JSON.parse(localData));
   }, [location.pathname]);
 
-  // 새 레시피 데이터 등록 프로세스 유지
   useEffect(() => {
     if (location.state && location.state.newRecipe) {
       const incomingData = location.state.newRecipe;
@@ -169,7 +166,7 @@ const RecipeMain = () => {
     }
     alert('요리를 시작합니다! 메인 목록으로 돌아갑니다.');
     setIsModalOpen(false);
-    navigate('/recipeMain'); // 💡 목록으로 주소 복구
+    navigate('/recipeMain');
   };
 
   const handleQuantityChange = (index: number, value: string) => {
@@ -186,7 +183,7 @@ const RecipeMain = () => {
 
   return (
     <div style={{ fontFamily: 'sans-serif', background: '#f8f9fa', minHeight: '100vh', color: '#111', position: 'relative' }}>
-      {/* ─── VIEW 1: 레시피 목록 화면 ─── */}
+      {/* ─── VIEW 1: 목록 화면 ─── */}
       {view === 'list' && (
         <div>
           <div style={{ background: '#fff', borderBottom: '0.5px solid #eee', padding: '24px 40px 0' }}>
@@ -257,14 +254,11 @@ const RecipeMain = () => {
                 return (
                   <div
                     key={r.id}
-                    /* 💡 변경 포인트 1: 단순 세터 함수 호출이 아니라 주소창 이동 처리 */
-                    onClick={() => navigate(`/recipeMain/${r.id}`)}
+                    onClick={() => navigate(`/recipeMain/${r.id}`)} // 주소창 이동
                     style={{ background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer' }}
                   >
+                    {/* 이미지 영역 (화면상 ID 노출 태그 제거됨) */}
                     <div style={{ height: '130px', background: r.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', position: 'relative' }}>
-                      <span style={{ position: 'absolute', top: '8px', left: '8px', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,0,0,0.4)', color: '#fff', fontWeight: 'bold' }}>
-                        #{r.id}
-                      </span>
                       {r.emoji}
                       <span style={{ position: 'absolute', bottom: '8px', right: '8px', fontSize: '11px', padding: '3px 8px', borderRadius: '20px', background: badge.bg, color: badge.text }}>
                         {r.match}% 일치
@@ -313,20 +307,16 @@ const RecipeMain = () => {
         </div>
       )}
 
-      {/* ─── VIEW 2: 레시피 상세 화면 ─── */}
+      {/* ─── VIEW 2: 상세 화면 (화면상 ID 노출 태그 제거됨) ─── */}
       {view === 'detail' && currentRecipe && (
         <div style={{ padding: '28px 40px' }}>
-          {/* 💡 변경 포인트 2: 뒤로가기 시 메인 주소 경로로 변경 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', cursor: 'pointer' }} onClick={() => navigate('/recipeMain')}>
             <span>⬅️</span> <span style={{ fontSize: '13px', color: '#666' }}>레시피 목록으로</span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', maxWidth: '960px', margin: '0 auto' }}>
             <div>
-              <div style={{ height: '220px', background: currentRecipe.bg, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '72px', marginBottom: '20px', position: 'relative' }}>
-                <span style={{ position: 'absolute', top: '12px', left: '12px', fontSize: '12px', padding: '4px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.5)', color: '#fff', fontWeight: 'bold' }}>
-                  레시피 번호 #{currentRecipe.id}
-                </span>
+              <div style={{ height: '220px', background: currentRecipe.bg, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '72px', marginBottom: '20px' }}>
                 {currentRecipe.emoji}
               </div>
 
@@ -394,7 +384,7 @@ const RecipeMain = () => {
         </div>
       )}
 
-      {/* 모달 팝업 생략없이 그대로 유지 */}
+      {/* 모달 */}
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', width: '360px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>

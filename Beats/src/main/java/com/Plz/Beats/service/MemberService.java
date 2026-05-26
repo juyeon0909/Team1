@@ -71,4 +71,24 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
         // 엔티티의 필드 값을 변경 (더티 체킹에 의해 자동으로 DB에 반영됨)
         member.setProfileimage(base64Image);
     }
+
+
+    // MemberService.java 내부 수정
+    @Transactional
+    public void delete(Member member) {
+        if (member == null) {
+            throw new IllegalArgumentException("삭제하려는 회원 정보가 null입니다.");
+        }
+
+        System.out.println("🎯 회원 강제 탈퇴 로직 가동. ID: " + member.getId());
+
+        // 1. 자식 테이블(storage_items) 데이터 먼저 직접 강제 삭제!
+        memberRepository.deleteStorageItemsByMemberId(member.getId());
+        System.out.println("-> 자식 테이블(storage_items) 데이터 청소 완료.");
+
+        // 2. 부모 테이블(members) 데이터 최종 삭제!
+        memberRepository.delete(member);
+        System.out.println("-> 부모 테이블(members) 회원 삭제 완료.");
+    }
+
 }

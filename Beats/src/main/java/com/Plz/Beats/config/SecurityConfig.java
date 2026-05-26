@@ -43,7 +43,8 @@ public class SecurityConfig {
                 "/api/member/login",
                 "/product/**",
                 "/first",
-                "/"
+                "/",
+                "/api/member/delete" // 회원 탈퇴
         };
 
         http
@@ -59,6 +60,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // A. 기존 팀원들이 열어둔 주소들을 한 방에 프리패스 시켜줍니다.
                         .requestMatchers(permitUrls).permitAll()
+                        .requestMatchers("/api/member/delete").permitAll() // 인증 필요
                         .requestMatchers("/api/member/join").permitAll()
                         .requestMatchers("/api/product/**").permitAll()
                         .requestMatchers("/api/member/**").authenticated()

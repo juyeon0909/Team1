@@ -25,6 +25,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class MemberController {
     private final MemberService memberService ;
     private final MemberDetailsService memberDetailsServices;
@@ -118,4 +119,30 @@ public class MemberController {
 
         return ResponseEntity.ok().body("프로필 사진이 성공적으로 변경되었습니다.");
     }
+
+    @PostMapping("/delete") // 🚨 다시 POST로 복구
+    public ResponseEntity<?> deleteMember(@RequestBody Map<String, String> request, Principal principal) {
+
+        String email = request.get("email");
+        String password = request.get("password");
+
+        // 로컬 콘솔창에 찍히는지 확인용
+        System.out.println("로컬 테스트 요청 들어옴! 이메일: " + email + ", 비번: " + password);
+
+        String targetEmail = (principal != null) ? principal.getName() : email;
+
+        Member member = memberService.findByEmail(targetEmail);
+        if (member == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "회원이 없습니다."));
+        }
+
+        if (!passwordEncoder.matches(password, member.getPassword())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "비밀번호 불일치"));
+        }
+
+        memberService.delete(member);
+        return ResponseEntity.ok(Map.of("message", "회원 탈퇴 성공"));
+    }
+
+
 }

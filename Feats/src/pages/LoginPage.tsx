@@ -354,7 +354,6 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "../api/axiosInstance.tsx";
 import type { LoginResponse, User } from "../types/User";
 import "../components/LoginPage.css";
-import { API_BASE_URL } from "../config/config";
 
 interface Props {
   onLogin: (user: User) => void;
@@ -382,7 +381,7 @@ function LoginPage({ onLogin }: Props) {
     try {
 
       const response = await axios.post<LoginResponse>(
-        `${API_BASE_URL}/member/login`,
+        `/member/login`,
         { email, password },
         { headers: { "Content-Type": "application/json" } }
       );

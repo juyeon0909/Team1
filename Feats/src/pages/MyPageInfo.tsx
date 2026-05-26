@@ -180,8 +180,9 @@ function App() {
                     </div>
 
                     {/* 요청하신 코드로 변경 및 부모(info) 안쪽 제자리 배치 완료 */}
+                    {/* navigate 경로 수정 */}
                     <div className="withdraw-box">
-                        <span className="withdraw-link" onClick={() => navigate('/mypage/qna')}>회원 탈퇴를 원하시나요?</span>
+                        <span className="withdraw-link" onClick={() => navigate('/delete')}>회원 탈퇴를 원하시나요?</span>
                     </div> 
                 </div>
 
@@ -189,5 +190,5 @@ function App() {
         </Container>
     );
 }
-
+{/* 커밋 체크 */}
 export default App;

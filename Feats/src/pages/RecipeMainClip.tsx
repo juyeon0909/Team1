@@ -83,7 +83,7 @@ const RecipeScrap = () => {
           <h2 className="scrap-title">내 스크랩</h2>
           <span className="scrap-count-badge">{recipes.length}개</span>
         </div>
-        <p className="scrap-subtitle">좋아요를 누른 레시피를 모아볼 수 있어요 ❤️</p>
+        <p className="scrap-subtitle">스크랩을 누른 레시피를 모아볼 수 있어요 ⭐</p>
 
         {/* 검색 + 정렬 */}
         <div className="scrap-controls">
@@ -123,9 +123,9 @@ const RecipeScrap = () => {
       <div className="scrap-body">
         {filtered.length === 0 ? (
           <div className="scrap-empty">
-            <div className="scrap-empty-icon">💔</div>
+            <div className="scrap-empty-icon">⭐</div>
             <p className="scrap-empty-title">스크랩한 레시피가 없어요</p>
-            <p className="scrap-empty-sub">마음에 드는 레시피에 ❤️를 눌러 저장해 보세요</p>
+            <p className="scrap-empty-sub">마음에 드는 레시피에 ⭐를 눌러 저장해 보세요</p>
             <button className="scrap-go-btn" onClick={() => navigate('/recipeMain')}>
               레시피 둘러보기
             </button>
@@ -153,9 +153,9 @@ const RecipeScrap = () => {
                     <button
                       className="scrap-heart-btn liked"
                       onClick={() => handleHeartToggle(r.id)}
-                      title="좋아요 취소"
+                      title="스크랩 취소"
                     >
-                      ❤️
+                      ⭐
                     </button>
                   </div>
 

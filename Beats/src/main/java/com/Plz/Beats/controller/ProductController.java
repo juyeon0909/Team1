@@ -39,5 +39,13 @@ public class ProductController {
         return ResponseEntity.ok("식재료 정보가 성공적으로 변경되었습니다.");
 
     }
+    @PostMapping("/delete/{id}")
+    public ResponseEntity<String> deleteStorage(@PathVariable("id") Long id) {
+
+        // 🟢 서비스에 이미 만들어져 있을 아이템 삭제 메서드를 호출합니다.
+        productService.deleteStorageItem(id);
+
+        return ResponseEntity.ok("식재료가 데이터베이스에서 영구 삭제되었습니다.");
+    }
 
 }

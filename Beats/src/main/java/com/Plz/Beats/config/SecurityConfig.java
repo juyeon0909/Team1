@@ -42,6 +42,7 @@ public class SecurityConfig {
                 "/api/member/signup",
                 "/api/member/login",
                 "/product/**",
+                "/api/product/**",
                 "/first",
                 "/"
         };
@@ -56,19 +57,12 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
+                // 📌 SecurityConfig.java 파일의 authorizeHttpRequests 부분을 아래 순서로 꼭 변경해 주세요!
+
                 .authorizeHttpRequests(auth -> auth
-                        // A. 기존 팀원들이 열어둔 주소들을 한 방에 프리패스 시켜줍니다.
                         .requestMatchers(permitUrls).permitAll()
                         .requestMatchers("/api/member/join").permitAll()
-
-                        // B. 냉장고 관련 API는 토큰이 있든 없든 프리패스 (우리가 수정한 정석 구조)
-                        .requestMatchers("/api/product/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/api/product/**").permitAll()
-
-                        // C. [팀원 추가분 반영] 회원가입 외의 나머지 회원 정보 관련 요청은 로그인 인증 필요
                         .requestMatchers("/api/member/**").authenticated()
-
-                        // D. 그 외의 모든 요청은 로그인 인증 필요
                         .anyRequest().authenticated()
                 );
 

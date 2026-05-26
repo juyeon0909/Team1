@@ -19,10 +19,9 @@ const FridgeMain: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   
-  //  구역별 독립된 정렬(Sort) 상태값 (기본값: 유통기한순)
-  const [refSort, setRefSort] = useState<string>("유통기한순"); // 냉장 정렬
-  const [froSort, setFroSort] = useState<string>("유통기한순"); // 냉동 정렬
-  const [roomSort, setRoomSort] = useState<string>("유통기한순"); // 실온 정렬
+  const [refSort, setRefSort] = useState<string>("유통기한순"); 
+  const [froSort, setFroSort] = useState<string>("유통기한순"); 
+  const [roomSort, setRoomSort] = useState<string>("유통기한순"); 
 
   useEffect(() => {
     const stored = localStorage.getItem('user');
@@ -45,6 +44,23 @@ const FridgeMain: React.FC = () => {
       .catch((error) => console.error('냉장고 데이터를 가져오는 중 오류 발생:', error));
   }, []);
 
+  const handleDelete = async (id: number, name: string, e: React.MouseEvent): Promise<void> => {
+  e.stopPropagation();
+
+  if (!window.confirm(`[${name}] 재료를 삭제하시겠습니까?`)) return;
+
+  try {
+      await axiosInstance.post(`/product/delete/${id}`, {});
+      
+      alert(`[${name}] 재료가 성공적으로 삭제되었습니다.`);
+      // 화면에서도 실시간으로 삭제 반영
+      setIngredients(prev => prev.filter(item => item.id !== id));
+    } catch (error) {
+      console.error("재료 삭제 중 에러 발생:", error);
+      alert("재료를 삭제하는 중 오류가 발생했습니다. 백엔드 메서드를 확인해주세요.");
+    }
+  };
+
   const getExpiryClass = (expiryDateStr: string): string => {
     if (!expiryDateStr) return 'expiry-normal';
     const today = new Date();
@@ -58,32 +74,27 @@ const FridgeMain: React.FC = () => {
     return 'expiry-normal';                      
   };
 
-  // 🟢 공통 정렬 처리 함수 (배열과 정렬 기준을 넣으면 정렬된 배열을 반환)
   const sortIngredients = (list: Ingredient[], sortType: string) => {
-    // 원본 배열이 망가지지 않게 shallow copy([...list]) 후 정렬 진행
     return [...list].sort((a, b) => {
       if (sortType === "가나다순") {
         return a.itemname.localeCompare(b.itemname, 'ko');
       }
       if (sortType === "재고순") {
-        return b.quantity - a.quantity; // 수량 많은 순 (내림차순)
+        return b.quantity - a.quantity; 
       }
       if (sortType === "유통기한순") {
-        // 날짜가 없는 경우 뒤로 밀기 방어코드
         if (!a.expirationdate) return 1;
         if (!b.expirationdate) return -1;
-        return new Date(a.expirationdate).getTime() - new Date(b.expirationdate).getTime(); // 임박한 순 (오름차순)
+        return new Date(a.expirationdate).getTime() - new Date(b.expirationdate).getTime(); 
       }
       return 0;
     });
   };
 
-  // 1차: 검색어 필터링
   const filteredIngredients = ingredients.filter((item) =>
     item.itemname?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // 2차: 보관 방법 분류 + 🟢 3차: 정렬 함수 적용
   const frozenItems = sortIngredients(
     filteredIngredients.filter((item) => item.storagetype === '냉동'),
     froSort
@@ -99,21 +110,12 @@ const FridgeMain: React.FC = () => {
     roomSort
   );
 
-  // 🟢 공통 정렬 드롭박스 컴포넌트 렌더링 함수
+  //  깔끔해진 공통 정렬 드롭박스 렌더링 함수
   const renderSortSelect = (value: string, onChangeFn: (val: string) => void) => (
     <select
       value={value}
       onChange={(e) => onChangeFn(e.target.value)}
-      style={{
-        marginLeft: 'auto', 
-        padding: '4px 8px',
-        borderRadius: '6px',
-        border: '1px solid rgba(0,0,0,0.15)',
-        fontSize: '13px',
-        cursor: 'pointer',
-        backgroundColor: '#fff',
-        color: '#333'
-      }}
+      className="room-sort-select"
     >
       <option value="유통기한순">유통기한순</option>
       <option value="가나다순">가나다순</option>
@@ -126,10 +128,10 @@ const FridgeMain: React.FC = () => {
       
       <div className="storage-search-section">
         <div className="storage-search-box">
-          <span className="search-icon"></span>
+          <span className="search-icon">🔍</span>
           <input
             type="text"
-            placeholder="보관 중인 재료를 검색해보세요"
+            placeholder="보관 중인 재료를 검색해보세요..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="storage-search-input"
@@ -150,11 +152,10 @@ const FridgeMain: React.FC = () => {
       <div className="storage-rooms-grid">
         {/* 냉동 보관실 */}
         <div className="storage-room-card">
-          <div className="room-header frozen-theme" style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+          <div className="room-header frozen-theme room-header-flex">
             <span className="room-emoji"></span>
-            <h3 className="room-title">냉동</h3>
-            <span className="room-count" style={{ marginRight: '10px' }}>{frozenItems.length}</span>
-            {/* 🟢 정렬 드롭박스 배치 */}
+            <h3 className="room-title">냉동 보관실</h3>
+            <span className="room-count">{frozenItems.length}</span>
             {renderSortSelect(froSort, setFroSort)}
           </div>
           <div className="room-list-scroll">
@@ -165,7 +166,16 @@ const FridgeMain: React.FC = () => {
                     {item.itemname}
                   </span>
                   <span className="item-quantity">{item.quantity}개</span>
-                  <span className="item-expiry">{item.expirationdate}</span>
+                  
+                  <span className="item-expiry item-expiry-wrapper">
+                    {item.expirationdate}
+                    <button 
+                      onClick={(e) => handleDelete(item.id, item.itemname, e)}
+                      className="btn-delete-small"
+                    >
+                      ✕
+                    </button>
+                  </span>
                 </div>
               ))
             )}
@@ -174,11 +184,10 @@ const FridgeMain: React.FC = () => {
 
         {/* 냉장 보관실 */}
         <div className="storage-room-card">
-          <div className="room-header refrigerated-theme" style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+          <div className="room-header refrigerated-theme room-header-flex">
             <span className="room-emoji"></span>
-            <h3 className="room-title">냉장</h3>
-            <span className="room-count" style={{ marginRight: '10px' }}>{refrigeratedItems.length}</span>
-            {/* 🟢 정렬 드롭박스 배치 */}
+            <h3 className="room-title">냉장 보관실</h3>
+            <span className="room-count">{refrigeratedItems.length}</span>
             {renderSortSelect(refSort, setRefSort)}
           </div>
           <div className="room-list-scroll">
@@ -189,7 +198,16 @@ const FridgeMain: React.FC = () => {
                     {item.itemname}
                   </span>
                   <span className="item-quantity">{item.quantity}개</span>
-                  <span className="item-expiry">{item.expirationdate}</span>
+                  
+                  <span className="item-expiry item-expiry-wrapper">
+                    {item.expirationdate}
+                    <button 
+                      onClick={(e) => handleDelete(item.id, item.itemname, e)}
+                      className="btn-delete-small"
+                    >
+                      ✕
+                    </button>
+                  </span>
                 </div>
               ))
             )}
@@ -198,11 +216,10 @@ const FridgeMain: React.FC = () => {
 
         {/* 상온 보관실 */}
         <div className="storage-room-card">
-          <div className="room-header room-theme" style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+          <div className="room-header room-theme room-header-flex">
             <span className="room-emoji"></span>
-            <h3 className="room-title">상온</h3>
-            <span className="room-count" style={{ marginRight: '10px' }}>{roomItems.length}</span>
-            {/*  정렬 드롭박스 배치 */}
+            <h3 className="room-title">상온 보관실</h3>
+            <span className="room-count">{roomItems.length}</span>
             {renderSortSelect(roomSort, setRoomSort)}
           </div>
           <div className="room-list-scroll">
@@ -213,7 +230,16 @@ const FridgeMain: React.FC = () => {
                     {item.itemname}
                   </span>
                   <span className="item-quantity">{item.quantity}개</span>
-                  <span className="item-expiry">{item.expirationdate}</span>
+                  
+                  <span className="item-expiry item-expiry-wrapper">
+                    {item.expirationdate}
+                    <button 
+                      onClick={(e) => handleDelete(item.id, item.itemname, e)}
+                      className="btn-delete-small"
+                    >
+                      ✕
+                    </button>
+                  </span>
                 </div>
               ))
             )}

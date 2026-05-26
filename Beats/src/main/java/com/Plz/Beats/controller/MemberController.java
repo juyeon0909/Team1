@@ -2,6 +2,8 @@ package com.Plz.Beats.controller;
 
 import com.Plz.Beats.config.JwtTokenProvider;
 import com.Plz.Beats.dto.LoginDto;
+import com.Plz.Beats.dto.MemberInfoResponse;
+import com.Plz.Beats.dto.ProfileImageRequest;
 import com.Plz.Beats.entity.Member;
 import com.Plz.Beats.service.MemberDetailsService;
 import com.Plz.Beats.service.MemberService;
@@ -14,11 +16,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -94,5 +94,28 @@ public class MemberController {
         // 회원 가입 처리
         memberService.insert(bean);
         return new ResponseEntity<>("회원 가입 성공", HttpStatus.OK) ; // 회원 가입 성공 (OK라는건 200번대라는 뜻)
+    }
+
+    @GetMapping("/mypage/info")
+    public ResponseEntity<MemberInfoResponse> getMyInfo(Principal principal){
+
+        System.out.println(">>> getMyInfo 컨트롤러 실행됨"); // ← 추가
+        String email = principal.getName();
+        MemberInfoResponse memberInfo = memberService.getMemberInfo(email);
+
+        return ResponseEntity.ok(memberInfo);
+    }
+
+    @PostMapping("/mypage/update-profileimage")
+    public ResponseEntity<?> updateProfileImage(
+            @RequestBody ProfileImageRequest request,
+            Principal principal) {
+
+        String email = principal.getName();
+
+        // 서비스 레이어에서 이미지 업데이트 로직 수행
+        memberService.updateProfileImage(email, request.getProfileimage());
+
+        return ResponseEntity.ok().body("프로필 사진이 성공적으로 변경되었습니다.");
     }
 }

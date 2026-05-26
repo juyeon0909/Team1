@@ -11,7 +11,7 @@ function App() {
     const navigate = useNavigate();
 
     const [user, setUser] = useState({
-    nickname: '',
+    name: '',
     profileimage: null as string | null,
     email: ''
     });
@@ -25,13 +25,13 @@ function App() {
         const fetchUserInfo = async () => {
             try {
                 // 백엔드의 내 정보 조회 API 엔드포인트
-                const url = `${API_BASE_URL}/user/me`;
+                const url = `${API_BASE_URL}/member/mypage/info`;
                 const response = await customAxios.get(url);
 
                 // 서버가 준 진짜 데이터(닉네임, 이미지 등)로 상태 변경!
-                // 백엔드가 주는 데이터 구조(예: response.data.nickname)에 맞게 맞추시면 됩니다.
+                // 백엔드가 주는 데이터 구조(예: response.data.name)에 맞게 맞추시면 됩니다.
                 setUser({
-                    nickname: response.data.nickname || '이름 없음',
+                    name: response.data.name || '이름 없음',
                     profileimage: response.data.profileimage || null,
                     email: response.data.email || '이메일 정보 없음'
                 });
@@ -50,7 +50,7 @@ function App() {
 
         try {
             // 백엔드 프로필 이미지 변경 엔드포인트 (실제 API 주소에 맞게 수정 가능)
-            const url = `${API_BASE_URL}/user/update-profileimage`;
+            const url = '/member/mypage/update-profileimage';
 
             // base64 데이터를 담아 서버로 전송
             const response = await customAxios.post(url, { profileimage: base64Image });
@@ -111,7 +111,7 @@ function App() {
 
                     <div className="mb-4">
                         <h1 className="page-title" style={{ fontWeight: 'bold', margin: 0 }}>
-                            안녕하세요, <span>{user.nickname}</span>님 👋
+                            안녕하세요, <span>{user.name}</span>님 👋
                         </h1>
                     </div>
 
@@ -121,7 +121,7 @@ function App() {
                                 {user.profileimage ? (
                                     <img src={user.profileimage} alt="프로필 사진"/>
                                 ) : (
-                                    user.nickname ? user.nickname.charAt(0) : '?'
+                                    user.name ? user.name.charAt(0) : '?'
                                 )}
                             </div>
                             <label className="profile-edit-btn" htmlFor="profile-uploader" title="프로필 사진 변경">📸</label>
@@ -135,7 +135,7 @@ function App() {
                             />
                         </div>
                         <div className="profile-info">
-                            <div className="profile-name">{user.nickname}</div>
+                            <div className="profile-name">{user.name}</div>
                             <div className="profile-email">{user.email || '이메일 정보 없음'}</div>
                             <span className="profile-hero-badge">일반 회원</span>
                         </div>

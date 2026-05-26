@@ -28,6 +28,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
+        System.out.println(">>> JWT 필터 실행됨: " + request.getRequestURI()); // ← 추가
+
         // 요청 헤더에서 Authorization 값을 가져온다
         String bearer = request.getHeader("Authorization");
 
@@ -36,27 +38,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Bearer "를 제거하여 JWT 토큰만 추출한다
             String token = bearer.substring("Bearer ".length());
 
-            // 토큰의 유효성을 검증한다 (validateToken)
-            if(jwtTokenProvider.validateToken(token)){
-                // 토큰에서 사용자 이메일을 추출한다 (getEmail)
-                String email = jwtTokenProvider.getEmail(token);
-                Claims claims = jwtTokenProvider.getClaims(token);
+            try {  // ← 추가
+                if(jwtTokenProvider.validateToken(token)){
+                    String email = jwtTokenProvider.getEmail(token);
+                    Claims claims = jwtTokenProvider.getClaims(token);
+                    String role = claims.get("role", String.class);
 
-                // 토큰의 claims에서 role 값을 추출한다
-                String role = claims.get("role", String.class);
+                    List<GrantedAuthority> authorities =
+                            List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
-                // 권한 객체 생성 (권한을 담고 있는 객체 모음)
-                // 인터페이스라서 객체 생성 불가능 - 구현체를 이용해서 객체를 생성해야 함
-                // SimpleGrantedAuthority라는 구현체를 이용함
-                List<GrantedAuthority> authorities
-                        = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(email, null, authorities);
 
-                // 인증 객체 생성
-                UsernamePasswordAuthenticationToken auth
-                        = new UsernamePasswordAuthenticationToken(email, null,
-                        authorities);
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            } catch (Exception e) {  // ← 추가: 토큰 예외 발생 시 그냥 인증 없이 통과
+                SecurityContextHolder.clearContext();
 
-                SecurityContextHolder.getContext().setAuthentication(auth);
 
             }
         }

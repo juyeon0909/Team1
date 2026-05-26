@@ -24,8 +24,10 @@ import FindPassword from '../pages/FindPassword.tsx'
 interface AppProps {
   user: User | null;
   handleLoginSuccess: (userData: User) => void;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
-function App({ user, handleLoginSuccess }: AppProps) {
+
+function App({ user, handleLoginSuccess, setUser }: AppProps) {
   return (
     <Routes>
       <Route path='/member/signup' element={<SignupPage />} />
@@ -39,7 +41,7 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path="/recipeMain/:id" element={<RecipeMain />} />
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
-      <Route path="/mypage/edit" element={<MyPageEdit name={user?.name || "이름 없음"} triggerToast={(msg) => console.log(msg)} />} />
+      <Route path="/mypage/edit" element={<MyPageEdit name={user?.name || "이름 없음"} setName={(newName) => setUser(prev => prev ? { ...prev, name: newName } : null)} triggerToast={(msg) => console.log(msg)} />} />
       <Route path='/mypage/recipe' element={<MyPageRecipe />} />
       <Route path='/mypage/like' element={<MyPageLike />} />
       <Route path='/mypage/qna' element={<MyPageQna />} />

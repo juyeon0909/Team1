@@ -1,30 +1,45 @@
 package com.Plz.Beats.controller;
 
-import com.Plz.Beats.entity.Product;
+import com.Plz.Beats.dto.ProductDto;
 import com.Plz.Beats.service.ProductService;
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-//@RestController
+@RestController
+@RequestMapping("/api/product") // 💡 리액트 axiosInstance의 baseURL 뒤에 붙을 공통 주소입니다.
 @RequiredArgsConstructor
-@RequestMapping("/image")
 public class ProductController {
 
-    private final ProductService service;
+    private final ProductService productService;
 
+    @GetMapping("/list")
+    public ResponseEntity<List<ProductDto>> getStorageList() {
+        // 1. 우선 DB에 있는 모든 냉장고 아이템을 다 가져옵니다.
+        List<ProductDto> allList = productService.getAllStorageItems();
+        // 2. [임시 치트키] 가져온 전체 데이터 중, 오직 memberId가 5번인 데이터만 필터링해서 가둡니다.
+        // 자바 스트림(Stream)을 사용하면 컨트롤러 한 줄로 쉽게 가로챌 수 있습니다.
 
-    // 이미지 업로드
-    @PostMapping("/upload")
-    public Product upload(
-            @RequestParam("file")
-            MultipartFile file) throws Exception {
+        // 3. 5번 데이터만 골라담은 진짜 가방을 리액트에게 쏴줍니다.
 
-        return service.saveImage(file);
+        return ResponseEntity.ok(allList); // 200 OK 상태코드와 함께 안전하게 데이터를 반환합니다.
+    }
+
+    @GetMapping("/detail/{id}")
+    public ResponseEntity<ProductDto> getStorageDetail(@PathVariable("id") Long id) {
+        ProductDto dto = productService.getStorageItemById(id);
+        return ResponseEntity.ok(dto);
     }
 
 
+    @PutMapping("/update/{id}")
+    public ResponseEntity<String> updateStorage(
+            @PathVariable("id") Long id,
+            @RequestBody ProductDto productDto) {
+
+        productService.updateStorageItem(id, productDto);
+        return ResponseEntity.ok("식재료 정보가 성공적으로 변경되었습니다.");
+    }
 }

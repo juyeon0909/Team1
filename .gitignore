@@ -32,3 +32,6 @@ build/
 ### VS Code ###
 .vscode/
 Beats/.env
+
+### local ###
+application-local.properties

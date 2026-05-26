@@ -32,7 +32,7 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/member/login' element={<LoginPage onLogin={handleLoginSuccess} />} />
       <Route path='/' element={<MainPage />} />
       <Route path='/product/insert' element={<FridgeMainPage />} />
-      <Route path='/product/edit' element={<FridgeEdit />} />
+      <Route path='/product/edit/:id' element={<FridgeEdit />} />
       <Route path='/product/register' element={<FridgeRegister />} />
       <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/recipeMain' element={<RecipeMain />} />

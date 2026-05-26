@@ -43,7 +43,8 @@ public class JwtTokenProvider { // JWT 생성, 검증 기능 담당자 클래스
                 .compact(); // 최종 문자열 생성하기
     }
 
-    public String getEmail(String token){ // JWT 토큰에서 사용자 정보 가져 오기
+    public String
+            (String token){ // JWT 토큰에서 사용자 정보 가져 오기
         return this.getClaims(token).getSubject() ;
     }
 

@@ -1,30 +1,73 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import '../components/FridgeRegister.css'; // 기존 등록창 CSS 그대로 연동
+import axiosInstance from '../api/axiosInstance.tsx';
 
 const FridgeEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>(); 
   const navigate = useNavigate();
 
   // 입력값 관리를 위한 상태 생성 (나중에 DB 연동 시 이 useState의 초기값에 값을 넣기)
-  const [name, setName] = useState<string>("");
+  const [itemname, setItemName] = useState<string>("");
   const [quantity, setQuantity] = useState<string>("");
   const [expiry, setExpiry] = useState<string>("");
   const [category, setCategory] = useState<string>("신선식품"); // 기본값
-  
-  const handleSave = (): void => {
-    if (!name || !quantity || !expiry) {
+  const [storagetype, setStoragetype] = useState<string>("REFRIGERATED");
+
+
+  useEffect(() => {
+    if (id) {
+      axiosInstance.get(`/product/detail/${id}`) // 백엔드 상세조회 API 주소 (팀원 규칙에 맞게 확인 필요)
+        .then((res) => {
+          const item = res.data;
+          setItemName(item.itemname || item.name || "");
+          setQuantity(item.quantity ? String(item.quantity) : "");
+          
+          if (item.expiry || item.expirationdate) {
+            const rawDate = item.expiry || item.expirationdate;
+            setExpiry(typeof rawDate === 'string' ? rawDate.substring(0, 10) : "");
+          }
+          setCategory(item.category || "신선식품");
+          const rawType = item.type || item.storagetype;
+          if (rawType) {
+            if (rawType === '냉장' || rawType === 'REFRIGERATED') setStoragetype('REFRIGERATED');
+            else if (rawType === '냉동' || rawType === 'FROZEN') setStoragetype('FROZEN');
+            else if (rawType === '실온' || rawType === 'ROOM_TEMP') setStoragetype('ROOM_TEMP');
+          }
+        })
+        .catch((err) => {
+          console.error("기존 재료 정보를 가져오는 데 실패했습니다:", err);
+        });
+    }
+  }, [id]);
+
+
+  const handleSave = async (): Promise<void> => {
+    // 정석 유효성 검사 복구
+    if (!itemname || !quantity || !expiry) {
       alert("모든 항목을 입력해주세요!");
       return;
-    } // 입력 안 됐을 때 오류처리
+    } 
 
-    const quantityText = quantity ? `${quantity}` : '';
+    try {
+      // 백엔드 @PostMapping("/update/{id}") 구조 및 ProductDto 필드명과 100% 매핑
+      await axiosInstance.post(`/product/update/${id}`, {
+        name: itemname,           
+        quantity: Number(quantity), 
+        expiry: expiry,           
+        type: storagetype,
+        storagetype: storagetype,        
+        category: category        
+      });
 
-    //  테스트용 알림창: ID와 내가 입력한 값이 팝업에 잘 매핑되는지 확인하는 용도입니다.
-    alert(` [ID: ${id}] [${category}] ${name}(이)가 ${quantityText}(유통기한: ${expiry})로 수정 완료되었습니다.`);
-    
-    navigate('/product/insert'); // 수정 완료 후 다시 목록으로 돌아가기
+      alert(`[${itemname}] 재료가 성공적으로 수정되었습니다!`);
+      navigate('/product/insert'); 
+    } catch (error) {
+      console.error("🚨 진짜 서버 에러 내용:", error);
+      alert("수정 저장 중 오류가 발생했습니다.");
+    }
   };
+    
 
   const handleCancel = (): void => {
     navigate('/product/insert'); // 취소 시 목록 페이지로 이동
@@ -64,14 +107,28 @@ const FridgeEdit: React.FC = () => {
           </select>
         </div>
 
+        <div className="fridge-form-group">
+          <label className="fridge-form-label">보관 방법</label>
+          <select
+            className="fridge-form-input"
+            value={storagetype}
+            onChange={(e) => setStoragetype(e.target.value)}
+            style={{ cursor: 'pointer' }}
+          >
+            <option value="REFRIGERATED">냉장</option>
+            <option value="FROZEN">냉동</option>
+            <option value="ROOM_TEMP">실온</option>
+          </select>
+        </div>
+
         {/* 재료명 입력창 */}
         <div className="fridge-form-group">
           <label className="fridge-form-label">재료명</label>
           <input
             type="text"
             className="fridge-form-input"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={itemname}
+            onChange={(e) => setItemName(e.target.value)}
             placeholder="예: 우유, 대파 등"
           />
         </div>

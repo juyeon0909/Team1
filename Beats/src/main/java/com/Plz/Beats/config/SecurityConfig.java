@@ -43,6 +43,7 @@ public class SecurityConfig {
                 "/api/member/login",
                 "/api/mypage/**",
                 "/product/**",
+                "/api/product/**",
                 "/first",
                 "/"
         };
@@ -58,9 +59,9 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        // A. 기존 팀원들이 열어둔 주소들을 한 방에 프리패스 시켜줍니다.
                         .requestMatchers(permitUrls).permitAll()
                         .requestMatchers("/api/member/join").permitAll()
+                        .requestMatchers("/api/member/**").authenticated()
                         .requestMatchers("/api/product/**").permitAll()
                         .requestMatchers("/api/mypage/**").authenticated()
 //                                .hasAnyRole("USER", "ADMIN")

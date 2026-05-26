@@ -25,7 +25,7 @@ function App() {
         const fetchUserInfo = async () => {
             try {
                 // 백엔드의 내 정보 조회 API 엔드포인트
-                const url = `${API_BASE_URL}/member/mypage/info`;
+                const url = `${API_BASE_URL}/mypage/info`;
                 const response = await customAxios.get(url);
 
                 // 서버가 준 진짜 데이터(닉네임, 이미지 등)로 상태 변경!
@@ -50,7 +50,7 @@ function App() {
 
         try {
             // 백엔드 프로필 이미지 변경 엔드포인트 (실제 API 주소에 맞게 수정 가능)
-            const url = '/member/mypage/update-profileimage';
+            const url = '/mypage/update-profileimage';
 
             // base64 데이터를 담아 서버로 전송
             const response = await customAxios.post(url, { profileimage: base64Image });

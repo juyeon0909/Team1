@@ -105,7 +105,8 @@ function MyPageEdit({ name, triggerToast }: EditPageProps) {
     }
 
     try {
-      const url = `${API_BASE_URL}/user/update-name`; 
+      const url = `${API_BASE_URL}/mypage/update-name`; 
+      const token = localStorage.getItem('accessToken');
       await customAxios.post(url, { newName: formValues.newName });
       triggerToast('이름이 변경되었습니다 ✅');
       navigate('/mypage/info');
@@ -134,7 +135,7 @@ function MyPageEdit({ name, triggerToast }: EditPageProps) {
     }
 
     try {
-      const url = `${API_BASE_URL}/user/update-password`; 
+      const url = `${API_BASE_URL}/mypage/update-password`; 
       await customAxios.post(url, {
         currentPassword: formValues.currentPassword,
         newPassword: formValues.newPassword

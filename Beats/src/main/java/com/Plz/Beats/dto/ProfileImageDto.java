@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProfileImageRequest {
+public class ProfileImageDto {
     private String profileimage;
 }

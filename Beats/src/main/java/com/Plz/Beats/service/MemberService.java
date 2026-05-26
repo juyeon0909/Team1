@@ -39,4 +39,52 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
     public Optional<Member> findMemberById(Long memberId){
         return this.memberRepository.findById(memberId);
     }
+
+
+    // 회원 정보 조회
+    public MemberInfoResponse getMemberInfo(String email) {
+        // 이메일로 회원 조회(없으면 예외 발생)
+        Member member = memberRepository.findByEmail(email);
+        if (member == null) {
+            throw new IllegalArgumentException("존재하지 않는 회원입니다. 이메일 : " + email);
+        }
+
+        //조회한 엔터티 데이터를 DTO에 담아서 반환
+        return new MemberInfoResponse(
+                member.getName(),
+                member.getProfileimage(),
+                member.getEmail()
+        );
+    }
+
+    @Transactional
+    public void updateProfileImage(String email, String base64Image) {
+        Member member = memberRepository.findByEmail(email);
+        if (member == null) {
+            throw new IllegalArgumentException("존재하지 않는 회원입니다.");
+        }
+
+        // 엔티티의 필드 값을 변경 (더티 체킹에 의해 자동으로 DB에 반영됨)
+        member.setProfileimage(base64Image);
+    }
+
+
+    // MemberService.java 내부 수정
+    @Transactional
+    public void delete(Member member) {
+        if (member == null) {
+            throw new IllegalArgumentException("삭제하려는 회원 정보가 null입니다.");
+        }
+
+        System.out.println("🎯 회원 강제 탈퇴 로직 가동. ID: " + member.getId());
+
+        // 1. 자식 테이블(storage_items) 데이터 먼저 직접 강제 삭제!
+        memberRepository.deleteStorageItemsByMemberId(member.getId());
+        System.out.println("-> 자식 테이블(storage_items) 데이터 청소 완료.");
+
+        // 2. 부모 테이블(members) 데이터 최종 삭제!
+        memberRepository.delete(member);
+        System.out.println("-> 부모 테이블(members) 회원 삭제 완료.");
+    }
+
 }

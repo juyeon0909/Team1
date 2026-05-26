@@ -80,8 +80,9 @@ const RecipeRegister = () => {
       ? method.split('\n').map(step => step.trim()).filter(Boolean)
       : ['조리 방법이 등록되지 않았습니다.'];
 
-    // 5. 메인 규격(Recipe 인터페이스)에 맞는 데이터 전달 객체 조립
+    // 5. 메인 규격 및 지속 저장을 위한 데이터 객체 조립 (id와 image 추가)
     const newRecipeData = {
+      id: Date.now().toString(), // 고유 ID (상세보기 및 삭제용)
       name: title,
       cat: category,
       time: numericTime,
@@ -92,14 +93,29 @@ const RecipeRegister = () => {
       selectIngredients: selectIngredientsArray,
       missingIngredients: [], // 초기값 빈 배열
       steps: stepsArray,
-      emoji: '🍳', // 임시 기본 이모지 (추후 이모지 피커 등으로 확장 가능)
-      bg: '#E1F5EE' // 임시 기본 배경색
+      emoji: '🍳', // 임시 기본 이모지
+      bg: '#E1F5EE', // 임시 기본 배경색
+      image: imagePreview || null // 이미지 Base64 스트링 저장
     };
 
-    alert('레시피 등록이 완료되었습니다.');
+    try {
+      // localStorage에서 기존 'my_recipes' 데이터를 읽어옴 (없으면 빈 배열)
+      const existingRecipes = JSON.parse(localStorage.getItem('my_recipes') || '[]');
 
-    // 💡 중요: 수정한 RecipeMain으로 데이터를 state에 담아 navigate 시킵니다.
-    navigate('/RecipeMain', { state: { newRecipe: newRecipeData } });
+      // 최신 등록 순으로 앞에 누적
+      const updatedRecipes = [newRecipeData, ...existingRecipes];
+
+      // localStorage에 다시 JSON 형태로 저장
+      localStorage.setItem('my_recipes', JSON.stringify(updatedRecipes));
+
+      alert('레시피 등록이 완료되었습니다.');
+
+      // 등록이 끝나면 모아보기 페이지로 이동시킵니다.
+      navigate('/mypage/recipe');
+    } catch (error) {
+      console.error("Storage error:", error);
+      alert("이미지 용량이 너무 커서 저장에 실패했습니다. 다른 이미지를 사용하거나 이미지를 제외해주세요.");
+    }
   };
   // =========================================================
 
@@ -159,7 +175,7 @@ const RecipeRegister = () => {
 
   return (
     <div style={pageContainerStyle}>
-      <div style={backLinkStyle} onClick={() => navigate('/RecipeMain')}>
+      <div style={backLinkStyle} onClick={() => navigate('/recipeMain')}>
         <i className="ti ti-arrow-left" style={{ fontSize: '16px' }}></i>
         <span>{id ? '레시피 상세로' : '레시피 목록으로'}</span>
       </div>
@@ -350,5 +366,5 @@ const RecipeRegister = () => {
     </div>
   );
 };
-{/* 커밋 체크  */}
+{/*커밋 체크*/}
 export default RecipeRegister;

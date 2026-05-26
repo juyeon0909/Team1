@@ -41,6 +41,7 @@ public class SecurityConfig {
                 "/js/**",
                 "/api/member/signup",
                 "/api/member/login",
+                "/api/mypage/**",
                 "/product/**",
                 "/api/product/**",
                 "/first",
@@ -57,12 +58,14 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 📌 SecurityConfig.java 파일의 authorizeHttpRequests 부분을 아래 순서로 꼭 변경해 주세요!
-
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(permitUrls).permitAll()
                         .requestMatchers("/api/member/join").permitAll()
                         .requestMatchers("/api/member/**").authenticated()
+                        .requestMatchers("/api/product/**").permitAll()
+                        .requestMatchers("/api/mypage/**").authenticated()
+//                                .hasAnyRole("USER", "ADMIN")
+// 임시 주석              // B. 그 외의 모든 요청은 로그인 인증 필요
                         .anyRequest().authenticated()
                 );
 
@@ -90,5 +93,4 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
-
 }

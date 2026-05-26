@@ -141,9 +141,11 @@ export default function LikedRecipes() {
             <span style={{ color: '#ccc' }}>›</span>
             <span className="cur" style={{ color: '#6abf69', fontWeight: 'bold' }}>좋아요 내역</span>
           </div>
+        </div>
+        <div>
           <h2 style={{ color: '#6abf69', fontWeight: 'bold', margin: 0 }}>좋아요 내역</h2>
         </div>
-
+        
         {error && (
           <div className="alert alert-danger mt-3" style={{ fontSize: '14px' }}>
             {error}

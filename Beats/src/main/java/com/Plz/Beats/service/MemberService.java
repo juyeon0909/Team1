@@ -39,7 +39,6 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
         memberRepository.save(bean);
     }
 
-
     public Optional<Member> findMemberById(Long memberId){
         return this.memberRepository.findById(memberId);
     }

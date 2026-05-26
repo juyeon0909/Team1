@@ -1,9 +1,7 @@
 package com.Plz.Beats.controller;
 
 import com.Plz.Beats.config.JwtTokenProvider;
-import com.Plz.Beats.dto.LoginDto;
-import com.Plz.Beats.dto.MemberInfoResponse;
-import com.Plz.Beats.dto.ProfileImageRequest;
+import com.Plz.Beats.dto.*;
 import com.Plz.Beats.entity.Member;
 import com.Plz.Beats.service.MemberDetailsService;
 import com.Plz.Beats.service.MemberService;
@@ -27,9 +25,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173")
 public class MemberController {
-    private final MemberService memberService ;
+    private final MemberService memberService;
     private final MemberDetailsService memberDetailsServices;
-    private final JwtTokenProvider jwtTokenProvider ;
+    private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")

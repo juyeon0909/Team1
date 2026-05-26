@@ -46,4 +46,7 @@ public class Member {
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate regdate ; // 등록 일자
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String profileimage;
 }

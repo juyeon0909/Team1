@@ -60,9 +60,8 @@ public class SecurityConfig {
                         // A. 기존 팀원들이 열어둔 주소들을 한 방에 프리패스 시켜줍니다.
                         .requestMatchers(permitUrls).permitAll()
                         .requestMatchers("/api/member/join").permitAll()
+                        .requestMatchers("/api/product/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/product/**").permitAll()
-//                                .hasAnyRole("USER", "ADMIN")
-// 임시 주석              // B. 그 외의 모든 요청은 로그인 인증 필요
                         .anyRequest().authenticated()
                 );
 
@@ -90,4 +89,5 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
+
 }

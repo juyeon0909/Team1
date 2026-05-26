@@ -36,6 +36,7 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/product/register' element={<FridgeRegister />} />
       <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/recipeMain' element={<RecipeMain />} />
+      <Route path="/recipeMain/:id" element={<RecipeMain />} />
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
       <Route path="/mypage/edit" element={<MyPageEdit nickname="홍길동" triggerToast={(msg) => console.log(msg)} />} />
@@ -46,9 +47,10 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path='/delete' element={<Delete />} />
       <Route path='/recipeMain/edit' element={<RecipeEdit />} />
       <Route path='/member/find-password' element={<FindPassword />} />
+
     </Routes>
   );
 }
-
+{/* 커밋 체크  */}
 {/* 커밋 체쿠 나나난  */ }
 export default App;

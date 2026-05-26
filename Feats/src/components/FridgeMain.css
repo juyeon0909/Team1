@@ -158,6 +158,53 @@
   border-radius: 12px;
   color: var(--text-mid, #666);
 }
+.room-sort-select {
+  margin-left: auto;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  font-size: 13px;
+  cursor: pointer;
+  background-color: #fff;
+  color: #333;
+  outline: none;
+}
+
+.room-sort-select:focus {
+  border-color: #4A90E2;
+}
+
+/* 🟢 유통기한 및 삭제 버튼을 감싸는 레이아웃 */
+.item-expiry-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 🟢 작은 ✕ 삭제 버튼 스타일 */
+.btn-delete-small {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.2s, transform 0.2s;
+}
+
+/* 삭제 버튼 마우스 호버 효과 */
+.btn-delete-small:hover {
+  color: #ff4d4f;
+  transform: scale(1.15);
+}
+
+/* 헤더 정렬용 보조 클래스 */
+.room-header-flex {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
 
 /* 개별 보관실 고유 테마 컬러 포인트 (옵션) */
 .frozen-theme { background-color: #f2f9ff; border-bottom-color: #d2e8ff; }

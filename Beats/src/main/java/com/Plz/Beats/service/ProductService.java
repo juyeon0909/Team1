@@ -82,13 +82,13 @@ public class ProductService {
      * 3. [수정] 재료 정보 변경 반영 (FridgeEdit 저장 버튼 클릭 시)
      * 리액트 인터셉터가 실어다 준 수정 데이터(DTO)를 받아 기존 DB 데이터를 교체합니다.
      */
-    @Transactional // 💡 쓰기(Update) 작업이므로 트랜잭션을 확실하게 켜줍니다.
+    @Transactional //
     public void updateStorageItem(Long id, ProductDto dto) {
         // 영속성 컨텍스트에서 기존 데이터를 조회해 옵니다.
         Storage_item item = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 보관 재료가 존재하지 않습니다. ID: " + id));
 
-        // 💡 기존 엔티티의 Setter를 깨워 리액트에서 넘어온 새로운 값으로 덮어씁니다.
+        // 💡
         item.setItemname(dto.getName());
         item.setQuantity(dto.getQuantity()); // 리액트에서 정수로 파싱되어 온 수량 적용
         item.setExpirationdate(dto.getExpiry());
@@ -107,8 +107,14 @@ public class ProductService {
                 item.setStoragetype(Storagetype.REFRIGERATED); // 에러 발생 시 안전하게 냉장으로 방어
             }
         }
+    }
+    @Transactional // 👈 찐중요: DB 데이터를 '삭제'하는 쓰기 작업이므로 읽기 전용을 깨고 트랜잭션을 걸어줍니다!
+    public void deleteStorageItem(Long id) {
+        // 1. 혹시 이미 지워졌거나 없는 ID인지 먼저 확인하는 방어 코드
+        Storage_item item = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 보관 재료가 존재하지 않습니다. ID: " + id));
 
-        // 💡 JPA의 영속성 컨텍스트 더티 체킹(Dirty Checking) 기술 덕분에
-        // 별도로 repository.save()를 치지 않아도 이 메서드가 끝날 때 자동으로 MySQL에 UPDATE 쿼리가 동기화됩니다.
+        // 2. 존재가 확인되면 JPA 리포지토리를 통해 DB에서 완전히 날려버립니다.
+        repository.delete(item);
     }
 }

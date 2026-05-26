@@ -1,7 +1,6 @@
 package com.Plz.Beats.service;
 
 import com.Plz.Beats.constant.Role;
-import com.Plz.Beats.dto.MemberInfoResponse;
 import com.Plz.Beats.entity.Member;
 import com.Plz.Beats.repository.MemberRepository;
 import com.Plz.Beats.repository.MemberRepository;
@@ -9,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -38,7 +35,6 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
 
         memberRepository.save(bean);
     }
-
 
     public Optional<Member> findMemberById(Long memberId){
         return this.memberRepository.findById(memberId);

@@ -379,8 +379,9 @@ function LoginPage({ onLogin }: Props) {
     }
 
     try {
+
       const response = await axios.post<LoginResponse>(
-        "/member/login",
+        `/member/login`,
         { email, password },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -391,7 +392,7 @@ function LoginPage({ onLogin }: Props) {
       onLogin(userData);
       navigate("/");
     } catch (error: any) {
-      const message = error.response?.data?.message ?? "서버 오류가 발생했습니다.";
+      const message = error.response?.data?.error ?? "서버 오류가 발생했습니다.";
       setErrors(message);
     }
   };

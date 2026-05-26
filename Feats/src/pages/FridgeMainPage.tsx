@@ -1,82 +1,149 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Button, Table, Badge, Stack } from 'react-bootstrap';
+import axiosInstance from '../api/axiosInstance'; 
+import '../components/FridgeMain.css';
 
-const FridgeMainPage = () => {
+interface Ingredient {
+  id: number;
+  itemname: string;
+  quantity: number;
+  expirationdate: string;
+  storagetype: '냉장' | '냉동' | '실온';
+}
+
+const FridgeMain: React.FC = () => {
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
 
-  // 예시 데이터 (실제로는 API나 부모 컴포넌트에서 받아온 데이터를 사용하게 됩니다)
-  const dummyIngredients = [
-    { id: 1, name: "우유", quantity: "1L", expiry: "2026-05-20", category: "유제품" },
-    { id: 2, name: "계란", quantity: "10알", expiry: "2026-05-25", category: "신선식품" },
-    { id: 3, name: "닭가슴살", quantity: "500g", expiry: "2026-05-15", category: "육류" },
-  ];
+  useEffect(() => {
+    const stored = localStorage.getItem('user');
+    if (!stored) return;
+    const user = JSON.parse(stored);
+
+    axiosInstance
+      .get<Ingredient[]>(`/product/list/${user.id}`)
+      .then((res) => setIngredients(res.data))
+      .catch((error) => console.error('냉장고 데이터를 가져오는 중 오류 발생:', error));
+  }, []);
+
+  const getExpiryClass = (expiryDateStr: string): string => {
+    if (!expiryDateStr) return 'expiry-normal';
+    const today = new Date();
+    const expiry = new Date(expiryDateStr);
+    
+    const diffTime = expiry.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 3) return 'expiry-danger';   
+    if (diffDays <= 7) return 'expiry-warning';  
+    return 'expiry-normal';                      
+  };
+
+  const filteredIngredients = ingredients.filter((item) =>
+    item.itemname?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const frozenItems = filteredIngredients.filter((item) => item.storagetype === '냉동');
+  const refrigeratedItems = filteredIngredients.filter((item) => item.storagetype === '냉장');
+  const roomItems = filteredIngredients.filter((item) => item.storagetype === '실온');
 
   return (
-    <Container className="py-4">
-      {/* 1. 상단 타이틀 및 작은 메뉴 버튼 */}
-      <div className="d-flex justify-content-between align-items-end mb-4 pb-2 border-bottom">
-        <div>
-          <h2 style={{ color: '#1a5d3b', fontWeight: 'bold', margin: 0 }}>내 냉장고 보관함</h2>
-          <p className="text-muted mb-0 small">현재 보관 중인 재료 리스트입니다.</p>
+    <div className="storage-page-container">
+      
+      <div className="storage-search-section">
+        <div className="storage-search-box">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="보관 중인 재료를 검색해보세요..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="storage-search-input"
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm('')} className="search-clear-btn">✕</button>
+          )}
         </div>
-        
-        {/* 수정과 등록을 작게 배치 */}
-        <Stack direction="horizontal" gap={2}>
-          <Button 
-            variant="outline-secondary" 
-            size="sm" 
-            onClick={() => navigate('/product/edit')}
-            style={{ fontSize: '0.85rem' }}
-          >
-            ✏️ 정보 수정
-          </Button>
-          <Button 
-            variant="success" 
-            size="sm" 
-            onClick={() => navigate('/product/register')}
-            style={{ backgroundColor: '#1a5d3b', border: 'none', fontSize: '0.85rem' }}
-          >
-            ➕ 새 재료 등록
-          </Button>
-        </Stack>
+      
+        <button 
+          className="storage-add-btn"
+          onClick={() => navigate('/product/register')}
+        >
+          <span className="add-icon-small">＋</span> 재료 등록
+        </button>
+      </div>
+      
+      <div className="storage-rooms-grid">
+        {/* 냉동 보관실 */}
+        <div className="storage-room-card">
+          <div className="room-header frozen-theme">
+            <span className="room-emoji">❄️</span>
+            <h3 className="room-title">냉동 보관실</h3>
+            <span className="room-count">{frozenItems.length}</span>
+          </div>
+          <div className="room-list-scroll">
+            {frozenItems.length === 0 ? <p className="empty-item-text">재료가 없습니다.</p> : (
+              frozenItems.map((item) => (
+                <div key={item.id} className={`storage-item-row ${getExpiryClass(item.expirationdate)}`}>
+                  <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>
+                    {item.itemname}
+                  </span>
+                  <span className="item-quantity">{item.quantity}개</span>
+                  <span className="item-expiry">{item.expirationdate}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* 냉장 보관실 */}
+        <div className="storage-room-card">
+          <div className="room-header refrigerated-theme">
+            <span className="room-emoji">💧</span>
+            <h3 className="room-title">냉장 보관실</h3>
+            <span className="room-count">{refrigeratedItems.length}</span>
+          </div>
+          <div className="room-list-scroll">
+            {refrigeratedItems.length === 0 ? <p className="empty-item-text">재료가 없습니다.</p> : (
+              refrigeratedItems.map((item) => (
+                <div key={item.id} className={`storage-item-row ${getExpiryClass(item.expirationdate)}`}>
+                  <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>
+                    {item.itemname}
+                  </span>
+                  <span className="item-quantity">{item.quantity}개</span>
+                  <span className="item-expiry">{item.expirationdate}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* 상온 보관실 */}
+        <div className="storage-room-card">
+          <div className="room-header room-theme">
+            <span className="room-emoji">📦</span>
+            <h3 className="room-title">상온 보관실</h3>
+            <span className="room-count">{roomItems.length}</span>
+          </div>
+          <div className="room-list-scroll">
+            {roomItems.length === 0 ? <p className="empty-item-text">재료가 없습니다.</p> : (
+              roomItems.map((item) => (
+                <div key={item.id} className={`storage-item-row ${getExpiryClass(item.expirationdate)}`}>
+                  <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>
+                    {item.itemname}
+                  </span>
+                  <span className="item-quantity">{item.quantity}개</span>
+                  <span className="item-expiry">{item.expirationdate}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* 2. 메인 보관함 목록 (Table 형태) */}
-      <div className="bg-white p-3 rounded shadow-sm">
-        <Table hover responsive>
-          <thead className="table-light">
-            <tr>
-              <th>카테고리</th>
-              <th>재료명</th>
-              <th>수량</th>
-              <th>유통기한</th>
-              <th>상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dummyIngredients.map((item) => (
-              <tr key={item.id} style={{ cursor: 'pointer' }}>
-                <td><Badge bg="secondary">{item.category}</Badge></td>
-                <td><strong>{item.name}</strong></td>
-                <td>{item.quantity}</td>
-                <td>{item.expiry}</td>
-                <td>
-                  <Badge bg="success">신선</Badge>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-        
-        {dummyIngredients.length === 0 && (
-          <div className="text-center py-5 text-muted">
-            냉장고가 비어있습니다. 새로운 재료를 등록해 보세요!
-          </div>
-        )}
-      </div>
-    </Container>
+    </div>
   );
 };
 
-export default FridgeMainPage;
+export default FridgeMain;

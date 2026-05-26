@@ -28,7 +28,8 @@ jobs:
             docker run -d \
             --name "${{ secrets.DOCKER_CONTAINER }}" \
             --restart unless-stopped \
-            -p 80:9000 \
+            -p 127.0.0.1:9000:9000 \
+            -e JAVA_OPTS="-Xmx2048m -Xms512m -XX:MaxMetaspaceSize=256m" \
             -e SPRING_PROFILES_ACTIVE=prod \
             -e DB_ENDPOINT="${{ secrets.DB_ENDPOINT }}" \
             -e DB_PORT="${{ secrets.DB_PORT }}" \

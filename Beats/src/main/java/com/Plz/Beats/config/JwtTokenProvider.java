@@ -32,14 +32,14 @@ public class JwtTokenProvider { // JWT 생성, 검증 기능 담당자 클래스
 
     // MemberController 클래스에서 인증 성공한 사용자를 위하여 로그인 증명서(토큰)를 발급하는 데 사용될 예정입니다.
     public String createToken(Member member){ // 매개 변수 : 토큰 안에 사용자 식별값 저장
+        Claims claims = Jwts.claims().setSubject(member.getEmail());
+        claims.put("role", member.getRole().name()); // 권한 정보 주입
+
         return Jwts.builder()
-                .setSubject(member.getEmail()) // 토큰 주인
+                .setClaims(claims) // subject + role 포함
                 .setIssuedAt(new Date()) // 토큰 발급 시간
                 .setExpiration(new Date(System.currentTimeMillis() + expiration)) // 토큰 만료 시간
-
-
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .claim("role", member.getRole().name()) // 권한 정보
                 .compact(); // 최종 문자열 생성하기
     }
 

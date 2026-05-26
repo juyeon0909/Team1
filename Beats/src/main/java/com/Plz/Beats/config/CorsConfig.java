@@ -24,14 +24,15 @@ public class CorsConfig {
                 "http://127.0.0.1:3000",
                 "http://eatsfridge.site",
                 "https://eatsfridge.site",
-                "http://54.180.0.163/",
-                "https://54.180.0.163/"
+                "http://54.180.0.163",
+                "https://54.180.0.163"
+
         ));
 
 
         // 허용 HTTP 메소드
         configuration.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
+                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH","*"
         ));
 
         // Authorization은 axiosInstance.tsx 파일 참조
@@ -39,7 +40,8 @@ public class CorsConfig {
         configuration.setAllowedHeaders(List.of(
                 "Authorization",
                 "Content-Type", // MIME 타입
-                "Accept"
+                "Accept",
+                "*"
         ));
 
         // 쿠키 Authorization 헤더 포함 요청 허용

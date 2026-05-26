@@ -19,10 +19,6 @@ public class ProductController {
     public ResponseEntity<List<ProductDto>> getStorageList() {
         // 1. 우선 DB에 있는 모든 냉장고 아이템을 다 가져옵니다.
         List<ProductDto> allList = productService.getAllStorageItems();
-        // 2. [임시 치트키] 가져온 전체 데이터 중, 오직 memberId가 5번인 데이터만 필터링해서 가둡니다.
-        // 자바 스트림(Stream)을 사용하면 컨트롤러 한 줄로 쉽게 가로챌 수 있습니다.
-
-        // 3. 5번 데이터만 골라담은 진짜 가방을 리액트에게 쏴줍니다.
 
         return ResponseEntity.ok(allList); // 200 OK 상태코드와 함께 안전하게 데이터를 반환합니다.
     }
@@ -34,12 +30,22 @@ public class ProductController {
     }
 
 
-    @PutMapping("/update/{id}")
+    @PostMapping("/update/{id}")
     public ResponseEntity<String> updateStorage(
             @PathVariable("id") Long id,
             @RequestBody ProductDto productDto) {
 
         productService.updateStorageItem(id, productDto);
         return ResponseEntity.ok("식재료 정보가 성공적으로 변경되었습니다.");
+
     }
+    @PostMapping("/delete/{id}")
+    public ResponseEntity<String> deleteStorage(@PathVariable("id") Long id) {
+
+        // 🟢 서비스에 이미 만들어져 있을 아이템 삭제 메서드를 호출합니다.
+        productService.deleteStorageItem(id);
+
+        return ResponseEntity.ok("식재료가 데이터베이스에서 영구 삭제되었습니다.");
+    }
+
 }

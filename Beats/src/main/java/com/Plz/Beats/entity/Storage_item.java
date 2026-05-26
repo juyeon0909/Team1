@@ -46,7 +46,7 @@ public class Storage_item {
 
     //냉장/냉동/실온 분류
     @Enumerated(EnumType.STRING)
-    @Column(name = "storage_type")
+    @Column(name = "storage_type", length = 50)
     @NotNull(message = "보관 타입은 필수입니다.")
     private Storagetype storagetype;
 

@@ -154,7 +154,7 @@ const FridgeMain: React.FC = () => {
         <div className="storage-room-card">
           <div className="room-header frozen-theme room-header-flex">
             <span className="room-emoji"></span>
-            <h3 className="room-title">냉동 보관실</h3>
+            <h3 className="room-title">냉동</h3>
             <span className="room-count">{frozenItems.length}</span>
             {renderSortSelect(froSort, setFroSort)}
           </div>
@@ -186,7 +186,7 @@ const FridgeMain: React.FC = () => {
         <div className="storage-room-card">
           <div className="room-header refrigerated-theme room-header-flex">
             <span className="room-emoji"></span>
-            <h3 className="room-title">냉장 보관실</h3>
+            <h3 className="room-title">냉장</h3>
             <span className="room-count">{refrigeratedItems.length}</span>
             {renderSortSelect(refSort, setRefSort)}
           </div>
@@ -218,7 +218,7 @@ const FridgeMain: React.FC = () => {
         <div className="storage-room-card">
           <div className="room-header room-theme room-header-flex">
             <span className="room-emoji"></span>
-            <h3 className="room-title">상온 보관실</h3>
+            <h3 className="room-title">상온</h3>
             <span className="room-count">{roomItems.length}</span>
             {renderSortSelect(roomSort, setRoomSort)}
           </div>

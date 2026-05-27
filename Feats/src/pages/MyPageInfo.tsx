@@ -20,6 +20,7 @@ function App() {
         profileimage: '',
         general: ''
     });
+    const [isPasswordless, setIsPasswordless] = useState(false);
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -35,6 +36,13 @@ function App() {
                     profileimage: response.data.profileimage || null,
                     email: response.data.email || '이메일 정보 없음'
                 });
+
+                // 패스워드리스 등록 여부 확인
+                const plResponse = await customAxios.get(`${API_BASE_URL}/passwordless/check-status`, {
+                    params: { email: response.data.email }
+                });
+                setIsPasswordless(plResponse.data === true);
+
             } catch (error) {
                 console.error('유저 정보 불러오기 실패:', error);
                 setErrors(prev => ({ ...prev, general: '회원 정보를 불러오지 못했습니다.' }));
@@ -42,7 +50,11 @@ function App() {
         };
 
         fetchUserInfo();
+
+        
     }, []);
+
+    
 
     const uploadProfileImage = async (base64Image: string) => {
         // 에러 초기화
@@ -137,6 +149,10 @@ function App() {
                         <div className="profile-info">
                             <div className="profile-name">{user.name}</div>
                             <div className="profile-email">{user.email || '이메일 정보 없음'}</div>
+                            <div className="profile-passwordless">{isPasswordless
+                                ? '패스워드리스 등록된 사용자입니다'
+                                : '패스워드리스 미등록'}
+                            </div>
                             <span className="profile-hero-badge">일반 회원</span>
                         </div>
                     </div>

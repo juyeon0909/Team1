@@ -62,6 +62,7 @@ public class PasswordlessService {
         // 바디 데이터 세팅 (userId 파라미터에 우리의 email을 넣습니다!)
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("userId", member.getEmail());
+        body.add("secretKey", serverKey);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
@@ -71,8 +72,9 @@ public class PasswordlessService {
 
             log.info("isAp response: {}", responseBody);
 
-            Object resultObj = responseBody != null ? responseBody.get("result") : null;
-            return resultObj != null && (resultObj.equals(true) || "true".equals(String.valueOf(resultObj)) || "Y".equals(resultObj));
+            Map<String, Object> dataObj = responseBody != null ? (Map<String, Object>) responseBody.get("data") : null;
+            Object existObj = dataObj != null ? dataObj.get("exist") : null;
+            return existObj != null && (existObj.equals(true) || "true".equals(String.valueOf(existObj)));
         } catch (Exception e) {
             log.error("isAp API 호출 중 에러 발생", e);
             return false;

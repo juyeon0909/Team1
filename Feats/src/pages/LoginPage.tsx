@@ -15,11 +15,13 @@ const POLL_DURATION = 60;
 
 function LoginPage({ onLogin }: Props) {
   const [loginMode, setLoginMode] = useState<LoginMode>("normal");
+  const [authNumber, setAuthNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState("");
   const [isPolling, setIsPolling] = useState(false);
   const [randomValue, setRandomValue] = useState("");
+  const [servicePassword, setServicePassword] = useState("");
   const [timeLeft, setTimeLeft] = useState(POLL_DURATION);
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -27,46 +29,63 @@ function LoginPage({ onLogin }: Props) {
 
   const navigate = useNavigate();
 
+  // 모든 타이머 정지 및 초기화 함수
   const stopAll = () => {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    setServicePassword("");
   };
 
-  useEffect(() => () => stopAll(), []);
+  // 컴포넌트가 화면에서 사라질 때(언마운트) 타이머 찌꺼기 청소
+  useEffect(() => {
+    return () => stopAll();
+  }, []);
 
-  const startPolling = (emailVal: string, rv: string) => {
-    let remaining = POLL_DURATION;
-    setTimeLeft(POLL_DURATION);
+  // 🌟 두 개로 쪼개져 있던 타이머를 하나로 완벽하게 합친 폴링 함수
+  const startPolling = (currentEmail: string, currentRandomValue: string) => {
+    setTimeLeft(POLL_DURATION); // 타이머 60초로 초기화
 
+    // 1. 화면에 보여줄 1초 카운트다운 타이머
     timerRef.current = setInterval(() => {
-      remaining--;
-      setTimeLeft(remaining);
-      if (remaining <= 0) {
-        stopAll();
-        setIsPolling(false);
-        setRandomValue("");
-        setErrors("인증 시간이 초과되었습니다. 다시 시도해주세요.");
-      }
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          stopAll();
+          alert("인증 시간이 초과되었습니다.");
+          setIsPolling(false);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
+    // 2. 백엔드에 승인 여부를 물어보는 통신 타이머
     pollRef.current = setInterval(async () => {
       try {
-        const { data: approved } = await axios.get<boolean>("/passwordless/check-result", {
-          params: { email: emailVal, randomValue: rv },
+        // 모바일 승인 여부 체크
+        const response = await axios.get("/passwordless/check-result", {
+          params: { email: currentEmail, randomValue: currentRandomValue }
         });
-        if (approved) {
-          stopAll();
-          const { data } = await axios.post("/passwordless/passwordless-login", null, {
-            params: { email: emailVal, randomValue: rv },
+
+        // 승인이 완료되었다면!
+        if (response.data === true) {
+          stopAll(); // 즉시 타이머 모두 정지
+
+          // 잇츠 인 마이 냉장고 서버에서 진짜 로그인(JWT 발급) 처리
+          const { data } = await axios.post<LoginResponse>("/passwordless/passwordless-login", null, {
+            params: { email: currentEmail, randomValue: currentRandomValue },
           });
-          const { accessToken, ...userData } = data as LoginResponse;
+
+          const { accessToken, ...userData } = data;
           localStorage.setItem("accessToken", accessToken);
           localStorage.setItem("user", JSON.stringify(userData));
           onLogin(userData as User);
-          navigate("/");
+          
+          alert("패스워드리스 인증에 성공했습니다!");
+          navigate("/"); // 메인 페이지로 이동
         }
-      } catch {
-        // 폴링 중 네트워크 오류는 무시하고 계속 시도
+      } catch (error) {
+        // 폴링 중 발생하는 자잘한 네트워크 에러는 무시하고 계속 찌릅니다.
+        console.error("승인 대기 중...", error);
       }
     }, 1000);
   };
@@ -80,7 +99,7 @@ function LoginPage({ onLogin }: Props) {
         params: { email, randomValue },
       });
     } catch {
-      // 취소 요청 실패는 무시
+      // 취소 에러 무시
     }
   };
 
@@ -90,12 +109,15 @@ function LoginPage({ onLogin }: Props) {
 
     if (loginMode === "passwordless") {
       try {
-        const { data: rv } = await axios.post<string>("/passwordless/getSp", null, {
-          params: { email },
-        });
-        setRandomValue(rv);
+        const { data } = await axios.post<{ randomValue: string; servicePassword: string }>(
+          "/passwordless/getSp", null, { params: { email } }
+        );
+
+        setRandomValue(data.randomValue);
+        setServicePassword(data.servicePassword);
         setIsPolling(true);
-        startPolling(email, rv);
+        // 합쳐진 폴링 함수 실행!
+        startPolling(email, data.randomValue);
       } catch (error: any) {
         setErrors(error.response?.data || "패스워드리스 인증 요청에 실패했습니다.");
       }
@@ -126,7 +148,6 @@ function LoginPage({ onLogin }: Props) {
 
   return (
     <div className="login-page-container">
-
       {/* LEFT: 브랜드 섹션 */}
       <div className="login-brand-section">
         <div className="brand-badge">냉장고 속 재료로 요리하기</div>
@@ -189,7 +210,6 @@ function LoginPage({ onLogin }: Props) {
 
         {/* 폼 */}
         <form onSubmit={handleLogin}>
-
           {/* 이메일 */}
           <div className="custom-input-group">
             <label className="custom-input-label">이메일</label>
@@ -204,7 +224,7 @@ function LoginPage({ onLogin }: Props) {
             />
           </div>
 
-          {/* 인증번호 박스 (패스워드리스 + 폴링 중에만 표시, 이메일 창 아래) */}
+          {/* 인증번호 박스 (패스워드리스 + 폴링 중에만 표시) */}
           {loginMode === "passwordless" && isPolling && (
             <div className="custom-input-group">
               <div className="custom-input-label" style={{ marginBottom: "8px" }}>
@@ -227,18 +247,10 @@ function LoginPage({ onLogin }: Props) {
                   userSelect: "none",
                 }}
               >
-                {randomValue}
+                {servicePassword}
               </div>
-              <p
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#555",
-                  marginTop: "10px",
-                  textAlign: "center",
-                  lineHeight: 1.6,
-                }}
-              >
-                모바일 앱에서 위 인증번호를 확인하고 승인해주세요
+              <p style={{ fontSize: "0.85rem", color: "#555", marginTop: "10px", textAlign: "center", lineHeight: 1.6 }}>
+                모바일 앱에 표시된 번호와 일치하면 승인해주세요
               </p>
             </div>
           )}
@@ -257,7 +269,7 @@ function LoginPage({ onLogin }: Props) {
               />
             </div>
           )}
-          {loginMode === "passwordless" && (
+          {loginMode === "passwordless" && !isPolling && (
             <div className="custom-input-group">
               <label className="custom-input-label">인증 방식</label>
               <input
@@ -280,7 +292,6 @@ function LoginPage({ onLogin }: Props) {
               인증 취소
             </button>
           ) : (
-            
             <button type="submit" className="btn-submit-green">
               {loginMode === "normal" ? "로그인" : "인증 요청"}
             </button>
@@ -312,10 +323,8 @@ function LoginPage({ onLogin }: Props) {
               </div>
             )
           )}
-
         </form>
       </div>
-
     </div>
   );
 }

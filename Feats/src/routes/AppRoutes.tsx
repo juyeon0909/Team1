@@ -18,6 +18,8 @@ import RecipeRegister from '../pages/RecipeRegister'
 import RecipeEdit from '../pages/RecipeEdit'
 import FindPassword from '../pages/FindPassword.tsx'
 import AdminQna from '../pages/AdminQna';
+import PasswordlessWithdrawalPage from '../pages/PasswordlessWithdrawalPage'
+import PasswordlessRegisterPage from '../pages/PasswordlessRegisterPage'
 
 
 
@@ -49,6 +51,8 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/recipeMain/edit' element={<RecipeEdit />} />
       <Route path='/member/find-password' element={<FindPassword />} />
       <Route path='/admin/qna' element={<AdminQna />} />
+      <Route path="/member/passwordless-register" element={<PasswordlessRegisterPage />} />
+      <Route path="/member/reset-register" element={<PasswordlessWithdrawalPage />} />
 
     </Routes>
   );

@@ -51,7 +51,7 @@ const RECIPES: Recipe[] = [
     {
         id: 1,
         name: "두부 계란찜",
-        icon: "🥚",
+        icon: "",
         iconBg: "#e8f5e9",
         tags: ["한식", "10분", "간단"],
         matchText: "재료 4/4",
@@ -60,7 +60,7 @@ const RECIPES: Recipe[] = [
     {
         id: 2,
         name: "대파 계란볶음밥",
-        icon: "🍳",
+        icon: "",
         iconBg: "#fff8e1",
         tags: ["한식", "15분"],
         matchText: "재료 3/4",
@@ -69,7 +69,7 @@ const RECIPES: Recipe[] = [
     {
         id: 3,
         name: "애호박 된장찌개",
-        icon: "🥘",
+        icon: "",
         iconBg: "#f3e5f5",
         tags: ["한식", "20분"],
         matchText: "재료 3/4",
@@ -87,7 +87,7 @@ interface HeroCardProps {
 const HeroCard: React.FC<HeroCardProps> = ({ userName }) => (
     <div className="hero-card">
         <div className="hero-text">
-            <p className="hero-greeting">안녕하세요, {userName}님 🧡</p>
+            <p className="hero-greeting">안녕하세요, {userName}님</p>
             <h1 className="hero-title">
                 냉장고 속 재료로
                 <br />
@@ -155,7 +155,7 @@ const ExpiringIngredients: React.FC<ExpiringIngredientsProps> = ({ ingredients, 
     return (
         <div className="section-card">
             <div className="section-header">
-                <span className="section-title">🧊 유통기한 임박 재료</span>
+                <span className="section-title">유통기한 임박 재료</span>
                 <button className="section-more" type="button" onClick={() => navigate("/product/insert")}>
                     전체 보기
                 </button>
@@ -202,14 +202,13 @@ const RecommendedRecipes: React.FC = () => {
     return (
         <div className="section-card">
             <div className="section-header">
-                <span className="section-title">🍳 오늘의 추천 레시피</span>
+                <span className="section-title">오늘의 추천 레시피</span>
                 <button className="section-more" type="button">
                     더 보기
                 </button>
             </div>
 
             <div className="recipe-search">
-                <span className="search-icon">🔍</span>
                 <input
                     type="text"
                     placeholder="재료 이름이나 레시피를 검색하세요..."

@@ -128,7 +128,7 @@ const FridgeMain: React.FC = () => {
       
       <div className="storage-search-section">
         <div className="storage-search-box">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"></span>
           <input
             type="text"
             placeholder="보관 중인 재료를 검색해보세요..."

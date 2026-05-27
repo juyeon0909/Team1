@@ -115,7 +115,7 @@ function Delete() {
           fontSize: '13px',
           borderRadius: 'var(--border-radius-md, 6px)',
           cursor: 'pointer',
-          background: '#1D9E75',
+          background: '#6FBC44',
           color: '#fff',
           border: 'none',
           fontWeight: '500'

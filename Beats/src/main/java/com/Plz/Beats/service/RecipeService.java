@@ -34,10 +34,8 @@ public class RecipeService {
     @Transactional
     public RecipeDto createRecipe(RecipeDto dto, String username) {
         // 1. 현재 로그인한 회원 조회
-        Member member = memberRepository.findByEmail(username);
-        if (member == null) {
-            throw new IllegalArgumentException("존재하지 않는 회원입니다.");
-        }
+        Member member = memberRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         // 2. Recipe 엔티티 생성 및 데이터 매핑
         Recipe recipe = new Recipe();

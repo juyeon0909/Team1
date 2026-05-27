@@ -8,8 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface MemberRepository extends JpaRepository<Member, Long> {
-    Member findByEmail(String email);
+    Optional<Member> findByEmail(String email);
 
     @Modifying
     @Transactional

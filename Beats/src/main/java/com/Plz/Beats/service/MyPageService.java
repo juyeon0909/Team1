@@ -18,7 +18,7 @@ public class MyPageService {
     private final PasswordEncoder passwordEncoder; // 👈 오타 해결 및 생성자 주입 자동 처리
 
     public Member findByEmail(String email){
-        return memberRepository.findByEmail(email);
+        return memberRepository.findByEmail(email).orElse(null);
     }
 
     public Optional<Member> findMemberById(Long memberId){
@@ -27,7 +27,7 @@ public class MyPageService {
 
     // 회원 정보 조회
     public MemberInfoDto getMemberInfo(String email) {
-        Member member = memberRepository.findByEmail(email);
+        Member member = memberRepository.findByEmail(email).orElse(null);
         if (member == null) {
             throw new IllegalArgumentException("존재하지 않는 회원입니다. 이메일 : " + email);
         }
@@ -40,7 +40,7 @@ public class MyPageService {
 
     @Transactional
     public void updateProfileImage(String email, String base64Image) {
-        Member member = memberRepository.findByEmail(email);
+        Member member = memberRepository.findByEmail(email).orElse(null);
         if (member == null) {
             throw new IllegalArgumentException("존재하지 않는 회원입니다.");
         }
@@ -49,7 +49,7 @@ public class MyPageService {
 
     @Transactional
     public void updateName(String email, String newName) {
-        Member member = memberRepository.findByEmail(email);
+        Member member = memberRepository.findByEmail(email).orElse(null);
         if (member == null) {
             throw new IllegalArgumentException("존재하지 않는 회원입니다.");
         }
@@ -62,7 +62,7 @@ public class MyPageService {
     // 회원 비밀번호 변경 로직
     @Transactional
     public void updatePassword(String email, String currentPassword, String newPassword) {
-        Member member = memberRepository.findByEmail(email);
+        Member member = memberRepository.findByEmail(email).orElse(null);
         if (member == null) {
             throw new IllegalArgumentException("존재하지 않는 회원입니다.");
         }

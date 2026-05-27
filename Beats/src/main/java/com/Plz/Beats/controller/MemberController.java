@@ -95,27 +95,6 @@ public class MemberController {
         return new ResponseEntity<>("회원 가입 성공", HttpStatus.OK); // 회원 가입 성공 (OK라는건 200번대라는 뜻)
     }
 
-
-        System.out.println(">>> getMyInfo 컨트롤러 실행됨"); // ← 추가
-        String email = principal.getName();
-        MemberInfoResponse memberInfo = memberService.getMemberInfo(email);
-
-        return ResponseEntity.ok(memberInfo);
-    }
-
-    @PostMapping("/mypage/update-profileimage")
-    public ResponseEntity<?> updateProfileImage(
-            @RequestBody ProfileImageRequest request,
-            Principal principal) {
-
-        String email = principal.getName();
-
-        // 서비스 레이어에서 이미지 업데이트 로직 수행
-        memberService.updateProfileImage(email, request.getProfileimage());
-
-        return ResponseEntity.ok().body("프로필 사진이 성공적으로 변경되었습니다.");
-    }
-
     @PostMapping("/delete") // 🚨 다시 POST로 복구
     public ResponseEntity<?> deleteMember(@RequestBody Map<String, String> request, Principal principal) {
 

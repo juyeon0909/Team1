@@ -20,6 +20,7 @@ function LoginPage({ onLogin }: Props) {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState("");
   const [isPolling, setIsPolling] = useState(false);
+  const [isRequesting, setIsRequesting] = useState(false);
   const [randomValue, setRandomValue] = useState("");
   const [servicePassword, setServicePassword] = useState("");
   const [timeLeft, setTimeLeft] = useState(POLL_DURATION);
@@ -41,11 +42,10 @@ function LoginPage({ onLogin }: Props) {
     return () => stopAll();
   }, []);
 
-  // 🌟 두 개로 쪼개져 있던 타이머를 하나로 완벽하게 합친 폴링 함수
   const startPolling = (currentEmail: string, currentRandomValue: string) => {
-    setTimeLeft(POLL_DURATION); // 타이머 60초로 초기화
+    setTimeLeft(POLL_DURATION);
 
-    // 1. 화면에 보여줄 1초 카운트다운 타이머
+    // 1초 카운트다운 타이머
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -58,34 +58,36 @@ function LoginPage({ onLogin }: Props) {
       });
     }, 1000);
 
-    // 2. 백엔드에 승인 여부를 물어보는 통신 타이머
+    // 1초마다 승인 여부 확인
     pollRef.current = setInterval(async () => {
       try {
-        // 모바일 승인 여부 체크
-        const response = await axios.get("/passwordless/check-result", {
-          params: { email: currentEmail, randomValue: currentRandomValue }
-        });
-
-        // 승인이 완료되었다면!
-        if (response.data === true) {
-          stopAll(); // 즉시 타이머 모두 정지
-
-          // 잇츠 인 마이 냉장고 서버에서 진짜 로그인(JWT 발급) 처리
-          const { data } = await axios.post<LoginResponse>("/passwordless/passwordless-login", null, {
-            params: { email: currentEmail, randomValue: currentRandomValue },
-          });
-
-          const { accessToken, ...userData } = data;
-          localStorage.setItem("accessToken", accessToken);
-          localStorage.setItem("user", JSON.stringify(userData));
-          onLogin(userData as User);
-          
-          alert("패스워드리스 인증에 성공했습니다!");
-          navigate("/"); // 메인 페이지로 이동
+        const { data: isApproved } = await axios.get<boolean>(
+          "/passwordless/check-result",
+          { params: { email: currentEmail, randomValue: currentRandomValue } }
+        );
+        if (isApproved) {
+          stopAll();
+          console.log("[패스워드리스] 승인 확인됨, 로그인 요청 시작");
+          try {
+            const { data } = await axios.post<LoginResponse>(
+              "/passwordless/passwordless-login",
+              null,
+              { params: { email: currentEmail, randomValue: currentRandomValue } }
+            );
+            console.log("[패스워드리스] 로그인 응답:", data);
+            const { accessToken, ...userData } = data;
+            localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("user", JSON.stringify(userData));
+            onLogin(userData);
+            navigate("/");
+          } catch (err: any) {
+            console.error("[패스워드리스] 로그인 실패:", err.response?.status, err.response?.data);
+            setErrors("로그인 처리 중 오류가 발생했습니다.");
+            setIsPolling(false);
+          }
         }
-      } catch (error) {
-        // 폴링 중 발생하는 자잘한 네트워크 에러는 무시하고 계속 찌릅니다.
-        console.error("승인 대기 중...", error);
+      } catch {
+        // 폴링 에러 무시
       }
     }, 1000);
   };
@@ -108,6 +110,8 @@ function LoginPage({ onLogin }: Props) {
     setErrors("");
 
     if (loginMode === "passwordless") {
+      if (isRequesting) return;
+      setIsRequesting(true);
       try {
         const { data } = await axios.post<{ randomValue: string; servicePassword: string }>(
           "/passwordless/getSp", null, { params: { email } }
@@ -116,10 +120,11 @@ function LoginPage({ onLogin }: Props) {
         setRandomValue(data.randomValue);
         setServicePassword(data.servicePassword);
         setIsPolling(true);
-        // 합쳐진 폴링 함수 실행!
         startPolling(email, data.randomValue);
       } catch (error: any) {
         setErrors(error.response?.data || "패스워드리스 인증 요청에 실패했습니다.");
+      } finally {
+        setIsRequesting(false);
       }
       return;
     }
@@ -136,7 +141,12 @@ function LoginPage({ onLogin }: Props) {
       onLogin(userData);
       navigate("/");
     } catch (error: any) {
-      setErrors(error.response?.data?.error ?? "서버 오류가 발생했습니다.");
+      const msg = error.response?.data?.error ?? "서버 오류가 발생했습니다.";
+      setErrors(msg);
+      if (error.response?.status === 403 && msg === "패스워드리스로 로그인해주세요.") {
+        setLoginMode("passwordless");
+        setPassword("");
+      }
     }
   };
 
@@ -292,8 +302,8 @@ function LoginPage({ onLogin }: Props) {
               인증 취소
             </button>
           ) : (
-            <button type="submit" className="btn-submit-green">
-              {loginMode === "normal" ? "로그인" : "인증 요청"}
+            <button type="submit" className="btn-submit-green" disabled={isRequesting}>
+              {isRequesting ? "요청 중..." : loginMode === "normal" ? "로그인" : "인증 요청"}
             </button>
           )}
 

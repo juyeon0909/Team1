@@ -32,6 +32,8 @@ public class PasswordlessService {
 
     // 인증 서버의 result API는 1회 소비형일 수 있으므로 승인 결과를 캐싱해 중복 조회 방지
     private final Map<String, Boolean> approvalCache = new ConcurrentHashMap<>();
+    // getSp 때 사용한 decryptedToken을 result/cancel 호출 시 재사용하기 위해 저장
+    private final Map<String, String> sessionTokenCache = new ConcurrentHashMap<>();
 
 
     @Value("${passwordless.server-url}")
@@ -67,11 +69,10 @@ public class PasswordlessService {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             Map<String, Object> responseBody = response.getBody();
 
-            // 응답 데이터 로그 확인
             log.info("isAp response: {}", responseBody);
 
-            // 성공 여부(result)가 Y이면 등록된 사용자
-            return responseBody != null && "Y".equals(responseBody.get("result"));
+            Object resultObj = responseBody != null ? responseBody.get("result") : null;
+            return resultObj != null && (resultObj.equals(true) || "true".equals(String.valueOf(resultObj)) || "Y".equals(resultObj));
         } catch (Exception e) {
             log.error("isAp API 호출 중 에러 발생", e);
             return false;
@@ -179,20 +180,20 @@ public class PasswordlessService {
 
     //인증 요청 (getSp) - 휴대폰으로 푸시 알림 전송
     public Map<String, String> requestSp(String email) {
-        // 1. 위에서 만든 메서드로 암호화된 토큰을 받아와서 풉니다.
+        // 1. 암호화된 토큰 복호화
         String decryptedToken = getDecryptedToken(email);
 
-        // 2. 포스트맨 스크립트가 하던 일(랜덤 값 생성)을 자바 코드로 구현합니다.
-        String randomValue = java.util.UUID.randomUUID().toString().substring(0, 8); // 8자리 랜덤 문자열
+        // 2. 랜덤 값 생성
+        String randomValue = java.util.UUID.randomUUID().toString().substring(0, 8);
         String sessionId = System.currentTimeMillis() + "-" + randomValue;
-        String clientIp = "127.0.0.1"; // 원래는 접속한 유저 IP를 추출해야 하지만, 테스트용으로 임시 고정
+        String clientIp = "127.0.0.1";
 
         String url = serverUrl + "/ap/rest/auth/getSp";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        // 3. 바디 세팅 (5개의 파라미터를 꽉꽉 채워 넣습니다)
+        // 3. 바디 세팅
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("userId", email);
         body.add("token", decryptedToken);
@@ -202,20 +203,26 @@ public class PasswordlessService {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
-        // 4. 인증 서버로 "이 사람 폰으로 알림 보내줘!" 요청
+        // 4. 인증 서버로 요청
         ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
         Map<String, Object> responseBody = response.getBody();
 
         log.info("getSp(푸시 알림) response: {}", responseBody);
 
-        // 5. 성공적으로 알림이 전송되었다면 randomValue와 servicePassword를 리턴합니다.
-        if (responseBody != null && "Y".equals(responseBody.get("result"))) {
+        // 🌟 5. 핵심 수정: "Y"가 아니라 true(또는 "true")인지 확인합니다!
+        Object resultObj = responseBody != null ? responseBody.get("result") : null;
+        if (resultObj != null && (resultObj.equals(true) || "true".equals(String.valueOf(resultObj)))) {
+
+            // 🌟 6. 리액트가 화면에 띄울 수 있도록 randomValue와 servicePassword를 묶어서 리턴!
             Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
-            String servicePassword = data != null ? String.valueOf(data.get("servicePassword")) : "";
+            String servicePassword = String.valueOf(data.get("servicePassword"));
+
+            // result/cancel 호출 시 재사용할 수 있도록 토큰 저장
+            sessionTokenCache.put(randomValue, decryptedToken);
 
             Map<String, String> resultMap = new HashMap<>();
             resultMap.put("randomValue", randomValue);
-            resultMap.put("authNumber", servicePassword);
+            resultMap.put("servicePassword", servicePassword);
 
             return resultMap;
         } else {
@@ -244,25 +251,30 @@ public class PasswordlessService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
+        String sessionToken = sessionTokenCache.get(randomValue);
+
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("userId", email);
         body.add("randomValue", randomValue);
+        if (sessionToken != null) {
+            body.add("token", sessionToken);
+        } else {
+            body.add("secretKey", serverKey);
+        }
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
         try {
-            // 딱 한 번만 인증 서버에 상태를 물어봅니다.
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             Map<String, Object> responseBody = response.getBody();
 
-            if (responseBody != null && responseBody.containsKey("data")) {
-                Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
-                String authStatus = (String) data.get("auth");
+            log.info("result API 전체 응답: {}", responseBody);
 
-                if ("Y".equals(authStatus)) {
-                    approvalCache.put(cacheKey, true);
-                    return true;
-                }
+            Object resultObj = responseBody != null ? responseBody.get("result") : null;
+            if (resultObj != null && (resultObj.equals(true) || "true".equals(String.valueOf(resultObj)))) {
+                approvalCache.put(cacheKey, true);
+                sessionTokenCache.remove(randomValue);
+                return true;
             }
             return false;
         } catch (Exception e) {
@@ -279,16 +291,24 @@ public class PasswordlessService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        // 취소할 대상(userId)과 취소할 요청번호(randomValue)를 담아 보냅니다.
+        String sessionToken = sessionTokenCache.remove(randomValue);
+
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("userId", email);
         body.add("randomValue", randomValue);
+        if (sessionToken != null) {
+            body.add("token", sessionToken);
+        } else {
+            body.add("secretKey", serverKey);
+        }
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             Map<String, Object> responseBody = response.getBody();
+
+            log.info("cancel API 응답: {}", responseBody);
 
             if (responseBody != null && "Y".equals(responseBody.get("result"))) {
                 log.info("인증 취소 완료 (email: {})", email);

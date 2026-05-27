@@ -111,7 +111,7 @@ function App() {
 
                     <div className="mb-4">
                         <h1 className="page-title" style={{ fontWeight: 'bold', margin: 0 }}>
-                            안녕하세요, <span>{user.name}</span>님 👋
+                            안녕하세요, <span>{user.name}</span>님
                         </h1>
                     </div>
 

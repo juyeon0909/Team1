@@ -29,7 +29,7 @@ const THUMB_BG: Record<string, string> = {
 };
 
 const SORT_OPTIONS = ['최신 등록순', '인기순', '요리시간 짧은순'];
-const FILTER_CATEGORIES = ['all', '한식', '양식', '일식', '중식', '다이어트'];
+const FILTER_CATEGORIES = ['all', '한식', '일식', '중식', '양식', '간식', '야식', '다이어트식', '밀프랩'];
 
 export default function LikedRecipes() {
   const navigate = useNavigate();

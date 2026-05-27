@@ -144,20 +144,15 @@ const RecipeMain = () => {
     let result = recipes.filter(r => {
       if (urgentOnly && !r.urgent) return false;
       if (activeCategory !== '전체' && r.cat !== activeCategory) return false;
-
       if (activeMatch === '100' && r.match < 100) return false;
       if (activeMatch === '70' && r.match < 70) return false;
       if (activeMatch === '50' && r.match < 50) return false;
-
       if (activeTime === '15' && r.time > 15) return false;
       if (activeTime === '30' && r.time > 30) return false;
       if (activeTime === '60' && r.time > 60) return false;
-
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        const matchesName = r.name.toLowerCase().includes(q);
-        const matchesTags = r.tags?.some(t => t.toLowerCase().includes(q)) || false;
-        if (!matchesName && !matchesTags) return false;
+        return r.name.toLowerCase().includes(q) || r.tags.some(t => t.toLowerCase().includes(q));
       }
       return true;
     });

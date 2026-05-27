@@ -45,8 +45,8 @@ public class SecurityConfig {
                 "/api/product/**",
                 "/first",
                 "/",
-                "/api/member/delete"
-                // 회원 탈퇴
+                "/api/member/delete", // 회원 탈퇴
+                "/api/passwordless/**" // 패스워드리스 로그인 (인증 전 호출)
         };
 
         http
@@ -68,7 +68,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/product/**").permitAll()
                         .requestMatchers("/api/mypage/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
 //                                .hasAnyRole("USER", "ADMIN")
 // 임시 주석              // B. 그 외의 모든 요청은 로그인 인증 필요
                         .anyRequest().authenticated()

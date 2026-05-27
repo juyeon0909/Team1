@@ -18,7 +18,7 @@ public class MemberDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         System.out.println("email");
         System.out.println(email);
-        Member member = memberRepository.findByEmail(email);
+        Member member = memberRepository.findByEmail(email).orElse(null);
 
         if(member == null) {
             String message = "이메일이" + email + "인 회원은 존재하지 않습니다.";

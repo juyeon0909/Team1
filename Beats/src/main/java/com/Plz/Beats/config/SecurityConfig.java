@@ -45,7 +45,8 @@ public class SecurityConfig {
                 "/api/product/**",
                 "/first",
                 "/",
-                "/api/member/delete" // 회원 탈퇴
+                "/api/member/delete", // 회원 탈퇴
+                "/api/passwordless/**" // 패스워드리스 로그인 (인증 전 호출)
         };
 
         http

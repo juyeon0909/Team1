@@ -26,7 +26,7 @@ public class RecipeLikeService {
 
     //현재 로그인 유저의 좋아요 목록 조회
     public List<RecipeLikeDto> getLikedRecipes(String email) {
-        Member member = memberRepository.findByEmail(email);
+        Member member = memberRepository.findByEmail(email).orElse(null);
         if (member == null) throw new IllegalArgumentException("존재하지 않는 회원입니다.");
 
         return recipeLikeRepository.findByMember(member).stream()
@@ -48,7 +48,7 @@ public class RecipeLikeService {
     // 좋아요 토글 (있으면 취소, 없으면 추가)
     @Transactional
     public boolean toggleLike(String email, Long recipeId) {
-        Member member = memberRepository.findByEmail(email);
+        Member member = memberRepository.findByEmail(email).orElse(null);
         if (member == null) throw new IllegalArgumentException("존재하지 않는 회원입니다.");
 
         Recipe recipe = recipeRepository.findById(recipeId)

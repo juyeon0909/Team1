@@ -26,7 +26,7 @@ public class QnaService {
 
     // 문의 등록
     public void submitQna(String email, QnaRequestDto dto) {
-        Member member = memberRepository.findByEmail(email);
+        Member member = memberRepository.findByEmail(email).orElse(null);
         if (member == null) throw new IllegalArgumentException("존재하지 않는 회원입니다.");
 
         Qna qna = new Qna();
@@ -39,7 +39,7 @@ public class QnaService {
 
     // 특정 회원의 QNA 목록 조회
     public List<QnaDto> getMyQna(String email) {
-        Member member = memberRepository.findByEmail(email);
+        Member member = memberRepository.findByEmail(email).orElse(null);
         if (member == null) throw new IllegalArgumentException("존재하지 않는 회원입니다.");
 
         return qnaRepository.findByMemberOrderByCreatedAtDesc(member)

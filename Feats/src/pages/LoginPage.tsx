@@ -187,45 +187,6 @@ function LoginPage({ onLogin }: Props) {
           </button>
         </div>
 
-        {/* 인증방식 탭 아래 인증번호 박스 (폴링 중에만 표시) */}
-        {loginMode === "passwordless" && isPolling && (
-          <div style={{ marginBottom: "20px" }}>
-            <div className="custom-input-label" style={{ marginBottom: "8px" }}>
-              인증번호&nbsp;
-              <span style={{ color: timeLeft <= 10 ? "#cc3333" : "#1a9d60", fontWeight: 700 }}>
-                ({timeLeft}초 남음)
-              </span>
-            </div>
-            <div
-              style={{
-                border: "2px solid #1a9d60",
-                borderRadius: "8px",
-                padding: "20px 16px",
-                backgroundColor: "#f0faf5",
-                textAlign: "center",
-                fontSize: "2rem",
-                fontWeight: 700,
-                letterSpacing: "0.5em",
-                color: "#1a9d60",
-                userSelect: "none",
-              }}
-            >
-              {randomValue}
-            </div>
-            <p
-              style={{
-                fontSize: "0.85rem",
-                color: "#555",
-                marginTop: "10px",
-                textAlign: "center",
-                lineHeight: 1.6,
-              }}
-            >
-              모바일 앱에서 위 인증번호를 확인하고 승인해주세요
-            </p>
-          </div>
-        )}
-
         {/* 폼 */}
         <form onSubmit={handleLogin}>
 
@@ -243,6 +204,45 @@ function LoginPage({ onLogin }: Props) {
             />
           </div>
 
+          {/* 인증번호 박스 (패스워드리스 + 폴링 중에만 표시, 이메일 창 아래) */}
+          {loginMode === "passwordless" && isPolling && (
+            <div className="custom-input-group">
+              <div className="custom-input-label" style={{ marginBottom: "8px" }}>
+                인증번호&nbsp;
+                <span style={{ color: timeLeft <= 10 ? "#cc3333" : "#1a9d60", fontWeight: 700 }}>
+                  ({timeLeft}초 남음)
+                </span>
+              </div>
+              <div
+                style={{
+                  border: "2px solid #1a9d60",
+                  borderRadius: "8px",
+                  padding: "20px 16px",
+                  backgroundColor: "#f0faf5",
+                  textAlign: "center",
+                  fontSize: "2rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.5em",
+                  color: "#1a9d60",
+                  userSelect: "none",
+                }}
+              >
+                {randomValue}
+              </div>
+              <p
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#555",
+                  marginTop: "10px",
+                  textAlign: "center",
+                  lineHeight: 1.6,
+                }}
+              >
+                모바일 앱에서 위 인증번호를 확인하고 승인해주세요
+              </p>
+            </div>
+          )}
+
           {/* 비밀번호 (일반 모드만) */}
           {loginMode === "normal" && (
             <div className="custom-input-group">
@@ -254,6 +254,17 @@ function LoginPage({ onLogin }: Props) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+              />
+            </div>
+          )}
+          {loginMode === "passwordless" && (
+            <div className="custom-input-group">
+              <label className="custom-input-label">인증 방식</label>
+              <input
+                type="text"
+                className="custom-form-passwordless"
+                placeholder="인증 번호가 표시됩니다"
+                readOnly
               />
             </div>
           )}
@@ -269,6 +280,7 @@ function LoginPage({ onLogin }: Props) {
               인증 취소
             </button>
           ) : (
+            
             <button type="submit" className="btn-submit-green">
               {loginMode === "normal" ? "로그인" : "인증 요청"}
             </button>

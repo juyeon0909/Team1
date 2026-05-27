@@ -21,33 +21,32 @@ function Delete() {
 
       // 2. axios 요청 보내기
       const response = await axios.post(
-        'http://localhost:9000/api/member/delete', // 로컬 주소
-        {
-          email: email,
-          password: password
-        },
-        {
-          headers: {
-            // 🚨 변수 이름을 위와 똑같이 'accessToken'으로 맞춰줍니다!
+      'http://localhost:9000/api/member/delete',
+      { email: email, password: password }, // ← email 다시 추가
+      {
+        headers: {
             Authorization: `Bearer ${accessToken}`
-          }
         }
-      );
-
-      if (response.status === 200 || response.status === 204) {
-        alert('회원 탈퇴가 완료되었습니다.');
-        localStorage.removeItem('accessToken'); // 탈퇴 성공 후 토큰 삭제
-        window.location.href = '/'; // 메인 페이지로 이동
       }
+    );
+
+
+    if (response.status === 200 || response.status === 204) {
+    alert('회원 탈퇴가 완료되었습니다.');
+    localStorage.clear(); // ← removeItem 대신 전체 삭제
+    window.location.replace('/member/login'); // ← href 대신 replace, 로그인 페이지로
+    }
     } catch (error: any) {
       console.error('탈퇴 처리 중 에러 발생:', error);
 
       // 서버가 에러 코드를 반환한 경우 (401, 403, 404, 500 등)
       if (error.response) {
         if (error.response.status === 403) {
-          alert('권한이 없거나 비밀번호가 틀렸습니다. (403 Forbidden)');
+          alert(error.response.data.message || '이메일 또는 비밀번호가 올바르지 않습니다.');
+        } else if (error.response.status === 401) {
+          alert('로그인이 필요합니다.');
         } else {
-          alert(`탈퇴 실패: ${error.response.data.message || '서버 오류가 발생했습니다.'}`);
+        alert(`탈퇴 실패: ${error.response.data.message || '서버 오류가 발생했습니다.'}`);
         }
       } else {
         // 네트워크 연결 자체가 실패한 경우

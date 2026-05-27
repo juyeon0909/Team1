@@ -12,18 +12,18 @@
 /*  상단 검색 섹션 */
 .storage-search-section {
   display: flex;
-  justify-content: center;   /* ⭐ 검색창을 무조건 화면 '정중앙'으로 정렬 */
+  justify-content: center;   
   align-items: center;
-  position: relative;        /* ⭐ 등록 버튼을 우상단 끝에 absolute로 박기 위한 기준 */
+  position: relative;        
   width: 100%;
-  margin-bottom: 24px;       /* 아래 표(Grid)와의 간격 */
+  margin-bottom: 24px;       
   padding: 5px 0;
 }
 
 .storage-search-box {
   position: relative;
   width: 100%;
-  max-width: 600px;          /* ⭐ 가운데 이쁘게 모이도록 최대 너비 제한 */
+  max-width: 600px;          
   display: flex;
   align-items: center;
 }
@@ -66,19 +66,18 @@
 
 /* 재료 등록 */
 .storage-add-btn {
-  position: absolute;        /* ⭐ 검색창 흐름과 상관없이 독립적으로 배치 */
-  right: 0;                  /* ⭐ 아래쪽 표(Grid) 우상단 끝라인에 정확히 일치 */
+  position: absolute;        
+  right: 0;                  
   
-  padding: 11px 18px;        /* 검색창보다 미세하게 슬림하게 조절하여 자그마한 느낌 강조 */
-  background-color: var(--white, #fff); /* ⚪ 순수 흰색 바탕 */
+  padding: 11px 18px;        
+  background-color: var(--white, #fff); 
   
-  /* 💡 [글씨색 변경] 초록색 말고 깔끔하고 고급스러운 다크 그레이/블랙 톤으로 교정 */
   color: var(--text-dark, #333333); 
   
-  border: 1px solid var(--green, #0BA574); /* 🟢 테두리는 팀 시그니처 초록색 유지 */
-  border-radius: 30px;       /* 검색창 라운드와 통일감 공유 */
-  font-size: 14px;
-  font-weight: 600;          /* 얇았던 100 폰트 두께를 선명하게 600으로 보완 */
+  border: 1px solid var(--green, #0BA574); 
+  border-radius: 30px;      
+  font-size: 17px;
+  font-weight: 600;         
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -88,10 +87,10 @@
   transition: all 0.2s;
 }
 
-/* 💡 마우스 오버 시 반전 효과 */
+
 .storage-add-btn:hover {
-  background-color: var(--green, #0BA574); /* 🟢 배경이 팀 초록색으로 변경 */
-  color: var(--white, #fff);               /* ⚪ 글씨는 흰색으로 반전 */
+  background-color: var(--green, #0BA574); 
+  color: var(--white, #fff);               
   box-shadow: 0 0 0 3px rgba(11, 165, 116, 0.15);
 }
 
@@ -102,7 +101,7 @@
   transform: translateY(-0.5px);
 }
 
-/* 🗂️ 3단 보관실 레이아웃 그리드 */
+/* 보관실 레이아웃 그리드 */
 .storage-rooms-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 냉동, 냉장, 상온 3칸 균등 분할 */
@@ -157,6 +156,7 @@
   padding: 2px 8px;
   border-radius: 12px;
   color: var(--text-mid, #666);
+  margin-right: 15px;
 }
 .room-sort-select {
   margin-left: auto;
@@ -174,14 +174,14 @@
   border-color: #4A90E2;
 }
 
-/* 🟢 유통기한 및 삭제 버튼을 감싸는 레이아웃 */
+/*  유통기한 및 삭제 버튼을 감싸는 레이아웃 */
 .item-expiry-wrapper {
   display: inline-flex;
   align-items: center;
   gap: 10px;
 }
 
-/* 🟢 작은 ✕ 삭제 버튼 스타일 */
+/* 작은 ✕ 삭제 버튼 스타일 */
 .btn-delete-small {
   background: none;
   border: none;
@@ -211,11 +211,11 @@
 .refrigerated-theme { background-color: #f0fbf7; border-bottom-color: #d1f2e5; }
 .room-theme { background-color: #fdfaf5; border-bottom-color: #f7edd6; }
 
-/* 📜 [핵심] 정해진 공간 안에서만 따로따로 스크롤되는 영역 */
+/*  정해진 공간 안에서만 따로따로 스크롤되는 영역 */
 .room-list-scroll {
   flex: 1;
   height: 100%;
-  overflow-y: auto;   /* 💡 데이터가 많아지면 이 구역 내에서만 따로 스크롤이 생성됨 */
+  overflow-y: auto;   
   padding: 12px;
 }
 

@@ -39,6 +39,15 @@ public class ProductController {
         return ResponseEntity.ok("식재료 정보가 성공적으로 변경되었습니다.");
 
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductDto>> searchProduct(@RequestParam("name") String name) {
+        // 1. 서비스단에서 이름(name)을 기반으로 디비에서 1,137개 중 일치하는 식재료 목록을 긁어옵니다.
+        List<ProductDto> searchResults = productService.searchItemsByName(name);
+
+        // 2. 리액트가 목말라하던 200 OK 사인과 함께 데이터를 던져줍니다.
+        return ResponseEntity.ok(searchResults);
+    }
+
     @PostMapping("/delete/{id}")
     public ResponseEntity<String> deleteStorage(@PathVariable("id") Long id) {
 

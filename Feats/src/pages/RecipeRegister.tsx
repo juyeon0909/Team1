@@ -214,20 +214,9 @@ const RecipeRegister = () => {
           )}
         </div>
 
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>레시피 이름 *</label>
-          <input
-            style={inputStyle}
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="예: 두부 계란찜"
-          />
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
           <div>
-            <label style={labelStyle}>카테고리 *</label>
+            <label style={labelStyle}> 레시피 구분 *</label>
             <select
               style={inputStyle}
               value={category}
@@ -239,6 +228,19 @@ const RecipeRegister = () => {
               <option>다이어트</option><option>밀프랩</option>
             </select>
           </div>
+
+        <div style={{ marginBottom: '14px' }}>
+          <label style={labelStyle}>레시피 이름 *</label>
+          <input
+            style={inputStyle}
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="예: 두부 계란찜"
+          />
+        </div>
+
+
           <div>
             <label style={labelStyle}>조리 시간</label>
             <input

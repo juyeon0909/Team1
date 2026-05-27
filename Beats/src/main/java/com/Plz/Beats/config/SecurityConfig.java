@@ -41,7 +41,6 @@ public class SecurityConfig {
                 "/js/**",
                 "/api/member/signup",
                 "/api/member/login",
-                "/api/mypage/**",
                 "/product/**",
                 "/api/product/**",
                 "/first",

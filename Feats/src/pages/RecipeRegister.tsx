@@ -1,22 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-
 const RecipeRegister = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // 1. 상태 변수 분리 및 필수재료 배열화
+  // 상태 변수 관리
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [cookingTime, setCookingTime] = useState("");
   const [intro, setIntro] = useState("");
 
-  // 필수 재료를 객체 배열로 변경
+  // 필수 재료 (객체 배열)
   const [mustIngredients, setMustIngredients] = useState([{ name: "", quantity: "" }]);
-
   const [optIngredients, setOptIngredients] = useState("");
-  const [recipeLink, setRecipeLink] = useState("");
   const [method, setMethod] = useState("");
 
   // 필수 재료 관련 핸들러들
@@ -56,14 +53,73 @@ const RecipeRegister = () => {
     setImagePreview("");
   };
 
+  // ================= [수정 및 연동 추가된 부분] =================
   const onSave = () => {
-    // 💡 백엔드에 보낼 때는 mustIngredients 배열 전체를 넘겨주시면 됩니다.
-    console.log("저장될 필수 재료 데이터: ", mustIngredients);
-    alert('레시피 등록 신청이 완료되었습니다. 관리자 승인 후 공개됩니다.');
-    navigate('/RecipeMain');
-  };
+    // 필수 항목 유효성 검사
+    if (!title.trim()) return alert("레시피 이름을 입력해주세요.");
+    if (!category) return alert("카테고리를 선택해주세요.");
 
-  // 🎨 인라인 스타일 가이드
+    // 1. 필수 재료 데이터 필터링 (비어있는 행 제외)
+    const filteredMustIngredients = mustIngredients.filter(
+      item => item.name.trim() !== "" && item.quantity.trim() !== ""
+    );
+    if (filteredMustIngredients.length === 0) {
+      return alert("필수 재료를 최소 한 개 이상 입력해주세요.");
+    }
+
+    // 2. 조리 시간에서 숫자만 추출 (메인 화면은 time: number 구조)
+    const numericTime = parseInt(cookingTime.replace(/[^0-9]/g, "")) || 15;
+
+    // 3. 선택 재료 가공: 쉼표 분리 문자열 ➔ 배열 변환
+    const selectIngredientsArray = optIngredients
+      ? optIngredients.split(',').map(item => item.trim()).filter(Boolean)
+      : [];
+
+    // 4. 조리 방법 가공: 엔터(\n) 단위 분리 줄글 ➔ 배열 변환
+    const stepsArray = method
+      ? method.split('\n').map(step => step.trim()).filter(Boolean)
+      : ['조리 방법이 등록되지 않았습니다.'];
+
+    // 5. 메인 규격 및 지속 저장을 위한 데이터 객체 조립 (id와 image 추가)
+    const newRecipeData = {
+      id: Date.now().toString(), // 고유 ID (상세보기 및 삭제용)
+      name: title,
+      cat: category,
+      time: numericTime,
+      desc: intro || `${title} 레시피입니다.`,
+      tags: [category, `${numericTime}분`], // 카테고리와 시간을 기본 태그로 활용
+      urgent: false,
+      mustIngredients: filteredMustIngredients,
+      selectIngredients: selectIngredientsArray,
+      missingIngredients: [], // 초기값 빈 배열
+      steps: stepsArray,
+      emoji: '🍳', // 임시 기본 이모지
+      bg: '#E1F5EE', // 임시 기본 배경색
+      image: imagePreview || null // 이미지 Base64 스트링 저장
+    };
+
+    try {
+      // localStorage에서 기존 'my_recipes' 데이터를 읽어옴 (없으면 빈 배열)
+      const existingRecipes = JSON.parse(localStorage.getItem('my_recipes') || '[]');
+
+      // 최신 등록 순으로 앞에 누적
+      const updatedRecipes = [newRecipeData, ...existingRecipes];
+
+      // localStorage에 다시 JSON 형태로 저장
+      localStorage.setItem('my_recipes', JSON.stringify(updatedRecipes));
+
+      alert('레시피 등록이 완료되었습니다.');
+
+      // 등록이 끝나면 모아보기 페이지로 이동시킵니다.
+      navigate('/mypage/recipe');
+    } catch (error) {
+      console.error("Storage error:", error);
+      alert("이미지 용량이 너무 커서 저장에 실패했습니다. 다른 이미지를 사용하거나 이미지를 제외해주세요.");
+    }
+  };
+  // =========================================================
+
+  // 인라인 스타일 가이드
   const pageContainerStyle = {
     padding: '28px 40px',
     background: 'var(--color-background-tertiary, #f8f9fa)',
@@ -119,7 +175,7 @@ const RecipeRegister = () => {
 
   return (
     <div style={pageContainerStyle}>
-      <div style={backLinkStyle} onClick={() => navigate('/RecipeMain')}>
+      <div style={backLinkStyle} onClick={() => navigate('/recipeMain')}>
         <i className="ti ti-arrow-left" style={{ fontSize: '16px' }}></i>
         <span>{id ? '레시피 상세로' : '레시피 목록으로'}</span>
       </div>
@@ -158,7 +214,6 @@ const RecipeRegister = () => {
           )}
         </div>
 
-
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>레시피 이름 *</label>
           <input
@@ -169,7 +224,6 @@ const RecipeRegister = () => {
             placeholder="예: 두부 계란찜"
           />
         </div>
-
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
           <div>
@@ -197,7 +251,6 @@ const RecipeRegister = () => {
           </div>
         </div>
 
-
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>간단 소개</label>
           <input
@@ -209,10 +262,8 @@ const RecipeRegister = () => {
           />
         </div>
 
-
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>필수 재료 및 용량 *</label>
-
           {mustIngredients.map((item, index) => (
             <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
               <input
@@ -256,7 +307,6 @@ const RecipeRegister = () => {
           </button>
         </div>
 
-
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>
             선택 재료 <span style={subLabelStyle}>쉼표로 구분</span>
@@ -270,7 +320,6 @@ const RecipeRegister = () => {
           />
         </div>
 
-
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>조리 방법</label>
           <textarea
@@ -281,18 +330,15 @@ const RecipeRegister = () => {
           />
         </div>
 
-
         {!id && (
           <div style={{
             background: '#FAEEDA', border: '0.5px solid #FAC775', borderRadius: 'var(--border-radius-md, 6px)',
             padding: '10px 14px', fontSize: '12px', color: '#633806', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start'
           }}>
             <i className="ti ti-info-circle" style={{ fontSize: '15px', flexShrink: 0, marginTop: '1px' }}></i>
-            등록된 레시피는 관리자 승인 후 공개됩니다.
+            등록된 레시피는 승인 후 공개 됩니다.
           </div>
         )}
-
-
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
           <button
@@ -305,7 +351,6 @@ const RecipeRegister = () => {
           >
             취소
           </button>
-          {/* 커밋 체쿠  */}
           <button
             type="button"
             onClick={onSave}
@@ -314,12 +359,12 @@ const RecipeRegister = () => {
               background: '#1D9E75', color: '#fff', border: 'none', fontWeight: '500'
             }}
           >
-            {id ? '저장하기' : '등록 신청'}
+            {id ? '저장하기' : '등록 완료'}
           </button>
         </div>
       </div>
     </div>
   );
 };
-
+{/*커밋 체크*/}
 export default RecipeRegister;

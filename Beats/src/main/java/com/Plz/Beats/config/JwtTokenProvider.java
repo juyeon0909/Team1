@@ -47,6 +47,8 @@ public class JwtTokenProvider { // JWT 생성, 검증 기능 담당자 클래스
         return this.getClaims(token).getSubject() ;
     }
 
+
+
     public Claims getClaims(String token){
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())

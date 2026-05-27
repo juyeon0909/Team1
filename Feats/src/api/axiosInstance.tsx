@@ -28,6 +28,8 @@ axiosInstance.interceptors.request.use(
             // Bearer 단어 대소문자 주의 바람
             config.headers.Authorization = `Bearer ${token}`;
         }
+        3
+        
 
         return config;
     },

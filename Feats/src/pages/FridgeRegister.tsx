@@ -10,6 +10,8 @@ const FridgeRegister: React.FC = () => {
   const [quantity, setQuantity] = useState<number | ''>('');
   const [expirationdate, setExpirationdate] = useState('');
   const [storagetype, setStoragetype] = useState('REFRIGERATED'); // 기본값: 냉장
+  const [category, setCategory] = useState('신선식품');
+
 
   const handleSave = async (): Promise<void> => {
     if (!itemname || quantity === '' || !expirationdate) {
@@ -58,6 +60,24 @@ const FridgeRegister: React.FC = () => {
         </div>
 
         <hr className="fridge-form-divider" />
+
+        {/* 카테고리 */}
+        <div className="fridge-form-group">
+          <label className="fridge-form-label">카테고리</label>
+          <select
+            className="fridge-form-input"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            style={{ cursor: 'pointer' }}
+          >
+            <option value="신선식품">신선식품</option>
+            <option value="유제품">유제품</option>
+            <option value="육류">육류</option>
+            <option value="어패류">어패류</option>
+            <option value="냉동식품">냉동식품</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
 
         {/* 보관 방법 */}
         <div className="fridge-form-group">

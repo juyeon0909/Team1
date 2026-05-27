@@ -36,10 +36,12 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
                      </NavDropdown>
+                     
 
                   </Nav>
                   <NavDropdown className="nav-user" title={NAV_USER_LABEL}>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/admin/qna`)}>문의 관리</NavDropdown.Item>
                      <NavDropdown.Item onClick={handleLogout}>로그아웃</NavDropdown.Item>
                   </NavDropdown>
                </>

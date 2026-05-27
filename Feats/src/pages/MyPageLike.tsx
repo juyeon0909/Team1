@@ -3,6 +3,7 @@ import { Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import customAxios from './../api/axiosInstance';
 import '../components/MyPage.css';
+import { API_BASE_URL } from '../config/config';
 
 interface Recipe {
   id: number;
@@ -49,19 +50,14 @@ export default function LikedRecipes() {
   useEffect(() => {
     const fetchLikedRecipes = async () => {
       try {
-        const url = `/user/likes`;
+        const url = `${API_BASE_URL}/mypage/like`;;
         const response = await customAxios.get(url);
         setRecipes(response.data || []);
       } catch (error) {
         console.error('좋아요 내역 불러오기 실패:', error);
-        setError('좋아요 내역을 불러오지 못했습니다. 임시 데이터를 표시합니다.');
+        setError('좋아요 내역을 불러오지 못했습니다.');
+        setRecipes([]);
 
-        // 로컬 더미 데이터 테스트 (첫 번째 코드 스타일의 필드 보완)
-        setRecipes([
-          { id: 1, emoji: '🍳', title: '두부 계란찜', category: '한식', time: '15분', diff: '쉬움', author: '김주연', likes: 234, liked: true, urgent: true, star: 4.8, scrappedAt: '2026.05.10' },
-          { id: 4, emoji: '🧀', title: '치즈 오믈렛', category: '양식', time: '10분', diff: '쉬움', author: '김주연', likes: 305, liked: true, urgent: false, star: 4.9, scrappedAt: '2026.05.08' },
-          { id: 3, emoji: '🍜', title: '애호박 볶음밥', category: '한식', time: '10분', diff: '보통', author: '이철수', likes: 120, liked: true, urgent: true, star: 4.5, scrappedAt: '2026.05.05' }
-        ]);
       }
     };
 
@@ -83,13 +79,13 @@ export default function LikedRecipes() {
   // 2. 애니메이션이 포함된 좋아요 취소 처리 함수
   const handleToggleLike = async (id: number, title: string, e: React.MouseEvent) => {
     e.stopPropagation(); // 카드 클릭 상세 이동 방지
-    
+
     // 0.3초간 페이드아웃 효과를 주기 위해 제거할 ID 저장
     setRemovingId(id);
 
     setTimeout(async () => {
       try {
-        const url = `/recipe/${id}/like`;
+        const url = `${API_BASE_URL}/recipe/${id}/like`;
         await customAxios.post(url);
 
         // 실제 리스트에서 제거 및 상태 초기화
@@ -131,7 +127,7 @@ export default function LikedRecipes() {
   return (
     <Container className="py-4">
       <div id="page-liked" className="page active">
-        
+
         {/* 네비게이션 브레드크럼 */}
         <div className="page-header" style={{ marginBottom: '20px' }}>
           <div className="breadcrumb" style={{ display: 'flex', gap: '6px', fontSize: '13px', marginBottom: '8px' }}>
@@ -141,9 +137,11 @@ export default function LikedRecipes() {
             <span style={{ color: '#ccc' }}>›</span>
             <span className="cur" style={{ color: '#6abf69', fontWeight: 'bold' }}>좋아요 내역</span>
           </div>
+        </div>
+        <div>
           <h2 style={{ color: '#6abf69', fontWeight: 'bold', margin: 0 }}>좋아요 내역</h2>
         </div>
-
+        
         {error && (
           <div className="alert alert-danger mt-3" style={{ fontSize: '14px' }}>
             {error}
@@ -160,7 +158,7 @@ export default function LikedRecipes() {
                 {filteredRecipes.length}개
               </span>
             </div>
-            
+
             {/* 첫 번째 코드의 정렬 셀렉트 박스 도입 */}
             <select
               className="scrap-sort-select"
@@ -183,7 +181,7 @@ export default function LikedRecipes() {
                     onClick={() => setCurFilter(cat)}
                     style={{
                       padding: '6px 14px', border: '1px solid #eee', borderRadius: '20px', fontSize: '13px', cursor: 'pointer',
-                      background: curFilter === cat ? '#6abf69' : '#f8fafc', 
+                      background: curFilter === cat ? '#6abf69' : '#f8fafc',
                       color: curFilter === cat ? '#fff' : '#64748b',
                       fontWeight: curFilter === cat ? 'bold' : 'normal',
                       transition: 'all 0.2s'
@@ -193,7 +191,7 @@ export default function LikedRecipes() {
                   </button>
                 ))}
               </div>
-              
+
               <div className="box-search" style={{ display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '6px 12px', background: '#fff', minWidth: '240px' }}>
                 <span style={{ fontSize: '14px', color: '#94a3b8' }}>🔍</span>
                 <input
@@ -213,7 +211,7 @@ export default function LikedRecipes() {
                   <div className="e-ico" style={{ fontSize: '40px', marginBottom: '12px' }}>💔</div>
                   <div className="e-ttl" style={{ fontSize: '16px', fontWeight: 'bold', color: '#475569' }}>해당하는 레시피가 없습니다</div>
                   <div className="e-sub" style={{ fontSize: '13px', marginTop: '6px', color: '#94a3b8' }}>마음에 드는 음식을 리스트에서 찜해보세요!</div>
-                  <button 
+                  <button
                     onClick={() => navigate('/recipeMain')}
                     style={{ marginTop: '16px', padding: '8px 16px', background: '#6abf69', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}
                   >
@@ -226,12 +224,12 @@ export default function LikedRecipes() {
                     key={r.id}
                     className={`item-card ${removingId === r.id ? 'removing' : ''}`}
                     onClick={() => navigate(`/recipeMain/${r.id}`)}
-                    style={{ 
-                      border: '1px solid #f1f5f9', 
-                      borderRadius: '10px', 
-                      overflow: 'hidden', 
-                      cursor: 'pointer', 
-                      background: '#fff', 
+                    style={{
+                      border: '1px solid #f1f5f9',
+                      borderRadius: '10px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      background: '#fff',
                       position: 'relative',
                       boxShadow: '0 2px 6px rgba(0,0,0,0.01)',
                       transition: 'transform 0.2s, opacity 0.3s',
@@ -245,7 +243,7 @@ export default function LikedRecipes() {
                       style={{ backgroundColor: THUMB_BG[r.category] || '#f5f5f5', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '52px', position: 'relative' }}
                     >
                       {r.emoji}
-                      
+
                       {/* 태그 컴포넌트 추가 (임박재료 활용이 활성화되어 있을 때만 렌더) */}
                       {r.urgent && (
                         <span style={{ position: 'absolute', bottom: '10px', left: '10px', background: '#ef4444', color: '#fff', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
@@ -269,7 +267,7 @@ export default function LikedRecipes() {
                       <h4 style={{ margin: '4px 0 8px 0', fontSize: '14px', fontWeight: 'bold', color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {r.title}
                       </h4>
-                      
+
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b' }}>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <span>⏱️ {r.time}</span>

@@ -3,11 +3,11 @@ package com.Plz.Beats.service;
 import com.Plz.Beats.constant.Role;
 import com.Plz.Beats.entity.Member;
 import com.Plz.Beats.repository.MemberRepository;
-import com.Plz.Beats.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -39,4 +39,24 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
     public Optional<Member> findMemberById(Long memberId){
         return this.memberRepository.findById(memberId);
     }
+
+
+    // MemberService.java 내부 수정
+    @Transactional
+    public void delete(Member member) {
+        if (member == null) {
+            throw new IllegalArgumentException("삭제하려는 회원 정보가 null입니다.");
+        }
+
+        System.out.println("🎯 회원 강제 탈퇴 로직 가동. ID: " + member.getId());
+
+        // 1. 자식 테이블(storage_items) 데이터 먼저 직접 강제 삭제!
+        memberRepository.deleteStorageItemsByMemberId(member.getId());
+        System.out.println("-> 자식 테이블(storage_items) 데이터 청소 완료.");
+
+        // 2. 부모 테이블(members) 데이터 최종 삭제!
+        memberRepository.delete(member);
+        System.out.println("-> 부모 테이블(members) 회원 삭제 완료.");
+    }
+
 }

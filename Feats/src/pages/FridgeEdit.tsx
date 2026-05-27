@@ -1,87 +1,178 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import '../components/FridgeRegister.css'; // 기존 등록창 CSS 그대로 연동
-import axiosInstance from '../api/axiosInstance.tsx';
+import axiosInstance from '../api/axiosInstance';
+import '../components/FridgeRegister.css';
+
+interface SearchItem {
+  id?: number;
+  itemId?: number;
+  name?: string;
+  itemName?: string;
+  category: string;     
+  type?: string;        
+  itemUnit?: string;
+}
 
 const FridgeEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>(); 
   const navigate = useNavigate();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 입력값 관리를 위한 상태 생성 (나중에 DB 연동 시 이 useState의 초기값에 값을 넣기)
-  const [itemname, setItemName] = useState<string>("");
-  const [quantity, setQuantity] = useState<string>("");
-  const [expiry, setExpiry] = useState<string>("");
-  const [category, setCategory] = useState<string>("신선식품"); // 기본값
-  const [storagetype, setStoragetype] = useState<string>("REFRIGERATED");
+  const [itemname, setItemname] = useState('');
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null); 
+  const [searchResults, setSearchResults] = useState<SearchItem[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
 
+  const [quantity, setQuantity] = useState<number | ''>('');
+  const [expirationdate, setExpirationdate] = useState('');
 
+  const [storagetype, setStoragetype] = useState('REFRIGERATED');
+  const [category, setCategory] = useState('과일, 야채류'); 
+
+  // 외부 클릭 시 드롭다운 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // 기존 보관 재료 상세 데이터 로드
   useEffect(() => {
     if (id) {
-      axiosInstance.get(`/product/detail/${id}`) // 백엔드 상세조회 API 주소 (팀원 규칙에 맞게 확인 필요)
+      axiosInstance.get(`/product/detail/${id}`)
         .then((res) => {
           const item = res.data;
-          setItemName(item.itemname || item.name || "");
-          setQuantity(item.quantity ? String(item.quantity) : "");
+          
+          setItemname(item.itemname || item.name || "");
+          setQuantity(item.quantity ? Number(item.quantity) : "");
+          setSelectedItemId(item.itemId || null);
           
           if (item.expiry || item.expirationdate) {
             const rawDate = item.expiry || item.expirationdate;
-            setExpiry(typeof rawDate === 'string' ? rawDate.substring(0, 10) : "");
+            setExpirationdate(typeof rawDate === 'string' ? rawDate.substring(0, 10) : "");
           }
-          setCategory(item.category || "신선식품");
+
+          if (item.category) {
+            setCategory(item.category.trim());
+          }
+
           const rawType = item.type || item.storagetype;
           if (rawType) {
-            if (rawType === '냉장' || rawType === 'REFRIGERATED') setStoragetype('REFRIGERATED');
-            else if (rawType === '냉동' || rawType === 'FROZEN') setStoragetype('FROZEN');
-            else if (rawType === '실온' || rawType === 'ROOM_TEMP') setStoragetype('ROOM_TEMP');
+            const dbType = rawType.trim().toUpperCase();
+            if (dbType === '실온' || dbType === 'ROOM_TEMP') setStoragetype('ROOM_TEMP');
+            else if (dbType === '냉동' || dbType === 'FROZEN') setStoragetype('FROZEN');
+            else if (dbType === '냉장' || dbType === 'REFRIGERATED') setStoragetype('REFRIGERATED');
           }
         })
-        .catch((err) => {
-          console.error("기존 재료 정보를 가져오는 데 실패했습니다:", err);
-        });
+        .catch((err) => console.error("기존 재료 조회 실패:", err));
     }
   }, [id]);
 
+  // 식재료 자동완성 검색 (Debounce)
+  useEffect(() => {
+    const fetchItems = async () => {
+      if (!itemname.trim() || selectedItemId) {
+        if (!itemname.trim()) setSearchResults([]);
+        return;
+      }
+      try {
+        const token = localStorage.getItem('ssToken');
+        const response = await axiosInstance.get(`/product/search?name=${encodeURIComponent(itemname)}`, {
+          headers: { Authorization: token ? `Bearer ${token}` : '' }
+        });
+        setSearchResults(response.data);
+        setShowDropdown(true);
+      } catch (error) {
+        console.error('식재료 검색 실패:', error);
+      }
+    };
 
-  const handleSave = async (): Promise<void> => {
-    // 정석 유효성 검사 복구
-    if (!itemname || !quantity || !expiry) {
-      alert("모든 항목을 입력해주세요!");
-      return;
-    } 
+    const delayDebounce = setTimeout(fetchItems, 200);
+    return () => clearTimeout(delayDebounce);
+  }, [itemname, selectedItemId]);
 
-    try {
-      // 백엔드 @PostMapping("/update/{id}") 구조 및 ProductDto 필드명과 100% 매핑
-      await axiosInstance.post(`/product/update/${id}`, {
-        name: itemname,           
-        quantity: Number(quantity), 
-        expiry: expiry,           
-        type: storagetype,
-        storagetype: storagetype,        
-        category: category        
-      });
+  // 드롭다운 항목 선택 핸들러
+  const handleSelectItem = (item: SearchItem) => {
+    const finalName = item.name || item.itemName || '';
+    const finalId = item.id || item.itemId || null;
 
-      alert(`[${itemname}] 재료가 성공적으로 수정되었습니다!`);
-      navigate('/product/insert'); 
-    } catch (error) {
-      console.error("🚨 진짜 서버 에러 내용:", error);
-      alert("수정 저장 중 오류가 발생했습니다.");
+    setItemname(finalName);
+    setSelectedItemId(finalId);
+    setShowDropdown(false);
+
+    if (item.category) setCategory(item.category.trim());
+    
+    if (item.type) {
+      const dbType = item.type.toUpperCase();
+      if (dbType === '실온' || dbType === 'ROOM_TEMP') setStoragetype('ROOM_TEMP');
+      else if (dbType === '냉동' || dbType === 'FROZEN') setStoragetype('FROZEN');
+      else if (dbType === '냉장' || dbType === 'REFRIGERATED') setStoragetype('REFRIGERATED');
     }
   };
-    
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setItemname(e.target.value);
+    if (selectedItemId) setSelectedItemId(null);
+  };
+
+  // 수정 정보 저장 처리
+  const handleSave = async (): Promise<void> => {
+    if (!selectedItemId || quantity === '' || !expirationdate) {
+      alert('모든 항목을 입력해주세요!');
+      return;
+    }
+
+    const stored = localStorage.getItem('user');
+    if (!stored) {
+      alert('로그인이 필요합니다.');
+      navigate('/member/login');
+      return;
+    }
+    const user = JSON.parse(stored);
+
+    let koStorageType = "냉장";
+    if (storagetype === "ROOM_TEMP") koStorageType = "실온";
+    else if (storagetype === "FROZEN") koStorageType = "냉동";
+
+    try {
+      const token = localStorage.getItem('ssToken');
+
+      await axiosInstance.post(`/product/update/${id}`, {
+        memberId: user.id,
+        id: selectedItemId,        
+        itemId: selectedItemId,    
+        quantity: Number(quantity),
+        expirationdate, 
+        expiry: expirationdate,
+        storagetype: koStorageType, 
+        type: storagetype,
+        category
+      }, {
+        headers: { Authorization: token ? `Bearer ${token}` : '' }
+      });
+
+      alert(`[${itemname}] 재료가 성공적으로 변경되었습니다.`);
+      navigate('/product/insert');
+    } catch (error) {
+      alert('수정 중 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error(error);
+    }
+  };
 
   const handleCancel = (): void => {
-    navigate('/product/insert'); // 취소 시 목록 페이지로 이동
+    navigate('/product/insert');
   };
 
   return (
     <div className="fridge-form-container">
       <div className="fridge-form-card">
-        
-        {/* 헤더 영역 */}
+
         <div style={{ marginBottom: '25px' }}>
-          <h3 className="fridge-form-title">
-            재료 수정 {id && <span className="fridge-form-title-id">(ID: {id})</span>}
-          </h3>
+          <h3 className="fridge-form-title">재료 수정</h3>
           <p className="fridge-form-subtitle">
             보관 중인 재료의 변경된 정보를 수정합니다.
           </p>
@@ -89,7 +180,6 @@ const FridgeEdit: React.FC = () => {
 
         <hr className="fridge-form-divider" />
 
-        {/* 카테고리 선택창 */}
         <div className="fridge-form-group">
           <label className="fridge-form-label">카테고리</label>
           <select
@@ -98,11 +188,15 @@ const FridgeEdit: React.FC = () => {
             onChange={(e) => setCategory(e.target.value)}
             style={{ cursor: 'pointer' }}
           >
-            <option value="신선식품">신선식품</option>
-            <option value="유제품">유제품</option>
+            <option value="과일, 야채류">과일, 야채류</option>
             <option value="육류">육류</option>
-            <option value="어패류">어패류</option>
-            <option value="냉동식품">냉동식품</option>
+            <option value="유지, 당류">유지, 당류</option>
+            <option value="곡물류">곡물류</option>
+            <option value="유제품류">유제품류</option>
+            <option value="수산물류">수산물류</option>
+            <option value="콩류">콩류</option>
+            <option value="양념류">양념류</option>
+            <option value="버섯류">버섯류</option>
             <option value="기타">기타</option>
           </select>
         </div>
@@ -121,49 +215,71 @@ const FridgeEdit: React.FC = () => {
           </select>
         </div>
 
-        {/* 재료명 입력창 */}
-        <div className="fridge-form-group">
+        <div className="fridge-form-group" style={{ position: 'relative' }} ref={dropdownRef}>
           <label className="fridge-form-label">재료명</label>
           <input
             type="text"
             className="fridge-form-input"
             value={itemname}
-            onChange={(e) => setItemName(e.target.value)}
-            placeholder="예: 우유, 대파 등"
+            onChange={handleInputChange}
+            placeholder="예: 우유, 대파"
+            autoComplete="off"
           />
+
+          {showDropdown && searchResults.length > 0 && (
+            <ul style={{
+              position: 'absolute', top: '100%', left: 0, right: 0,
+              backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '4px',
+              maxHeight: '180px', overflowY: 'auto', zIndex: 9999, padding: 0, margin: '4px 0 0 0',
+              listStyle: 'none', boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
+            }}>
+              {searchResults.map((item, index) => {
+                const displayName = item.itemName || item.name || '이름 없음';
+                const displayId = item.itemId || item.id || index;
+                return (
+                  <li
+                    key={displayId}
+                    onClick={() => handleSelectItem(item)}
+                    style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', borderBottom: '1px solid #f5f5f5', alignItems: 'center' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f7ff')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+                  >
+                    <strong style={{ color: '#333', marginRight: '8px' }}>{displayName}</strong>
+                    <span style={{ color: '#888', fontSize: '13px', flexGrow: 1 }}>{item.itemUnit || '개'}</span>
+                    <span style={{ color: '#aaa', fontSize: '12px', background: '#eee', padding: '2px 6px', borderRadius: '10px' }}>{item.category}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
 
-        {/* 수량 입력창 */}
         <div className="fridge-form-group">
-          <label className="fridge-form-label">수량</label>
+          <label className="fridge-form-label">수량 (개)</label>
           <input
-            type="text"
+            type="number"
+            min={1}
+            max={1000}
             className="fridge-form-input"
             value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="예: 1팩, 500g, 3개"
+            onChange={(e) => setQuantity(e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder="예: 3"
           />
         </div>
 
-        {/* 유통기한 입력창 */}
         <div className="fridge-form-group last">
           <label className="fridge-form-label">유통기한</label>
           <input
             type="date"
             className="fridge-form-input"
-            value={expiry}
-            onChange={(e) => setExpiry(e.target.value)}
+            value={expirationdate}
+            onChange={(e) => setExpirationdate(e.target.value)}
           />
         </div>
 
-        {/* 버튼 그룹 */}
         <div className="fridge-form-actions">
-          <button onClick={handleCancel} className="btn-cancel">
-            취소
-          </button>
-          <button onClick={handleSave} className="btn-save">
-            저장
-          </button>
+          <button onClick={handleCancel} className="btn-cancel">취소</button>
+          <button onClick={handleSave} className="btn-save">저장</button>
         </div>
 
       </div>

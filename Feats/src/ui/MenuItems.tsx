@@ -19,8 +19,8 @@ type MenuItemsProps = {
 function App({ appName, user, handleLogout }: MenuItemsProps) {
    console.log('xxx 프롭스 : ' + appName);
    const navigate = useNavigate();
-   const USER_NAME = "김주연";
-   const NAV_USER_LABEL = "김주";
+   const USER_NAME = user?.name || "사용자";
+   const NAV_USER_LABEL = user?.name?.slice(0, 2) || "사용자";
 
    // user 프롭스를 사용하여 상단에 보이는 풀다운 메뉴를 적절히 분기 처리합니다.
    const Navbar: React.FC = () => {

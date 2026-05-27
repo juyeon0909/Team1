@@ -31,7 +31,7 @@ public class RecipeIngredient {
 
     private String unit; // VARCHAR (단위: g, ml, 스푼 등)
 
-    private int quantity; // 수량
+    private String quantity; // 수량
 
     // 💡 자바 변수명은 camelCase가 관례이므로 isRequired로 변경하되, DB 컬럼명은 snake_case 유지
     @Column(name = "is_required", nullable = false)

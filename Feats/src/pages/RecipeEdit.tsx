@@ -2,66 +2,79 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
-const RecipeEdit = () => {
-  const { id } = useParams(); // URL에서 수정한 레시피의 ID 추출
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState<boolean>(!!id); // ID가 있으면 초기 로딩 활성화
+interface IngredientRow {
+  name: string;
+  quantity: string;
+}
 
-  // 1. 상태 변수 정의
+const RecipeEdit = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // 상태 변수 정의
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [cookingTime, setCookingTime] = useState("");
   const [intro, setIntro] = useState("");
-  const [mustIngredients, setMustIngredients] = useState([{ name: "", quantity: "" }]);
+
+  // 필수 재료 구조 (기존 단순 name, quantity 구조)
+  const [mustIngredients, setMustIngredients] = useState<IngredientRow[]>([
+    { name: "", quantity: "" }
+  ]);
   const [optIngredients, setOptIngredients] = useState("");
   const [method, setMethod] = useState("");
 
-  // 이미지 관련 상태 (추후 확장용 기틀 유지)
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
-  // ================= [1. 기존 데이터 로드 (GET) 연동 추가] =================
+  // 💡 기존 레시피 데이터 불러오기
   useEffect(() => {
-    if (!id) return;
-
-    const fetchOriginalRecipe = async () => {
+    const fetchRecipeData = async () => {
       try {
         setLoading(true);
-        // 백엔드 단건 조회 API 호출 (예: GET /api/{id})
+        const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+
         const response = await axios.get(`http://localhost:9000/api/recipeMain/${id}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
           withCredentials: true
         });
 
-        const data = response.data;
+        if (response.data) {
+          const data = response.data;
+          setTitle(data.title || "");
+          // 카테고리 역매핑 (영문 DTO -> 국문 UI)
+          const reverseCategoryMapper: { [key: string]: string } = {
+            "HANSICK": "한식", "WESTERN": "양식", "JAPANESE": "일식", "CHINESE": "중식",
+            "SNACK": "간식", "NIGHT_SNACK": "야식", "DIET": "다이어트", "MEAL_PREP": "밀프랩"
+          };
+          setCategory(reverseCategoryMapper[data.category] || "한식");
+          setCookingTime(data.cookingTime ? `${data.cookingTime}분` : "");
+          setIntro(data.description || "");
+          setMethod(data.steps ? data.steps.join('\n') : "");
+          setImagePreview(data.image || "");
 
-        // 백엔드 CamelCase 데이터를 프론트엔드 폼 상태에 매핑
-        setTitle(data.title || "");
-        setCategory(data.category || "");
-        setCookingTime(data.cookingTime ? `${data.cookingTime}분` : "");
-        setIntro(data.description || "");
-        setMustIngredients(data.mustIngredients && data.mustIngredients.length > 0
-          ? data.mustIngredients
-          : [{ name: "", quantity: "" }]
-        );
-
-        // 배열 형태의 조리 단계를 다시 textarea용 줄글(string)로 복원
-        if (data.steps && data.steps.length > 0) {
-          setMethod(data.steps.join('\n'));
+          // 필수 재료 세팅 (불필요한 내장 객체 없이 name과 quantity만 매핑)
+          if (data.mustIngredients && data.mustIngredients.length > 0) {
+            setMustIngredients(data.mustIngredients.map((ing: any) => ({
+              name: ing.name || "",
+              quantity: ing.quantity || ""
+            })));
+          }
         }
-      } catch (error: any) {
-        console.error("기존 레시피 로딩 실패:", error);
-        alert("레시피 데이터를 불러오지 못했습니다.");
-        navigate('/recipeMain');
+      } catch (error) {
+        console.error("레시피 데이터 로드 실패:", error);
+        alert("레시피 데이터를 불러오는 중 오류가 발생했습니다.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchOriginalRecipe();
-  }, [id, navigate]);
-  // =========================================================================
+    if (id) {
+      fetchRecipeData();
+    }
+  }, [id]);
 
-  // 필수 재료 관련 핸들러들
   const handleIngredientChange = (index: number, field: 'name' | 'quantity', value: string) => {
     const newIngredients = [...mustIngredients];
     newIngredients[index][field] = value;
@@ -69,84 +82,69 @@ const RecipeEdit = () => {
   };
 
   const addIngredientRow = () => setMustIngredients([...mustIngredients, { name: "", quantity: "" }]);
-  const removeIngredientRow = (index: number) => {
-    if (mustIngredients.length === 1) return;
-    setMustIngredients(mustIngredients.filter((_, i) => i !== index));
+  const removeIngredientRow = (index: number) => setMustIngredients(mustIngredients.filter((_, i) => i !== index));
+
+  const categoryMapper: { [key: string]: string } = {
+    "한식": "KOR", "양식": "YANG", "일식": "JAN", "중식": "CHN",
+    "간식": "GAN", "야식": "YA", "다이어트": "DIET", "밀프랩": "RAP"
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setImageFile(null);
-    setImagePreview("");
-  };
-
-  // ================= [2. 저장하기 (PUT/POST) 연동 구현] =================
+  // 💡 수정사항 저장하기 (PUT 또는 POST 프로젝트 규격에 맞게 사용)
   const onSave = async () => {
     if (!title.trim()) return alert("레시피 이름을 입력해주세요.");
     if (!category) return alert("카테고리를 선택해주세요.");
 
-    const filteredMustIngredients = mustIngredients.filter(
-      item => item.name.trim() !== "" && item.quantity.trim() !== ""
-    );
+    const filteredMustIngredients = mustIngredients
+      .filter(item => item.name.trim() !== "" && item.quantity.trim() !== "");
+
     if (filteredMustIngredients.length === 0) {
       return alert("필수 재료를 최소 한 개 이상 입력해주세요.");
     }
 
     const numericTime = parseInt(cookingTime.replace(/[^0-9]/g, "")) || 15;
     const stepsArray = method ? method.split('\n').map(s => s.trim()).filter(Boolean) : [];
+    const finalDescription = optIngredients.trim() ? `${intro || title} (선택 재료: ${optIngredients})` : intro || `${title} 레시피입니다.`;
 
-    // 백엔드 RecipeDto 규격에 맞춰 데이터 페이로드 가공
     const recipePayload = {
-      id: id ? parseInt(id, 10) : null, // 수정 시 필수 포함
+      id: id, // 수정용 ID 포함
       title: title,
-        dishName: title,                       // 💡 자바 엔티티 필수 항목 매핑 보완
-        category: "HANSICK",                   // 💡 주의: 백엔드 Category Enum 문자열 명칭과 일치해야 함 (예: 한식 -> HANSICK)
-        cookingTime: numericTime,
-        description: intro || `${title} 레시피입니다.`,
-        image: imagePreview || "default.png",  // 💡 자바 엔티티 필수 항목 매핑 보완
-        mustIngredients: filteredMustIngredients,
-        steps: stepsArray
-      };
+      dishName: title,
+      category: categoryMapper[category] || "KOR",
+      cookingTime: numericTime,
+      description: finalDescription,
+      image: imagePreview || "default.png",
+      mustIngredients: filteredMustIngredients,
+      steps: stepsArray
+    };
+
+    const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
 
     try {
-      let response;
-      if (id) {
-        // 💡 수정 모드: PUT 메서드로 특정 ID 리소스 갱신 요청
-        response = await axios.put(`http://localhost:9000/api/recipeMain/edit/${id}`, recipePayload, {
-          withCredentials: true
-        });
-      } else {
-        // 신규 수정신청 모드: POST 메서드로 발송
-        response = await axios.post('http://localhost:9000/api/recipeMain/edit', recipePayload, {
-          withCredentials: true
-        });
-      }
+      setLoading(true);
+      // 프로젝트 API 명세에 따라 PUT 주소 또는 POST 주소로 전송
+      const response = await axios.put(`http://localhost:9000/api/recipeMain/edit/${id}`, recipePayload, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        withCredentials: true
+      });
 
       if (response.status === 200 || response.status === 201) {
-        alert(id ? '레시피 수정이 완료되었습니다.' : '레시피 수정 신청이 완료되었습니다. 관리자 승인 후 공개됩니다.');
-        navigate('/recipeMain');
+        alert('레시피 수정이 완료되었습니다!');
+        navigate(`/recipeMain`);
       }
     } catch (error: any) {
-      console.error("레시피 저장 실패:", error);
+      console.error("서버 수정 실패:", error);
       if (error.response?.status === 401) {
-        alert("인증이 만료되었습니다. 다시 로그인해 주세요.");
+        alert("로그인 세션이 만료되었거나 로그인 상태가 아닙니다.");
+      } else if (error.response?.status === 403) {
+        alert("접근 권한이 없습니다. (백엔드 시큐리티 차단)");
       } else {
-        alert("서버 통신 중 오류가 발생했습니다.");
+        alert("서버 통신 장애가 발생했습니다.");
       }
+    } finally {
+      setLoading(false);
     }
   };
-  // =========================================================================
 
-  // 스타일 객체 가이드
   const pageContainerStyle = { padding: '28px 40px', background: '#f8f9fa', minHeight: 'calc(100vh - 56px)', fontFamily: 'sans-serif' };
   const backLinkStyle = { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', cursor: 'pointer', fontSize: '13px', color: '#666' };
   const cardStyle = { maxWidth: '600px', margin: '0 auto', background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', padding: '28px 32px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' };
@@ -154,32 +152,17 @@ const RecipeEdit = () => {
   const subLabelStyle = { fontSize: '11px', color: '#999', marginLeft: '4px' };
   const inputStyle = { width: '100%', padding: '9px 12px', fontSize: '13px', border: '0.5px solid #ccc', borderRadius: '6px', background: '#fafafa', color: '#111', outline: 'none', boxSizing: 'border-box' as const };
 
-  if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>레시피 정보를 가져오는 중입니다...</div>;
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>레시피 정보를 불러오는 중입니다...</div>;
 
   return (
     <div style={pageContainerStyle}>
-      <div style={backLinkStyle} onClick={() => navigate('/recipeMain')}>
-        <i className="ti ti-arrow-left" style={{ fontSize: '16px' }}></i>
-        <span>{id ? '레시피 상세로' : '레시피 목록으로'}</span>
+      <div style={backLinkStyle} onClick={() => navigate(-1)}>
+        <span>⬅ 뒤로 가기</span>
       </div>
 
       <div style={cardStyle}>
         <div style={{ fontSize: '18px', fontWeight: '500', color: '#111', marginBottom: '22px' }}>
-          {id ? `레시피 수정 (ID: ${id})` : '레시피 수정'}
-        </div>
-
-        {/* 이미지 업로드 영역 */}
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>요리 대표 이미지</label>
-          <input type="file" accept="image/*" onChange={handleImageChange} style={{ marginBottom: '8px', fontSize: '12px' }} />
-          {imagePreview ? (
-            <div style={{ position: 'relative', borderRadius: '6px', overflow: 'hidden', border: '0.5px solid #eee' }}>
-              <img src={imagePreview} alt="대표 이미지" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} />
-              <button type="button" onClick={handleRemoveImage} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', fontSize: '11px' }}>✕</button>
-            </div>
-          ) : (
-            <div style={{ padding: '20px', background: '#fafafa', border: '1px dashed #ccc', borderRadius: '6px', textAlign: 'center', color: '#999', fontSize: '12px' }}>권장 비율 정방형 또는 4:3 (선택사항)</div>
-          )}
+          레시피 수정
         </div>
 
         {/* 레시피 이름 */}
@@ -210,13 +193,25 @@ const RecipeEdit = () => {
           <input style={inputStyle} type="text" value={intro} onChange={(e) => setIntro(e.target.value)} placeholder="레시피를 한 줄로 소개해주세요" />
         </div>
 
-        {/* 필수 재료 배열 루프 */}
+        {/* 필수 재료 영역 (순수 Input 폼) */}
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>필수 재료 및 용량 *</label>
           {mustIngredients.map((item, index) => (
-            <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
-              <input style={inputStyle} type="text" value={item.name} onChange={(e) => handleIngredientChange(index, 'name', e.target.value)} placeholder="예: 두부" />
-              <input style={inputStyle} type="text" value={item.quantity} onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)} placeholder="예: 150g, 1개" />
+            <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
+              <input
+                style={inputStyle}
+                type="text"
+                value={item.name}
+                onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
+                placeholder="예: 두부"
+              />
+              <input
+                style={inputStyle}
+                type="text"
+                value={item.quantity}
+                onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
+                placeholder="예: 1모, 150g"
+              />
               {mustIngredients.length > 1 && (
                 <button type="button" onClick={() => removeIngredientRow(index)} style={{ background: '#fff', border: '0.5px solid #ccc', color: '#ff4d4f', padding: '8px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>✕</button>
               )}
@@ -237,19 +232,10 @@ const RecipeEdit = () => {
           <textarea style={{ ...inputStyle, minHeight: '100px', resize: 'vertical', fontFamily: 'inherit', lineHeight: '1.5' }} value={method} onChange={(e) => setMethod(e.target.value)} placeholder={`조리 순서를 입력해주세요\n1. 두부를 먹기 좋은 크기로 썰어요\n2. ...`} />
         </div>
 
-        {/* 안내 문구 배너 */}
-        {!id && (
-          <div style={{ background: '#FAEEDA', border: '0.5px solid #FAC775', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', color: '#633806', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-            <span style={{ fontSize: '14px' }}>ℹ️</span>
-            수정된 레시피는 관리자 승인 후 공개됩니다.
-          </div>
-        )}
-
-        {/* 하단 버튼 제어 */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
           <button type="button" onClick={() => navigate(-1)} style={{ padding: '8px 18px', fontSize: '13px', borderRadius: '6px', cursor: 'pointer', border: '0.5px solid #ccc', background: '#fff', color: '#666' }}>취소</button>
           <button type="button" onClick={onSave} style={{ padding: '8px 18px', fontSize: '13px', borderRadius: '6px', cursor: 'pointer', background: '#1D9E75', color: '#fff', border: 'none', fontWeight: '500' }}>
-            {id ? '저장하기' : '수정 신청'}
+            저장하기
           </button>
         </div>
       </div>

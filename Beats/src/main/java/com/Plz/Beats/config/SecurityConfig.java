@@ -45,7 +45,8 @@ public class SecurityConfig {
                 "/api/product/**",
                 "/first",
                 "/",
-                "/api/member/delete" // 회원 탈퇴
+                "/api/member/delete"
+                // 회원 탈퇴
         };
 
         http
@@ -62,10 +63,12 @@ public class SecurityConfig {
                         .requestMatchers(permitUrls).permitAll()
                         .requestMatchers("/api/member/delete").permitAll() // 인증 필요
                         .requestMatchers("/api/member/join").permitAll()
-                        .requestMatchers("/api/member/**").authenticated()
+                                .requestMatchers("/api/recipeMain/**").permitAll()
+                                .requestMatchers("/api/ingredients/**").permitAll()
                         .requestMatchers("/api/product/**").permitAll()
                         .requestMatchers("/api/mypage/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
 //                                .hasAnyRole("USER", "ADMIN")
 // 임시 주석              // B. 그 외의 모든 요청은 로그인 인증 필요
                         .anyRequest().authenticated()

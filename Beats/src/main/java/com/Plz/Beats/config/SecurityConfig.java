@@ -44,7 +44,8 @@ public class SecurityConfig {
                 "/product/**",
                 "/api/product/**",
                 "/first",
-                "/"
+                "/",
+                "/api/member/delete" // 회원 탈퇴
         };
 
         http
@@ -59,6 +60,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(permitUrls).permitAll()
+                        .requestMatchers("/api/member/delete").permitAll() // 인증 필요
                         .requestMatchers("/api/member/join").permitAll()
                         .requestMatchers("/api/member/**").authenticated()
                         .requestMatchers("/api/product/**").permitAll()

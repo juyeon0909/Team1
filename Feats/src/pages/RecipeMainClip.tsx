@@ -29,7 +29,7 @@ const INITIAL_SCRAPPED: ScrapedRecipe[] = [
 ];
 
 const SORT_OPTIONS = ['최신 스크랩순', '별점순', '좋아요순'];
-const CATEGORIES = ['전체', '한식', '양식', '일식', '중식', '간식'];
+const CATEGORIES = ['전체', '한식', '일식', '중식', '양식', '간식', '야식', '다이어트식', '밀프랩'];
 
 const RecipeScrap = () => {
   const navigate = useNavigate();
@@ -78,17 +78,17 @@ const RecipeScrap = () => {
       <div className="scrap-header">
         <div className="scrap-header-top">
           <button className="scrap-back-btn" onClick={() => navigate('/recipeMain')}>
-            ⬅️ <span>레시피 목록으로</span>
+             <span>레시피 목록으로</span>
           </button>
           <h2 className="scrap-title">내 스크랩</h2>
           <span className="scrap-count-badge">{recipes.length}개</span>
         </div>
-        <p className="scrap-subtitle">스크랩을 누른 레시피를 모아볼 수 있어요 ⭐</p>
+        <p className="scrap-subtitle">스크랩을 누른 레시피를 모아볼 수 있어요</p>
 
         {/* 검색 + 정렬 */}
         <div className="scrap-controls">
           <div className="scrap-search-box">
-            <span>🔍</span>
+            <span></span>
             <input
               type="text"
               placeholder="스크랩한 레시피 검색..."

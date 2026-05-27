@@ -30,9 +30,10 @@
    값이 동일하므로 이 블록을 지워도 됩니다.
    ------------------------------------------------------------ */
 :root {
-    --green: #6abf69;
-    --green-dark: #4cae4c;
-    --green-light: #e8f5e9;
+    --green: #6FBC44;          /* 기존 #8DC63F → 더 밝고 청량한 민트그린 */
+    --green-dark: #1FA86E;
+    --green-light: #E8FBF4;
+    --green-pale: #F5FFFB;
     --border: #b5d9b5;
     --white: #ffffff;
     --text-dark: #1e2a1e;

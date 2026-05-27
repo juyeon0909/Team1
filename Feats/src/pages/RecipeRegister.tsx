@@ -299,7 +299,7 @@ const RecipeRegister = () => {
             type="button"
             onClick={addIngredientRow}
             style={{
-              background: 'none', border: '1px dashed #1D9E75', color: '#1D9E75',
+              background: 'none', border: '1px dashed #6FBC44', color: '#6FBC44',
               padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', width: '100%', marginTop: '4px'
             }}
           >
@@ -356,7 +356,7 @@ const RecipeRegister = () => {
             onClick={onSave}
             style={{
               padding: '8px 18px', fontSize: '13px', borderRadius: 'var(--border-radius-md, 6px)', cursor: 'pointer',
-              background: '#1D9E75', color: '#fff', border: 'none', fontWeight: '500'
+              background: '#6FBC44', color: '#fff', border: 'none', fontWeight: '500'
             }}
           >
             {id ? '저장하기' : '등록 완료'}

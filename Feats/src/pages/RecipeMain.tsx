@@ -49,14 +49,13 @@ const INITIAL_RECIPES: Recipe[] = [
 const RecipeMain = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { id: urlId } = useParams(); // URL 주소의 ID 값 감지
+  const { id: urlId } = useParams();
 
   const [recipes, setRecipes] = useState<Recipe[]>(() => {
     const localData = localStorage.getItem('user_recipes');
     return localData ? JSON.parse(localData) : INITIAL_RECIPES;
   });
 
-  // 주소창에 ID 유무에 따라 리스트/상세 뷰 스위칭
   const view = urlId ? 'detail' : 'list';
   const selectedRecipeId = urlId ? parseInt(urlId, 10) : null;
 
@@ -97,7 +96,6 @@ const RecipeMain = () => {
         const localData = localStorage.getItem('user_recipes');
         const currentList: Recipe[] = localData ? JSON.parse(localData) : prevRecipes;
         const nextId = currentList.length > 0 ? Math.max(...currentList.map(r => r.id)) + 1 : 1;
-
         const completedRecipe: Recipe = {
           ...incomingData,
           id: nextId,
@@ -145,12 +143,10 @@ const RecipeMain = () => {
       }
       return true;
     });
-
     if (sortBy === '추천순') result.sort((a, b) => b.match - a.match);
     if (sortBy === '인기순') result.sort((a, b) => b.heart - a.heart);
     if (sortBy === '최신순') result.sort((a, b) => b.id - a.id);
     if (sortBy === '리뷰순') result.sort((a, b) => b.star - a.star);
-
     return result;
   }, [recipes, searchQuery, activeCategory, activeMatch, activeTime, urgentOnly, sortBy]);
 
@@ -176,21 +172,22 @@ const RecipeMain = () => {
   };
 
   const getMatchBadgeStyle = (match: number) => {
-    if (match >= 100) return { bg: '#1D9E75', text: '#fff' };
-    if (match >= 80) return { bg: '#639922', text: '#fff' };
+    if (match >= 100) return { bg: '#6FBC44', text: '#fff' };  // ← 변경
+    if (match >= 80)  return { bg: '#3E8C1F', text: '#fff' };  // ← 변경
     return { bg: '#BA7517', text: '#fff' };
   };
 
   return (
     <div style={{ fontFamily: 'sans-serif', background: '#f8f9fa', minHeight: '100vh', color: '#111', position: 'relative' }}>
-      {/* ─── VIEW 1: 목록 화면 ─── */}
+
+      {/* ─── 목록 화면 ─── */}
       {view === 'list' && (
         <div>
           <div style={{ background: '#fff', borderBottom: '0.5px solid #eee', padding: '24px 40px 0' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div style={{ fontSize: '20px', fontWeight: 500 }}>레시피</div>
               <button
-                style={{ background: '#1D9E75', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+                style={{ background: '#6FBC44', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
                 onClick={() => navigate('/recipeMain/register')}
               >
                 레시피 등록
@@ -199,7 +196,6 @@ const RecipeMain = () => {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
               <div style={{ flex: 1, background: '#fafafa', border: '0.5px solid #ccc', borderRadius: '8px', padding: '9px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>🔍</span>
                 <input
                   type="text"
                   placeholder="레시피 이름 또는 재료로 검색..."
@@ -224,9 +220,9 @@ const RecipeMain = () => {
                   onClick={() => { setActiveCategory(cat); setCurrentPage(1); }}
                   style={{
                     fontSize: '13px', padding: '8px 16px', cursor: 'pointer', whiteSpace: 'nowrap',
-                    color: activeCategory === cat ? '#1D9E75' : '#666',
+                    color: activeCategory === cat ? '#3E8C1F' : '#666',
                     fontWeight: activeCategory === cat ? 500 : 'normal',
-                    borderBottom: activeCategory === cat ? '2px solid #1D9E75' : '2px solid transparent'
+                    borderBottom: activeCategory === cat ? '2px solid #6FBC44' : '2px solid transparent'
                   }}
                 >
                   {cat}
@@ -254,10 +250,9 @@ const RecipeMain = () => {
                 return (
                   <div
                     key={r.id}
-                    onClick={() => navigate(`/recipeMain/${r.id}`)} // 주소창 이동
+                    onClick={() => navigate(`/recipeMain/${r.id}`)}
                     style={{ background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer' }}
                   >
-                    {/* 이미지 영역 (화면상 ID 노출 태그 제거됨) */}
                     <div style={{ height: '130px', background: r.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', position: 'relative' }}>
                       {r.emoji}
                       <span style={{ position: 'absolute', bottom: '8px', right: '8px', fontSize: '11px', padding: '3px 8px', borderRadius: '20px', background: badge.bg, color: badge.text }}>
@@ -266,7 +261,7 @@ const RecipeMain = () => {
                     </div>
                     <div style={{ padding: '14px 16px' }}>
                       <div style={{ fontSize: '14px', fontWeight: 500, color: '#111', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '11px', color: '#1D9E75', background: '#E1F5EE', padding: '1px 5px', borderRadius: '4px', fontWeight: 'bold' }}>{r.cat}</span>
+                        <span style={{ fontSize: '11px', color: '#3E8C1F', background: '#E8F5DA', padding: '1px 5px', borderRadius: '4px', fontWeight: 'bold' }}>{r.cat}</span>
                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</span>
                       </div>
                       <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px', height: '16px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.desc}</div>
@@ -294,7 +289,9 @@ const RecipeMain = () => {
                     onClick={() => setCurrentPage(page)}
                     style={{
                       width: '34px', height: '34px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                      border: '0.5px solid #ccc', background: currentPage === page ? '#1D9E75' : '#fff', color: currentPage === page ? '#fff' : '#555'
+                      border: '0.5px solid #ccc',
+                      background: currentPage === page ? '#6FBC44' : '#fff',
+                      color: currentPage === page ? '#fff' : '#555'
                     }}
                   >
                     {page}
@@ -307,11 +304,11 @@ const RecipeMain = () => {
         </div>
       )}
 
-      {/* ─── VIEW 2: 상세 화면 (화면상 ID 노출 태그 제거됨) ─── */}
+      {/* ─── 상세 화면 ─── */}
       {view === 'detail' && currentRecipe && (
         <div style={{ padding: '28px 40px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', cursor: 'pointer' }} onClick={() => navigate('/recipeMain')}>
-            <span>⬅️</span> <span style={{ fontSize: '13px', color: '#666' }}>레시피 목록으로</span>
+             <span style={{ fontSize: '13px', color: '#666' }}>레시피 목록으로</span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', maxWidth: '960px', margin: '0 auto' }}>
@@ -339,7 +336,7 @@ const RecipeMain = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px', color: '#666' }}>
                   {currentRecipe.steps && currentRecipe.steps.map((step, idx) => (
                     <div key={idx} style={{ display: 'flex', gap: '12px' }}>
-                      <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#E1F5EE', color: '#085041', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#E8F5DA', color: '#3E8C1F', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         {idx + 1}
                       </span>
                       <span>{step}</span>
@@ -372,10 +369,16 @@ const RecipeMain = () => {
               )}
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={(e) => toggleScrap(currentRecipe.id, e)} style={{ flex: 1, padding: '10px', background: currentRecipe.isScrapped ? '#BA7517' : '#1D9E75', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+                <button
+                  onClick={(e) => toggleScrap(currentRecipe.id, e)}
+                  style={{ flex: 1, padding: '10px', background: currentRecipe.isScrapped ? '#BA7517' : '#6FBC44', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                >
                   {currentRecipe.isScrapped ? '★ 스크랩 취소' : '⭐ 스크랩'}
                 </button>
-                <button onClick={() => setIsModalOpen(true)} style={{ flex: 1, padding: '10px', background: '#0BA574', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  style={{ flex: 1, padding: '10px', background: '#3E8C1F', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
+                >
                   요리하기
                 </button>
               </div>
@@ -384,9 +387,9 @@ const RecipeMain = () => {
         </div>
       )}
 
-      {/* 모달 */}
+      {/* ─── 모달 ─── */}
       {isModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', width: '360px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
             <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '14px' }}>🍳 사용할 재료 및 수량 확인</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
@@ -402,9 +405,15 @@ const RecipeMain = () => {
                 </div>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: '8px'  }}>
-              <button onClick={() => setIsModalOpen(false)} style={{ flex: 1, padding: '10px', background: '#eee', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>취소</button>
-              <button onClick={handleCookStart} style={{ flex: 1.5, padding: '10px', background: '#0BA574', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>확인 및 요리시작</button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                style={{ flex: 1, padding: '10px', background: '#eee', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+              >취소</button>
+              <button
+                onClick={handleCookStart}
+                style={{ flex: 1.5, padding: '10px', background: '#3E8C1F', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
+              >확인 및 요리시작</button>
             </div>
           </div>
         </div>
@@ -412,5 +421,5 @@ const RecipeMain = () => {
     </div>
   );
 };
-{/* 커밋 체크  */}
+
 export default RecipeMain;

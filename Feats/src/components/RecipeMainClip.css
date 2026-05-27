@@ -34,7 +34,7 @@
 }
 
 .scrap-back-btn:hover {
-  color: #1a9d60;
+  color: #3E8C1F; /* #1a9d60 → green-dark */
 }
 
 .scrap-title {
@@ -45,7 +45,7 @@
 }
 
 .scrap-count-badge {
-  background: #1a9d60;
+  background: #6FBC44; /* #1a9d60 → green */
   color: #fff;
   font-size: 12px;
   font-weight: 600;
@@ -120,9 +120,9 @@
 }
 
 .scrap-cat-tab.active {
-  color: #1a9d60;
+  color: #3E8C1F;                    /* #1a9d60 → green-dark */
   font-weight: 500;
-  border-bottom: 2px solid #1a9d60;
+  border-bottom: 2px solid #6FBC44; /* #1a9d60 → green */
 }
 
 /* ── 본문 ── */
@@ -192,12 +192,12 @@
 }
 
 .badge-match-full {
-  background: #1a9d60;
+  background: #3E8C1F; /* green-dark */
   color: #fff;
 }
 
 .badge-match-high {
-  background: #639922;
+  background: #6FBC44; /* green */
   color: #fff;
 }
 
@@ -228,10 +228,6 @@
 .scrap-heart-btn:hover {
   transform: scale(1.15);
   background: rgba(255, 255, 255, 1);
-}
-
-.scrap-heart-btn.liked {
-  /* 하트 이모지로 표현하므로 별도 색상 불필요 */
 }
 
 /* 카드 바디 */
@@ -271,9 +267,9 @@
 }
 
 .scrap-tag-cat {
-  background: #E8F5EE;
-  color: #1a9d60;
-  border-color: #b2dfc8;
+  background: #E8F5DA;  /* #E8F5EE → green-light */
+  color: #3E8C1F;       /* #1a9d60 → green-dark */
+  border-color: #BDE095; /* #b2dfc8 → border */
 }
 
 .scrap-tag-urgent {
@@ -332,7 +328,7 @@
 }
 
 .scrap-go-btn {
-  background: #1a9d60;
+  background: #6FBC44; /* #1a9d60 → green */
   color: #fff;
   border: none;
   padding: 11px 24px;
@@ -344,7 +340,7 @@
 }
 
 .scrap-go-btn:hover {
-  background: #158a52;
+  background: #3E8C1F; /* #158a52 → green-dark */
 }
 
 /* ── 반응형 ── */

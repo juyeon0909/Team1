@@ -44,13 +44,13 @@ public class PasswordlessController {
     @PostMapping("/getSp")
     public ResponseEntity<?> getSp(@RequestParam String email) {
         try {
+            // Service에서 묶어준 Map(randomValue, servicePassword)을 그대로 받습니다.
             Map<String, String> result = passwordlessService.requestSp(email);
+
+            // 리액트로 그대로 전달! (알아서 JSON으로 변환됨)
             return ResponseEntity.ok(result);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("인증 요청에 실패했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 

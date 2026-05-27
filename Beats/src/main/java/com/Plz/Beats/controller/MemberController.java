@@ -5,6 +5,7 @@ import com.Plz.Beats.dto.*;
 import com.Plz.Beats.entity.Member;
 import com.Plz.Beats.service.MemberDetailsService;
 import com.Plz.Beats.service.MemberService;
+import com.Plz.Beats.service.PasswordlessService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ public class MemberController {
     private final MemberDetailsService memberDetailsServices;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordlessService passwordlessService;
 
     @PostMapping("/login")
     // LoginDto의 데이터를 객체에 담으려고 @RequestBody 작성
@@ -44,7 +46,17 @@ public class MemberController {
                     .body(Map.of("error", "이메일 또는 비밀번호가 올바르지 않습니다."));
         }
 
-        // 2. 비밀번호 검증
+        // 2. 패스워드리스 등록 여부 확인
+        try {
+            if (passwordlessService.checkIsAp(dto.getEmail())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "패스워드리스로 로그인해주세요."));
+            }
+        } catch (Exception e) {
+            // 패스워드리스 서버 장애 시 일반 로그인 허용
+        }
+
+        // 3. 비밀번호 검증
         if (!passwordEncoder.matches(dto.getPassword(), userDetails.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "이메일 또는 비밀번호가 올바르지 않습니다."));
@@ -95,24 +107,33 @@ public class MemberController {
         return new ResponseEntity<>("회원 가입 성공", HttpStatus.OK); // 회원 가입 성공 (OK라는건 200번대라는 뜻)
     }
 
-    @PostMapping("/delete") // 🚨 다시 POST로 복구
+    @PostMapping("/delete")
     public ResponseEntity<?> deleteMember(@RequestBody Map<String, String> request, Principal principal) {
 
-        String email = request.get("email");
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다."));
+        }
+
+        String requestEmail = request.get("email");
         String password = request.get("password");
+        String principalEmail = principal.getName();
 
-        // 로컬 콘솔창에 찍히는지 확인용
-        System.out.println("로컬 테스트 요청 들어옴! 이메일: " + email + ", 비번: " + password);
+        // 입력한 이메일이 로그인한 본인 이메일과 다르면 거부
+        if (!principalEmail.equals(requestEmail)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "본인 계정 이메일과 일치하지 않습니다."));
+        }
 
-        String targetEmail = (principal != null) ? principal.getName() : email;
-
-        Member member = memberService.findByEmail(targetEmail);
+        Member member = memberService.findByEmail(principalEmail);
         if (member == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "회원이 없습니다."));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "회원이 없습니다."));
         }
 
         if (!passwordEncoder.matches(password, member.getPassword())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "비밀번호 불일치"));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "비밀번호 불일치"));
         }
 
         memberService.delete(member);

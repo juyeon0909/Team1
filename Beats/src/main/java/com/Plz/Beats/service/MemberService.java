@@ -82,4 +82,5 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
         memberRepository.delete(member);
         System.out.println("-> 부모 테이블(members) 회원 삭제 완료.");
     }
+
 }

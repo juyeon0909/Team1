@@ -18,6 +18,7 @@ import Delete from '../pages/Delete';
 import RecipeRegister from '../pages/RecipeRegister'
 import RecipeEdit from '../pages/RecipeEdit'
 import FindPassword from '../pages/FindPassword.tsx'
+import AdminQna from '../pages/AdminQna';
 
 
 
@@ -49,6 +50,7 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/delete' element={<Delete />} />
       <Route path='/recipeMain/edit' element={<RecipeEdit />} />
       <Route path='/member/find-password' element={<FindPassword />} />
+      <Route path='/admin/qna' element={<AdminQna />} />
 
     </Routes>
   );

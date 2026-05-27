@@ -65,6 +65,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/member/**").authenticated()
                         .requestMatchers("/api/product/**").permitAll()
                         .requestMatchers("/api/mypage/**").authenticated()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 //                                .hasAnyRole("USER", "ADMIN")
 // 임시 주석              // B. 그 외의 모든 요청은 로그인 인증 필요
                         .anyRequest().authenticated()

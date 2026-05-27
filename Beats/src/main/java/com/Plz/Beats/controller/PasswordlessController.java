@@ -44,8 +44,8 @@ public class PasswordlessController {
     @PostMapping("/getSp")
     public ResponseEntity<?> getSp(@RequestParam String email) {
         try {
-            String randomValue = passwordlessService.requestSp(email);
-            return ResponseEntity.ok(randomValue);
+            Map<String, String> result = passwordlessService.requestSp(email);
+            return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {

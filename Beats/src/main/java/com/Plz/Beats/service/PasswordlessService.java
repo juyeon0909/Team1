@@ -17,7 +17,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 import java.nio.charset.StandardCharsets;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 // 일회용 복호화 토큰 만들기
 @Slf4j
@@ -27,6 +29,9 @@ public class PasswordlessService {
 
     private final MemberRepository memberRepository;
     private final RestTemplate restTemplate = new RestTemplate(); // Bean으로 등록해두셨다면 주입받아 쓰셔도 됩니다.
+
+    // 인증 서버의 result API는 1회 소비형일 수 있으므로 승인 결과를 캐싱해 중복 조회 방지
+    private final Map<String, Boolean> approvalCache = new ConcurrentHashMap<>();
 
 
     @Value("${passwordless.server-url}")
@@ -87,18 +92,23 @@ public class PasswordlessService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("userId", member.getEmail()); // 이메일을 아이디로!
         body.add("name", member.getName());    // 엔티티의 이름
-        body.add("email", member.getEmail());  // 엔티티의 이메일
+        body.add("secretKey", serverKey);  // 엔티티의 이메일
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
-        Map<String, Object> responseBody = response.getBody();
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+            Map<String, Object> responseBody = response.getBody();
 
-        log.info("joinAp response: {}", responseBody);
+            log.info("joinAp response: {}", responseBody);
 
-        // 여기서 리턴된 data 안의 'qr' (Base64 이미지 문자열)을
-        // 리액트 프론트엔드로 보내주면 <img> 태그로 띄울 수 있습니다.
-        return (Map<String, Object>) responseBody.get("data");
+            // 여기서 리턴된 data 안의 'qr' (Base64 이미지 문자열)을
+            // 리액트 프론트엔드로 보내주면 <img> 태그로 띄울 수 있습니다.
+            return (Map<String, Object>) responseBody.get("data");
+        } catch (Exception e) {
+            log.error("joinAp API 호출 중 에러 발생 (AP 서버 주소: {})", url, e);
+            throw new RuntimeException("패스워드리스 인증 서버 호출에 실패했습니다: " + e.getMessage(), e);
+        }
     }
 
 
@@ -168,7 +178,7 @@ public class PasswordlessService {
     }
 
     //인증 요청 (getSp) - 휴대폰으로 푸시 알림 전송
-    public String requestSp(String email) {
+    public Map<String, String> requestSp(String email) {
         // 1. 위에서 만든 메서드로 암호화된 토큰을 받아와서 풉니다.
         String decryptedToken = getDecryptedToken(email);
 
@@ -185,7 +195,7 @@ public class PasswordlessService {
         // 3. 바디 세팅 (5개의 파라미터를 꽉꽉 채워 넣습니다)
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("userId", email);
-        body.add("decryptedToken", decryptedToken);
+        body.add("token", decryptedToken);
         body.add("randomValue", randomValue);
         body.add("sessionId", sessionId);
         body.add("clientIp", clientIp);
@@ -198,10 +208,21 @@ public class PasswordlessService {
 
         log.info("getSp(푸시 알림) response: {}", responseBody);
 
-        // 5. 성공적으로 알림이 전송되었다면 randomValue를 리턴합니다.
+        // 5. 성공적으로 알림이 전송되었다면 randomValue와 servicePassword를 리턴합니다.
         if (responseBody != null && "Y".equals(responseBody.get("result"))) {
-            return randomValue;
+            Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
+            String servicePassword = data != null ? String.valueOf(data.get("servicePassword")) : "";
+
+            Map<String, String> resultMap = new HashMap<>();
+            resultMap.put("randomValue", randomValue);
+            resultMap.put("authNumber", servicePassword);
+
+            return resultMap;
         } else {
+            String code = responseBody != null ? String.valueOf(responseBody.get("code")) : "";
+            if ("200.6".equals(code)) {
+                throw new IllegalArgumentException("이미 진행 중인 인증 요청이 있습니다. 모바일 앱에서 승인하거나 취소 후 다시 시도해 주세요.");
+            }
             throw new RuntimeException("모바일 푸시 알림 전송에 실패했습니다.");
         }
     }
@@ -211,6 +232,13 @@ public class PasswordlessService {
     // 리액트가 api를 호출할 때 마다 확인하는 식으로 함.
     // 이렇게 하면 서버 과부화를 예방할 수 있을 뿐더러 1분동안 요청에 무리가 없음.
     public boolean checkApprovalResultOnce(String email, String randomValue) {
+        String cacheKey = email + ":" + randomValue;
+
+        // 이미 승인된 결과는 캐시에서 즉시 반환 (인증 서버 재조회 불필요)
+        if (Boolean.TRUE.equals(approvalCache.get(cacheKey))) {
+            return true;
+        }
+
         String url = serverUrl + "/ap/rest/auth/result";
 
         HttpHeaders headers = new HttpHeaders();
@@ -231,8 +259,10 @@ public class PasswordlessService {
                 Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
                 String authStatus = (String) data.get("auth");
 
-                // 승인이 완료되었으면 true, 아니면 false를 즉시 리턴
-                return "Y".equals(authStatus);
+                if ("Y".equals(authStatus)) {
+                    approvalCache.put(cacheKey, true);
+                    return true;
+                }
             }
             return false;
         } catch (Exception e) {

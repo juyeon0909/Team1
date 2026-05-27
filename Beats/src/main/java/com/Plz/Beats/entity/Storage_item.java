@@ -39,11 +39,6 @@ public class Storage_item {
     @JoinColumn(name = "item_id")
     private Item item;
 
-    //식재료 이름(사용
-    @Column(nullable = false)
-    @NotBlank(message = "식재료 이름은 필수입니다.")
-    private String itemname;
-
     //냉장/냉동/실온 분류
     @Enumerated(EnumType.STRING)
     @Column(name = "storage_type", length = 50)

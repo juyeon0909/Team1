@@ -1,42 +1,9 @@
-//package com.Plz.Beats.service;
-//
-//import com.Plz.Beats.entity.Product;
-//import com.Plz.Beats.repository.ProductRepository;
-//
-//import lombok.RequiredArgsConstructor;
-//
-//import org.springframework.stereotype.Service;
-//import org.springframework.web.multipart.MultipartFile;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class ProductService {
-//
-//    private final S3Service s3Service;
-//    private final ProductRepository repository;
-//
-//    public Product saveImage(MultipartFile file)
-//            throws Exception {
-//
-//        // S3 업로드
-//        String imageUrl = s3Service.uploadFile(file);
-//
-//        // DB 저장
-//        Product image =
-//                Product.builder()
-//                        .imageName(file.getOriginalFilename())
-//                        .imageUrl(imageUrl)
-//                        .build();
-//
-//        return repository.save(image);
-//    }
-//}
-
 package com.Plz.Beats.service;
 
 import com.Plz.Beats.constant.Storagetype;
 import com.Plz.Beats.dto.ProductDto;
 import com.Plz.Beats.entity.Storage_item;
+import com.Plz.Beats.repository.ItemRepository;
 import com.Plz.Beats.repository.ProductRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -53,12 +20,8 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository repository;
+    private final ItemRepository itemRepository;
 
-//    public List<ProductDto> getAllStorageItems() {
-//        return repository.findAll().stream()
-//                .map(ProductDto::fromEntity)
-//                .collect(Collectors.toList());
-//    }
     @PersistenceContext
     private EntityManager entityManager;
     // 컨트롤러에서 5L을 넘겨받을 수 있도록 매개변수(Long memberId)를 추가합니다.
@@ -88,8 +51,10 @@ public class ProductService {
         Storage_item item = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 보관 재료가 존재하지 않습니다. ID: " + id));
 
+        com.Plz.Beats.entity.Item realItem = itemRepository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식재료 항목입니다. ID: " + dto.getId()));
         // 💡
-        item.setItemname(dto.getName());
+        item.setItem(realItem);
         item.setQuantity(dto.getQuantity()); // 리액트에서 정수로 파싱되어 온 수량 적용
         item.setExpirationdate(dto.getExpiry());
 
@@ -116,5 +81,24 @@ public class ProductService {
 
         // 2. 존재가 확인되면 JPA 리포지토리를 통해 DB에서 완전히 날려버립니다.
         repository.delete(item);
+    }
+
+    public List<ProductDto> searchItemsByName(String name) {
+        // itemRepository를 통해 이름에 검색어가 포함된 식재료들을 디비에서 찾습니다.
+        return itemRepository.findByNameContaining(name).stream()
+                .map(item -> {
+                    ProductDto dto = new ProductDto();
+                    dto.setId(item.getId());
+                    dto.setName(item.getName());
+                    dto.setCategory(item.getCategory());
+                    // 필요 시 단우(itemUnit)도 DTO에 필드가 있다면 세팅해 줍니다.
+                    if (item.getFridgeStatus() != null) {
+                        dto.setType(item.getFridgeStatus().toLowerCase()); // 예: "frozen", "refrigerated"
+                    } else {
+                        dto.setType("refrigerated"); // 기본값 방어
+                    }
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }

@@ -1,20 +1,107 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import '../components/FridgeRegister.css';
 
+interface SearchItem {
+  id?: number;
+  itemId?: number;
+  name?: string;
+  itemName?: string;
+  category: string;     
+  type?: string;        
+  itemUnit?: string;
+}
+
 const FridgeRegister: React.FC = () => {
   const navigate = useNavigate();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [itemname, setItemname] = useState('');
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  const [searchResults, setSearchResults] = useState<SearchItem[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const [quantity, setQuantity] = useState<number | ''>('');
   const [expirationdate, setExpirationdate] = useState('');
-  const [storagetype, setStoragetype] = useState('REFRIGERATED'); // 기본값: 냉장
-  const [category, setCategory] = useState('신선식품');
 
+  const [storagetype, setStoragetype] = useState('REFRIGERATED');
+  const [category, setCategory] = useState('과일, 야채류'); 
 
+  // 외부 클릭 시 드롭다운 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // 식재료 자동완성 검색 (Debounce)
+  useEffect(() => {
+    const fetchItems = async () => {
+      if (!itemname.trim() || selectedItemId) {
+        if (!itemname.trim()) setSearchResults([]);
+        return;
+      }
+      try {
+        const token = localStorage.getItem('ssToken');
+        const response = await axiosInstance.get(`/product/search?name=${encodeURIComponent(itemname)}`, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : ''
+          }
+        });
+
+        setSearchResults(response.data);
+        setShowDropdown(true);
+      } catch (error) {
+        console.error('식재료 검색 실패:', error);
+      }
+    };
+
+    const delayDebounce = setTimeout(fetchItems, 200);
+    return () => clearTimeout(delayDebounce);
+  }, [itemname, selectedItemId]);
+
+  // 드롭다운 항목 선택 핸들러
+  const handleSelectItem = (item: SearchItem) => {
+    const finalName = item.name || item.itemName || '';
+    const finalId = item.id || item.itemId || null;
+
+    setItemname(finalName);
+    setSelectedItemId(finalId);
+    setShowDropdown(false);
+
+    if (item.category) {
+      setCategory(item.category.trim());
+    }
+    if (item.type) {
+      const dbType = item.type.toUpperCase();
+
+      if (dbType === '실온' || dbType === 'ROOM_TEMP') {
+        setStoragetype('ROOM_TEMP');
+      } else if (dbType === '냉동' || dbType === 'FROZEN') {
+        setStoragetype('FROZEN');       
+      } else if (dbType === '냉장' || dbType === 'REFRIGERATED') {
+        setStoragetype('REFRIGERATED'); 
+      } else {
+        setStoragetype('REFRIGERATED'); 
+      }
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setItemname(e.target.value);
+    if (selectedItemId) {
+      setSelectedItemId(null);
+    }
+  };
+
+  // 새 식재료 등록 처리
   const handleSave = async (): Promise<void> => {
-    if (!itemname || quantity === '' || !expirationdate) {
+    if (!selectedItemId || quantity === '' || !expirationdate) {
       alert('모든 항목을 입력해주세요!');
       return;
     }
@@ -30,7 +117,7 @@ const FridgeRegister: React.FC = () => {
     try {
       await axiosInstance.post('/product/register', {
         memberId: user.id,
-        itemname,
+        itemId: selectedItemId,
         quantity: Number(quantity),
         expirationdate,
         storagetype,
@@ -61,7 +148,6 @@ const FridgeRegister: React.FC = () => {
 
         <hr className="fridge-form-divider" />
 
-        {/* 카테고리 */}
         <div className="fridge-form-group">
           <label className="fridge-form-label">카테고리</label>
           <select
@@ -70,16 +156,19 @@ const FridgeRegister: React.FC = () => {
             onChange={(e) => setCategory(e.target.value)}
             style={{ cursor: 'pointer' }}
           >
-            <option value="신선식품">신선식품</option>
-            <option value="유제품">유제품</option>
+            <option value="과일, 야채류">과일, 야채류</option>
             <option value="육류">육류</option>
-            <option value="어패류">어패류</option>
-            <option value="냉동식품">냉동식품</option>
+            <option value="유지, 당류">유지, 당류</option>
+            <option value="곡물류">곡물류</option>
+            <option value="유제품류">유제품류</option>
+            <option value="수산물류">수산물류</option>
+            <option value="콩류">콩류</option>
+            <option value="양념류">양념류</option>
+            <option value="버섯류">버섯류</option>
             <option value="기타">기타</option>
           </select>
         </div>
 
-        {/* 보관 방법 */}
         <div className="fridge-form-group">
           <label className="fridge-form-label">보관 방법</label>
           <select
@@ -94,19 +183,45 @@ const FridgeRegister: React.FC = () => {
           </select>
         </div>
 
-        {/* 재료명 */}
-        <div className="fridge-form-group">
+        <div className="fridge-form-group" style={{ position: 'relative' }} ref={dropdownRef}>
           <label className="fridge-form-label">재료명</label>
           <input
             type="text"
             className="fridge-form-input"
             value={itemname}
-            onChange={(e) => setItemname(e.target.value)}
-            placeholder="예: 서울우유, 대파 등"
+            onChange={handleInputChange}
+            placeholder="예: 우유, 대파"
+            autoComplete="off"
           />
+
+          {showDropdown && searchResults.length > 0 && (
+            <ul style={{
+              position: 'absolute', top: '100%', left: 0, right: 0,
+              backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '4px',
+              maxHeight: '180px', overflowY: 'auto', zIndex: 9999, padding: 0, margin: '4px 0 0 0',
+              listStyle: 'none', boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
+            }}>
+              {searchResults.map((item, index) => {
+                const displayName = item.itemName || item.name || '이름 없음';
+                const displayId = item.itemId || item.id || index;
+                return (
+                  <li
+                    key={displayId}
+                    onClick={() => handleSelectItem(item)}
+                    style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', borderBottom: '1px solid #f5f5f5', alignItems: 'center' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f7ff')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+                  >
+                    <strong style={{ color: '#333', marginRight: '8px' }}>{displayName}</strong>
+                    <span style={{ color: '#888', fontSize: '13px', flexGrow: 1 }}>{item.itemUnit || '개'}</span>
+                    <span style={{ color: '#aaa', fontSize: '12px', background: '#eee', padding: '2px 6px', borderRadius: '10px' }}>{item.category}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
 
-        {/* 수량 */}
         <div className="fridge-form-group">
           <label className="fridge-form-label">수량 (개)</label>
           <input
@@ -120,7 +235,6 @@ const FridgeRegister: React.FC = () => {
           />
         </div>
 
-        {/* 유통기한 */}
         <div className="fridge-form-group last">
           <label className="fridge-form-label">유통기한</label>
           <input

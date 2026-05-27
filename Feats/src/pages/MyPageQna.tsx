@@ -148,6 +148,7 @@ export default function MyPageQna() {
                     </div>
                     <form onSubmit={handleSubmit}>
                         <div className="mb-4">
+                            //커밋 쳌쳌
                             <label htmlFor="qnaType" className="form-label">문의 유형</label>
                             <select className="form-select" id="qnaType" value={formData.qnaType} onChange={handleChange} required>
                                 <option value="" disabled>유형을 선택해 주세요</option>

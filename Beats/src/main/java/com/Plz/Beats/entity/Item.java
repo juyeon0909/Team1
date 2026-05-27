@@ -32,6 +32,12 @@ public class Item {
 
     private String category;
 
+    @Column(name = "fridge_status", length = 50)
+    private String fridgeStatus;
+
+    @Column(name = "item_unit", length = 200)
+    private String itemUnit;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt; // TIMESTAMP
 }

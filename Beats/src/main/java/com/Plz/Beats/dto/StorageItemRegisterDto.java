@@ -10,6 +10,7 @@ import java.time.LocalDate;
 public class StorageItemRegisterDto {
     private Long memberId;
     private String itemname;
+    private Long itemId;
     private String storagetype;   // "REFRIGERATED" / "FROZEN" / "ROOM_TEMP"
     private int quantity;
 

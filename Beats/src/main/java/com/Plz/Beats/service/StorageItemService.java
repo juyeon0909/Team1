@@ -4,9 +4,12 @@ import com.Plz.Beats.constant.Storagetype;
 import com.Plz.Beats.dto.StorageItemDto;
 import com.Plz.Beats.dto.StorageItemRegisterDto;
 import com.Plz.Beats.entity.Member;
+import com.Plz.Beats.entity.Item;
 import com.Plz.Beats.entity.Storage_item;
+import com.Plz.Beats.repository.ItemRepository;
 import com.Plz.Beats.repository.MemberRepository;
 import com.Plz.Beats.repository.StorageItemRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,7 @@ public class StorageItemService {
 
     private final StorageItemRepository storageItemRepository;
     private final MemberRepository memberRepository;
+    private final ItemRepository itemRepository;
 
     // 유통기한 임박 순 상위 4개 조회 (메인 페이지용)
     public List<StorageItemDto> getTop4ExpiringItems(Long memberId) {
@@ -41,9 +45,12 @@ public class StorageItemService {
         Member member = memberRepository.findById(dto.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
+        Item realItem = itemRepository.findById(dto.getItemId())
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 식재료 항목입니다."));
+
         Storage_item item = new Storage_item();
         item.setMember(member);
-        item.setItemname(dto.getItemname());
+        item.setItem(realItem);
         item.setQuantity(dto.getQuantity());
         item.setExpirationdate(dto.getExpirationdate());
         item.setStoragetype(Storagetype.valueOf(dto.getStoragetype()));
@@ -57,7 +64,7 @@ public class StorageItemService {
         return items.stream().map(item -> {
             StorageItemDto dto = new StorageItemDto();
             dto.setId(item.getId());
-            dto.setItemname(item.getItemname());
+            dto.setItemname(item.getItem().getName());
             dto.setQuantity(item.getQuantity());
             dto.setExpirationdate(item.getExpirationdate());
 

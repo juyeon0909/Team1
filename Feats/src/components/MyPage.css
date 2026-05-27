@@ -1,11 +1,12 @@
 :root {
-    --green: #6abf69;
-    --green-dark: #4cae4c;
-    --green-light: #e8f5e9;
+    --green: #6FBC44;          
+    --green: #6FBC44;
+    --green-dark: #3E8C1F;   
+    --green-light: #E8F5DA;  
+    --green-pale: #F3FAEA;   
+    --border: #BDE095;  
     --red:         #e05a5a;
     --red-light:   #fff0f0;
-    --border: #b5d9b5;
-    --white: #ffffff;
     --text-dark: #1e2a1e;
     --text-mid: #4a5e4a;
     --text-light:  #9ab8ae;

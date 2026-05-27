@@ -13,19 +13,21 @@ import MyPageEdit from '../pages/MyPageEdit';
 import MyPageRecipe from '../pages/MyPageRecipe';
 import MyPageLike from '../pages/MyPageLike';
 import MyPageQna from '../pages/MyPageQna';
-import Logout from '../pages/Logout';
 import Delete from '../pages/Delete';
 import RecipeRegister from '../pages/RecipeRegister'
 import RecipeEdit from '../pages/RecipeEdit'
 import FindPassword from '../pages/FindPassword.tsx'
+import AdminQna from '../pages/AdminQna';
 
 
 
 interface AppProps {
   user: User | null;
   handleLoginSuccess: (userData: User) => void;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
-function App({ user, handleLoginSuccess }: AppProps) {
+
+function App({ user, handleLoginSuccess, setUser }: AppProps) {
   return (
     <Routes>
       <Route path='/member/signup' element={<SignupPage />} />
@@ -39,14 +41,14 @@ function App({ user, handleLoginSuccess }: AppProps) {
       <Route path="/recipeMain/:id" element={<RecipeMain />} />
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
-      <Route path="/mypage/edit" element={<MyPageEdit name={user?.name || "이름 없음"} triggerToast={(msg) => console.log(msg)} />} />
+      <Route path="/mypage/edit" element={<MyPageEdit name={user?.name || "이름 없음"} setName={(newName) => setUser(prev => prev ? { ...prev, name: newName } : null)} triggerToast={(msg) => console.log(msg)} />} />
       <Route path='/mypage/recipe' element={<MyPageRecipe />} />
       <Route path='/mypage/like' element={<MyPageLike />} />
       <Route path='/mypage/qna' element={<MyPageQna />} />
-      <Route path='/logout' element={<Logout />} />
       <Route path='/delete' element={<Delete />} />
       <Route path='/recipeMain/edit' element={<RecipeEdit />} />
       <Route path='/member/find-password' element={<FindPassword />} />
+      <Route path='/admin/qna' element={<AdminQna />} />
 
     </Routes>
   );

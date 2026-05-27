@@ -88,7 +88,7 @@ const MyPageRecipe = () => {
       </div>
 
       <h2 style={{ fontSize: '18px', fontWeight: '500', marginTop: '24px', color: '#111' }}>
-        내가 등록한 레시피 🍳
+        내가 등록한 레시피
       </h2>
 
       {myRecipes.length === 0 ? (

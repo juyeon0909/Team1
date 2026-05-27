@@ -19,8 +19,8 @@ type MenuItemsProps = {
 function App({ appName, user, handleLogout }: MenuItemsProps) {
    console.log('xxx 프롭스 : ' + appName);
    const navigate = useNavigate();
-   const USER_NAME = "김주연";
-   const NAV_USER_LABEL = "김주";
+   const USER_NAME = user?.name || "사용자";
+   const NAV_USER_LABEL = user?.name?.slice(0, 2) || "사용자";
 
    // user 프롭스를 사용하여 상단에 보이는 풀다운 메뉴를 적절히 분기 처리합니다.
    const Navbar: React.FC = () => {
@@ -36,10 +36,12 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
                      </NavDropdown>
+                     
 
                   </Nav>
                   <NavDropdown className="nav-user" title={NAV_USER_LABEL}>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
+                     <NavDropdown.Item onClick={() => navigate(`/admin/qna`)}>문의 관리</NavDropdown.Item>
                      <NavDropdown.Item onClick={handleLogout}>로그아웃</NavDropdown.Item>
                   </NavDropdown>
                </>

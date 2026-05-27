@@ -82,7 +82,7 @@ const hideNav = ['/member/login', '/member/signup'].includes(location.pathname);
   return (
     <>
       {!hideNav && <MenuItems appName={appName} user={user} handleLogout={handleLogout} />}
-      <AppRoutes user={user} handleLoginSuccess={handleLoginSuccess} />
+      <AppRoutes user={user} handleLoginSuccess={handleLoginSuccess} setUser={setUser} />
 
       <footer className="bg-dark text-light text-center py-3 mt-5">
         {/* <p>&copy; 2026 {appName} ICT 인재개발원</p> */}

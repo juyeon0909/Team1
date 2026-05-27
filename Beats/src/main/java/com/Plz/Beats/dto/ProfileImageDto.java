@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProfileImageDto {
-    private String profileimage;
+    private String profileimage; //프로필 이미지
 }

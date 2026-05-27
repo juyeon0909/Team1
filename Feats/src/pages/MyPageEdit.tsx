@@ -8,10 +8,11 @@ import { API_BASE_URL } from "../config/config";
 
 interface EditPageProps {
   name: string; 
+  setName: (name: string) => void;
   triggerToast: (msg: string) => void;
 }
 
-function MyPageEdit({ name, triggerToast }: EditPageProps) {
+function MyPageEdit({ name, setName, triggerToast }: EditPageProps) {
   const navigate = useNavigate();
   const [editTab, setEditTab] = useState<'name' | 'password'>('name'); 
 
@@ -64,7 +65,7 @@ function MyPageEdit({ name, triggerToast }: EditPageProps) {
     } else if (val.length > 10) {
       setNameHint({ text: '이름이 너무 길어요. (최대 10자)', className: 'hint err' });
     } else {
-      setNameHint({ text: '사용 가능한 이름이에요 ✅', className: 'hint ok' });
+      setNameHint({ text: '사용 가능한 이름이에요.', className: 'hint ok' });
     }
   }, [formValues.newName]);
 
@@ -88,7 +89,7 @@ function MyPageEdit({ name, triggerToast }: EditPageProps) {
     if (!confirmPassword) {
       setConfirmHint({ text: '', className: 'hint' });
     } else if (confirmPassword === newPassword) {
-      setConfirmHint({ text: '비밀번호가 일치해요 ✅', className: 'hint ok' });
+      setConfirmHint({ text: '비밀번호가 일치해요.', className: 'hint ok' });
     } else {
       setConfirmHint({ text: '비밀번호가 일치하지 않아요.', className: 'hint err' });
     }
@@ -108,7 +109,8 @@ function MyPageEdit({ name, triggerToast }: EditPageProps) {
       const url = `${API_BASE_URL}/mypage/update-name`; 
       const token = localStorage.getItem('accessToken');
       await customAxios.post(url, { newName: formValues.newName });
-      triggerToast('이름이 변경되었습니다 ✅');
+      setName(formValues.newName);
+      triggerToast('이름이 변경되었습니다.');
       navigate('/mypage/info');
     } catch (error) {
       console.error(error);
@@ -140,7 +142,7 @@ function MyPageEdit({ name, triggerToast }: EditPageProps) {
         currentPassword: formValues.currentPassword,
         newPassword: formValues.newPassword
       });
-      triggerToast('비밀번호가 변경되었습니다 🔒');
+      triggerToast('비밀번호가 변경되었습니다.');
       navigate('/mypage/info');
     } catch (error) {
       console.error(error);

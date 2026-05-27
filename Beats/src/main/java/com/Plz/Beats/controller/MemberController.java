@@ -5,6 +5,7 @@ import com.Plz.Beats.dto.*;
 import com.Plz.Beats.entity.Member;
 import com.Plz.Beats.service.MemberDetailsService;
 import com.Plz.Beats.service.MemberService;
+import com.Plz.Beats.service.PasswordlessService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ public class MemberController {
     private final MemberDetailsService memberDetailsServices;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordlessService passwordlessService;
 
     @PostMapping("/login")
     // LoginDto의 데이터를 객체에 담으려고 @RequestBody 작성
@@ -44,7 +46,17 @@ public class MemberController {
                     .body(Map.of("error", "이메일 또는 비밀번호가 올바르지 않습니다."));
         }
 
-        // 2. 비밀번호 검증
+        // 2. 패스워드리스 등록 여부 확인
+        try {
+            if (passwordlessService.checkIsAp(dto.getEmail())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "패스워드리스로 로그인해주세요."));
+            }
+        } catch (Exception e) {
+            // 패스워드리스 서버 장애 시 일반 로그인 허용
+        }
+
+        // 3. 비밀번호 검증
         if (!passwordEncoder.matches(dto.getPassword(), userDetails.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "이메일 또는 비밀번호가 올바르지 않습니다."));

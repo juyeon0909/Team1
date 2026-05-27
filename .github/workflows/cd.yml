@@ -41,4 +41,8 @@ jobs:
             -e S3_KEY="${{ secrets.S3_KEY }}" \
             -e S3_SECRET_KEY="${{ secrets.S3_SECRET_KEY }}" \
             -e BUCKET_NAME="${{ secrets.BUCKET_NAME }}" \
+            -e SERVER_URL="${{ secrets.SERVER_URL }}" \
+            -e SERVER_KEY="${{ secrets.SERVER_KEY }}" \
             "${{ secrets.DOCKER_IMAGE }}"
+            
+            docker image prune -f

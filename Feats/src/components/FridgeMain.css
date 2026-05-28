@@ -1,311 +1,122 @@
-/* src/components/FridgeStorage.css */
 
-.storage-page-container {
-  padding: 24px;
-  max-width: 1200px; /* 전체 너비를 널찍하게 주어 세 칸이 이쁘게 배치되도록 설정 */
-  margin: 0 auto;
-  background-color: var(--white, #fff);
-  min-height: 100vh;
-  box-sizing: border-box;
+:root {
+    --green: #6FBC44; --green-dark: #3E8C1F; --green-light: #E8F5DA; --green-pale: #F3FAEA;   
+    --border: #BDE095; --red: #e05a5a; --red-light: #fff0f0; --white: #ffffff;
+    --text-dark: #1e2a1e; --text-mid: #4a5e4a; --text-light: #9ab8ae;
+    --shadow: 0 4px 24px rgba(29, 158, 117, 0.10);
+    --orange:       #e67e22;  
+    --orange-light: #ffeacc;  
+    --orange-pale:  #fff5e6;  
+    --gray: #ececec;
 }
 
-/*  상단 검색 섹션 */
+.storage-page-container {
+  padding: 24px; max-width: 1200px; margin: 0 auto;
+  background-color: var(--white); min-height: 100vh; box-sizing: border-box;
+}
+
+   /* 2. 상단 검색 섹션 (반응형 겹침방지 & 인풋 광채 일체화) */
 .storage-search-section {
-  display: flex;
-  justify-content: center;   
-  align-items: center;
-  position: relative;        
-  width: 100%;
-  margin-bottom: 24px;       
-  padding: 5px 0;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.75rem; width: 100%; max-width: 1200px; margin: 0 auto 1.5rem auto; box-sizing: border-box;
 }
 
 .storage-search-box {
-  position: relative;
-  width: 100%;
-  max-width: 600px;          
-  display: flex;
-  align-items: center;
+  display: flex; align-items: center; flex: 1; min-width: 150px;
+  background-color: #f5f5f5; border-radius: 8px; padding: 0 1rem; box-sizing: border-box;
+  border: 1px solid var(--border); box-shadow: var(--shadow); transition: all 0.2s ease;
 }
+
+
+.storage-search-box:focus-within {
+  border-color: var(--green); background-color: var(--white); box-shadow: 0 0 0 3px rgba(106, 191, 105, 0.15);
 
 .storage-search-input {
-  width: 100%;
-  padding: 14px 16px 14px 48px;
-  font-size: 15px;
-  border: 1px solid var(--border, #eee);
-  border-radius: 30px;
-  outline: none;
-  background-color: #fafafa;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-  transition: all 0.2s;
+  flex: 1; width: 100%; border: none; background: none; outline: none;
+  padding: 0.75rem 0; font-size: 1rem; color: var(--text-dark); margin: 0 0.5rem;
 }
+.storage-search-input::placeholder { color: var(--text-light); }
 
-.storage-search-input:focus {
-  border-color: var(--green, #6FBC44);
-  background-color: var(--white, #fff);
-  box-shadow: 0 0 0 3px rgba(11, 165, 116, 0.15);
-}
+/* 아이콘 및 지우기 버튼 공통 축약 */
+.search-icon, .search-clear-btn { display: flex; align-items: center; flex-shrink: 0; }
+.search-icon { font-size: 1.1rem; color: var(--text-mid); }
+.search-clear-btn { background: none; border: none; font-size: 1rem; color: var(--text-light); cursor: pointer; padding: 0; }
 
-/* 검색창 내부 아이콘 및 버튼 위치 조정 */
-.search-icon {
-  position: absolute;
-  left: 16px;
-  font-size: 18px;
-  color: var(--text-light, #888);
-}
-
-.search-clear-btn {
-  position: absolute;
-  right: 16px;
-  background: none;
-  border: none;
-  font-size: 14px;
-  color: #bbb;
-  cursor: pointer;
-}
-
-/* 재료 등록 */
+/*  재료 등록 버튼 (RecipeMain 대입) */
 .storage-add-btn {
-  position: absolute;        
-  right: 0;                  
+
+  background-color: var(--green); color: var(--white); border: none; border-radius: 8px;
+  padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; white-space: nowrap;
+  transition: background-color 0.2s, transform 0.1s;
+=======
   
-  padding: 11px 18px;        
-  background-color: var(--white, #fff); 
-  
-  color: var(--text-dark, #333333); 
-  
-  border: 1px solid var(--green, #6FBC44); 
-  border-radius: 30px;      
-  font-size: 17px;
-  font-weight: 600;         
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-  transition: all 0.2s;
 }
+.storage-add-btn:hover { background-color: var(--green-dark); }
+.storage-add-btn:active { transform: scale(0.98); }
+.add-icon-small { font-size: 1.1rem; font-weight: 500; display: inline-block; }
 
+/*   3. 보관실 레이아웃 및 카드 공통 스타일 */
+.storage-rooms-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .storage-rooms-grid { grid-template-columns: 1fr; } }
 
-.storage-add-btn:hover {
-  background-color: var(--green, #6FBC44); 
-  color: var(--white, #fff);               
-  box-shadow: 0 0 0 3px rgba(11, 165, 116, 0.15);
-}
-
-.add-icon-small {
-  font-size: 15px;
-  font-weight: 500;
-  display: inline-block;
-  transform: translateY(-0.5px);
-}
-
-/* 보관실 레이아웃 그리드 */
-.storage-rooms-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 냉동, 냉장, 상온 3칸 균등 분할 */
-  gap: 20px;
-  align-items: start;
-}
-
-/* 모바일/태블릿 반응형 대응 (화면이 좁아지면 아래로 1줄씩 정렬) */
-@media (max-width: 900px) {
-  .storage-rooms-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 개별 보관실 큰 카드 박스 */
 .storage-room-card {
-  background-color: var(--white, #fff);
-  border-radius: 16px;
-  border: 1px solid var(--border, #eee);
-  box-shadow: var(--card-shadow, 0 4px 12px rgba(0,0,0,0.05));
-  overflow: hidden;
-  height: 580px;
-  display: flex;
-  flex-direction: column;
+  background: var(--white); border: 1px solid var(--border); border-radius: 16px;
+  box-shadow: var(--shadow); overflow: hidden; height: 580px; display: flex; flex-direction: column;
 }
 
-/* 보관실 각각의 상단 헤더 공통 */
-.room-header {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  color: var(--text-dark, #222);
-  border-bottom: 1px solid var(--border, #eee);
-}
-
-.room-emoji {
-  font-size: 20px;
-  margin-right: 8px;
-}
-
-.room-title {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 0;
-  flex: 1;
-}
+.room-header, .room-header-flex { display: flex; align-items: center; width: 100%; }
+.room-header { padding: 16px; color: var(--text-dark); border-bottom: 1px solid var(--green-light); }
+.room-emoji { font-size: 20px; margin-right: 8px; }
+.room-title { font-size: 16px; margin: 0; flex: 1; }
 
 .room-count {
-  font-size: 13px;
-  font-weight: bold;
-  background-color: rgba(0,0,0,0.05);
-  padding: 2px 8px;
-  border-radius: 12px;
-  color: var(--text-mid, #666);
-  margin-right: 15px;
+  font-size: 13px; font-weight: bold; background-color: var(--gray);
+  padding: 2px 8px; border-radius: 12px; color: var(--green-dark); margin-right: 15px;
 }
+
 .room-sort-select {
-  margin-left: auto;
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  font-size: 13px;
-  cursor: pointer;
-  background-color: #fff;
-  color: #333;
-  outline: none;
+  margin-left: auto; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border);
+  font-size: 13px; cursor: pointer; background-color: var(--white); color: var(--text-mid); outline: none;
 }
+.room-sort-select:focus { border-color: var(--green); }
 
-.room-sort-select:focus {
-  border-color: #4A90E2;
-}
-
-/*  유통기한 및 삭제 버튼을 감싸는 레이아웃 */
-.item-expiry-wrapper {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* 작은 ✕ 삭제 버튼 스타일 */
-.btn-delete-small {
-  background: none;
-  border: none;
-  color: #999;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 0 4px;
-  line-height: 1;
-  transition: color 0.2s, transform 0.2s;
-}
-
-/* 삭제 버튼 마우스 호버 효과 */
-.btn-delete-small:hover {
-  color: #ff4d4f;
-  transform: scale(1.15);
-}
-
-/* 헤더 정렬용 보조 클래스 */
-.room-header-flex {
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-/* 개별 보관실 고유 테마 컬러 포인트 (옵션) */
+/*  보관실별 테마 배경색 (중복 제거 단축형) */
 .frozen-theme { background-color: #f2f9ff; border-bottom-color: #d2e8ff; }
-.refrigerated-theme { background-color: #f0fbf7; border-bottom-color: #d1f2e5; }
+.refrigerated-theme { background-color: var(--green-pale); }
 .room-theme { background-color: #fdfaf5; border-bottom-color: #f7edd6; }
 
-/*  정해진 공간 안에서만 따로따로 스크롤되는 영역 */
-.room-list-scroll {
-  flex: 1;
-  height: 100%;
-  overflow-y: auto;   
-  padding: 12px;
+/*  4. 개별 식재료 리스트 내부 가열 (인라인 완전 제거) */
+.room-list-scroll { flex: 1; height: 100%; overflow-y: auto; padding: 12px; }
+.room-list-scroll::-webkit-scrollbar { width: 6px; }
+.room-list-scroll::-webkit-scrollbar-thumb { background-color: var(--green-light); border-radius: 4px; }
+
+/*  재료 가로 줄 및 텍스트 레이아웃 공통 구조 */
+.storage-item-row, .item-expiry-wrapper { display: flex; align-items: center; }
+.storage-item-row { justify-content: space-between; padding: 12px 14px; margin-bottom: 8px; border-radius: 8px; font-size: 14px; border: 1px solid transparent; transition: all 0.2s; }
+.storage-item-row:last-child { margin-bottom: 0; }
+
+/*  한 글자 카테고리 뱃지 */
+.item-badge-short {
+  font-size: 11px; color: var(--text-mid); background-color: var(--gray);
+  padding: 2px 6px; border-radius: 10px; margin-left: 6px; marginRight: auto; font-weight: bold;
 }
 
-/* 스크롤바 커스텀 (더 정갈하고 얇게 가꾸기) */
-.room-list-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-.room-list-scroll::-webkit-scrollbar-thumb {
-  background-color: #ddd;
-  border-radius: 4px;
-}
+.item-name-link { flex: 2; color: var(--text-dark); font-weight: 500; cursor: pointer; text-decoration: none; }
+.item-name-link:hover { text-decoration: underline; }
+.item-quantity { flex: 1; text-align: right; color: var(--text-mid); padding-right: 10px; }
+.item-expiry { flex: 1.5; text-align: right; font-size: 13px; color: var(--text-light); font-variant-numeric: tabular-nums; }
+.item-expiry-wrapper { gap: 10px; }
 
-/* 🥩 개별 재료 가로 줄 (Row) */
-.storage-item-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  font-size: 14px;
-  border: 1px solid transparent;
-  transition: all 0.2s;
-}
+/* 삭제 버튼 */
+.btn-delete-small { background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 14px; padding: 0 4px; line-height: 1; transition: all 0.2s; }
+.btn-delete-small:hover { color: var(--red); transform: scale(1.15); }
 
-.storage-item-row:last-child {
-  margin-bottom: 0;
-}
+/* 유통기한 임박도 상태 컬러 팩 */
+.expiry-normal { background-color: #fafafa; border-color: #f0f0f0; }
+.expiry-warning { background-color: var(--orange-pale) !important; border-color: var(--orange-light) !important; color: var(--orange); }
+.expiry-warning .item-name-link { color: var(--orange) !important; font-weight: bold; }
+.expiry-danger { background-color: var(--red-light) !important; border-color: #ffcccc !important; color: var(--red); }
+.expiry-danger .item-name-link { color: var(--red) !important; font-weight: bold; }
 
-/*  유통기한 정상 (넉넉함) */
-.expiry-normal {
-  background-color: #ffffff;
-  border-color: #f0f0f0;
-}
-
-/*  유통기한 일주일 이하 (주황 경고) */
-.expiry-warning {
-  background-color: #fff6eb !important; /* 주황색 틴트 배경 */
-  border-color: #ffe0b3 !important;
-  color: #c46200;
-}
-.expiry-warning .item-name-link {
-  color: #c46200 !important;
-  font-weight: bold;
-}
-
-/* 🔴 유통기한 사흘 이내 (빨강 위험) */
-.expiry-danger {
-  background-color: #fff0f0 !important; /* 빨간색 틴트 배경 */
-  border-color: #ffcccc !important;
-  color: #d93838;
-}
-.expiry-danger .item-name-link {
-  color: #d93838 !important;
-  font-weight: bold;
-}
-
-/* 클릭하면 수정창으로 가는 재료명 링크 스타일 */
-.item-name-link {
-  flex: 2;
-  color: var(--text-dark, #333);
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.item-name-link:hover {
-  text-decoration: underline; /* 마우스 올리면 밑줄 쫙 그어지며 클릭 유도 */
-}
-
-.item-quantity {
-  flex: 1;
-  text-align: right;
-  color: var(--text-mid, #666);
-  padding-right: 10px;
-}
-
-.item-expiry {
-  flex: 1.5;
-  text-align: right;
-  font-size: 13px;
-  color: var(--text-light, #888);
-  font-variant-numeric: tabular-nums; /* 숫자 폭 고정해서 가독성 유지 */
-}
-
-/* 데이터 없을 때 문구 */
-.empty-item-text {
-  text-align: center;
-  color: #bbb;
-  font-size: 13px;
-  padding: 30px 0;
-  margin: 0;
-}
+.empty-item-text { text-align: center; color: var(--text-light); font-size: 13px; padding: 30px 0; margin: 0; }

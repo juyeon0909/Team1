@@ -38,24 +38,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Bearer "를 제거하여 JWT 토큰만 추출한다
             String token = bearer.substring("Bearer ".length());
 
-            try {  // ← 추가
-                if(jwtTokenProvider.validateToken(token)){
-                    String email = jwtTokenProvider.getEmail(token);
-                    Claims claims = jwtTokenProvider.getClaims(token);
-                    String role = claims.get("role", String.class);
+            if(jwtTokenProvider.validateToken(token)){
+                String email = jwtTokenProvider.getEmail(token);
+                Claims claims = jwtTokenProvider.getClaims(token);
+                String role = claims.get("role", String.class);
 
-                    List<GrantedAuthority> authorities =
-                            List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                List<GrantedAuthority> authorities =
+                        List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(email, null, authorities);
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(email, null, authorities);
 
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                }
-            } catch (Exception e) {  // ← 추가: 토큰 예외 발생 시 그냥 인증 없이 통과
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            } else {
+                // 토큰이 있지만 만료/위조된 경우 → 401 즉시 반환
                 SecurityContextHolder.clearContext();
-
-
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"error\":\"인증이 만료되었습니다. 다시 로그인해주세요.\"}");
+                return;
             }
         }
 

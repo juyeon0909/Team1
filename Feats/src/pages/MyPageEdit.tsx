@@ -4,7 +4,6 @@ import "../components/MyPageEdit.css";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import customAxios from './../api/axiosInstance'; 
-import { API_BASE_URL } from "../config/config";
 
 interface EditPageProps {
   name: string; 
@@ -106,9 +105,7 @@ function MyPageEdit({ name, setName, triggerToast }: EditPageProps) {
     }
 
     try {
-      const url = `${API_BASE_URL}/mypage/update-name`; 
-      const token = localStorage.getItem('accessToken');
-      await customAxios.post(url, { newName: formValues.newName });
+      await customAxios.post('/mypage/update-name', { newName: formValues.newName });
       setName(formValues.newName);
       triggerToast('이름이 변경되었습니다.');
       navigate('/mypage/info');
@@ -137,8 +134,7 @@ function MyPageEdit({ name, setName, triggerToast }: EditPageProps) {
     }
 
     try {
-      const url = `${API_BASE_URL}/mypage/update-password`; 
-      await customAxios.post(url, {
+      await customAxios.post('/mypage/update-password', {
         currentPassword: formValues.currentPassword,
         newPassword: formValues.newPassword
       });

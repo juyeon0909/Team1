@@ -12,6 +12,7 @@ interface Ingredient {
   expiry?: string;        
   storagetype: string;     
   type?: string;    
+  category?: string;
 }
 
 const FridgeMain: React.FC = () => {
@@ -69,6 +70,13 @@ const FridgeMain: React.FC = () => {
     if (diffDays <= 7) return 'expiry-warning';  
     return 'expiry-normal';                      
   };
+  // 카테고리명 축약
+  const getShortCategory = (categoryStr?: string): string => {
+  if (!categoryStr) return '기'; // 카테고리 데이터가 없을 때 기본값 '기타'의 '기'
+  
+  const char = categoryStr.trim().charAt(0); // 맨 앞글자 딱 하나만 추출
+  return char;
+};
 
   // 조건별 정렬 처리 함수
   const sortIngredients = (list: Ingredient[], sortType: string) => {
@@ -97,10 +105,12 @@ const FridgeMain: React.FC = () => {
     });
   };
 
-  // 이름 검색 필터링
   const filteredIngredients = ingredients.filter((item) => {
-    const targetName = item.itemname || item.name || '';
-    return targetName.toLowerCase().includes(searchTerm.toLowerCase());
+    const targetName = (item.itemname || item.name || '').toLowerCase();
+    const targetCategory = (item.category || '').toLowerCase();
+    const search = searchTerm.toLowerCase().trim();
+
+    return targetName.includes(search) || targetCategory.includes(search);
   });
 
   // 보관 방법별 격리 및 정렬
@@ -185,16 +195,13 @@ const FridgeMain: React.FC = () => {
                     <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>
                       {finalName}
                     </span>
+                    <span className="item-badge-short">
+                      {getShortCategory(item.category)}
+                    </span>
                     <span className="item-quantity">{item.quantity}g</span>
-                    
                     <span className="item-expiry item-expiry-wrapper">
                       {item.expirationdate}
-                      <button 
-                        onClick={(e) => handleDelete(item.id, finalName, e)}
-                        className="btn-delete-small"
-                      >
-                        ✕
-                      </button>
+                      <button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button>
                     </span>
                   </div>
                 );
@@ -220,16 +227,13 @@ const FridgeMain: React.FC = () => {
                     <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>
                       {finalName}
                     </span>
+                    <span className="item-badge-short">
+                      {getShortCategory(item.category)}
+                    </span>
                     <span className="item-quantity">{item.quantity}g</span>
-                    
                     <span className="item-expiry item-expiry-wrapper">
                       {item.expirationdate}
-                      <button 
-                        onClick={(e) => handleDelete(item.id, finalName, e)}
-                        className="btn-delete-small"
-                      >
-                        ✕
-                      </button>
+                      <button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button>
                     </span>
                   </div>
                 );
@@ -255,16 +259,13 @@ const FridgeMain: React.FC = () => {
                     <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>
                       {finalName}
                     </span>
+                    <span className="item-badge-short">
+                      {getShortCategory(item.category)}
+                    </span>
                     <span className="item-quantity">{item.quantity}g</span>
-                    
                     <span className="item-expiry item-expiry-wrapper">
                       {item.expirationdate}
-                      <button 
-                        onClick={(e) => handleDelete(item.id, finalName, e)}
-                        className="btn-delete-small"
-                      >
-                        ✕
-                      </button>
+                      <button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button>
                     </span>
                   </div>
                 );
@@ -272,8 +273,8 @@ const FridgeMain: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
 
+      </div>
     </div>
   );
 };

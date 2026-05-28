@@ -5,9 +5,9 @@ import '../components/FridgeRegister.css';
 
 interface SearchItem {
   id?: number;
+  itemName?: string;
   itemId?: number;
   name?: string;
-  itemName?: string;
   category: string;     
   type?: string;        
   itemUnit?: string;
@@ -169,7 +169,7 @@ const FridgeEdit: React.FC = () => {
         expiry: expirationdate,
         storagetype: koStorageType, 
         type: storagetype,
-        category
+        category: category
       }, {
         headers: { Authorization: token ? `Bearer ${token}` : '' }
       });
@@ -190,7 +190,7 @@ const FridgeEdit: React.FC = () => {
     <div className="fridge-form-container">
       <div className="fridge-form-card">
 
-        <div style={{ marginBottom: '25px' }}>
+        <div className="fridge-form-header-zone">
           <h3 className="fridge-form-title">재료 수정</h3>
           <p className="fridge-form-subtitle">
             보관 중인 재료의 정보를 수정합니다.
@@ -202,7 +202,7 @@ const FridgeEdit: React.FC = () => {
         <div className="fridge-form-group">
           <label className="fridge-form-label">카테고리</label>
           <select
-            className="fridge-form-input"
+            className="fridge-form-input select-pointer"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             style={{ cursor: 'pointer' }}
@@ -216,25 +216,23 @@ const FridgeEdit: React.FC = () => {
             <option value="콩류">콩류</option>
             <option value="양념류">양념류</option>
             <option value="버섯류">버섯류</option>
-            <option value="기타">기타</option>
           </select>
         </div>
 
         <div className="fridge-form-group">
           <label className="fridge-form-label">보관 방법</label>
           <select
-            className="fridge-form-input"
+            className="fridge-form-input select-pointer"
             value={storagetype}
             onChange={(e) => setStoragetype(e.target.value)}
-            style={{ cursor: 'pointer' }}
-          >
+            >
             <option value="REFRIGERATED">냉장</option>
             <option value="FROZEN">냉동</option>
             <option value="ROOM_TEMP">실온</option>
           </select>
         </div>
 
-        <div className="fridge-form-group" style={{ position: 'relative' }} ref={dropdownRef}>
+        <div className="fridge-form-group" ref={dropdownRef}>
           <label className="fridge-form-label">재료명</label>
           <input
             type="text"
@@ -246,12 +244,8 @@ const FridgeEdit: React.FC = () => {
           />
 
           {showDropdown && searchResults.length > 0 && (
-            <ul style={{
-              position: 'absolute', top: '100%', left: 0, right: 0,
-              backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '4px',
-              maxHeight: '180px', overflowY: 'auto', zIndex: 9999, padding: 0, margin: '4px 0 0 0',
-              listStyle: 'none', boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
-            }}>
+            <ul className="fridge-search-dropdown-menu"> 
+              
               {searchResults.map((item, index) => {
                 const displayName = item.itemName || item.name || '이름 없음';
                 const displayId = item.itemId || item.id || index;
@@ -259,13 +253,11 @@ const FridgeEdit: React.FC = () => {
                   <li
                     key={displayId}
                     onClick={() => handleSelectItem(item)}
-                    style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', borderBottom: '1px solid #f5f5f5', alignItems: 'center' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f7ff')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+                    className="fridge-search-dropdown-item" 
                   >
-                    <strong style={{ color: '#333', marginRight: '8px' }}>{displayName}</strong>
-                    <span style={{ color: '#888', fontSize: '13px', flexGrow: 1 }}>{item.itemUnit || ''}</span>
-                    <span style={{ color: '#aaa', fontSize: '12px', background: '#eee', padding: '2px 6px', borderRadius: '10px' }}>{item.category}</span>
+                    <strong className="dropdown-item-name">{displayName}</strong>
+                    <span className="dropdown-item-unit">{item.itemUnit || ''}</span>
+                    <span className="dropdown-item-category">{item.category}</span>
                   </li>
                 );
               })}

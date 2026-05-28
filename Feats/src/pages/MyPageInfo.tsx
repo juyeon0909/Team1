@@ -54,37 +54,32 @@ function App() {
 
     
 
-// uploadProfileImage: File → base64 String으로 되돌리기
-const uploadProfileImage = async (base64Image: string) => {
-    setErrors({ profileimage: '', general: '' });
-    try {
-        const response = await customAxios.post('/mypage/update-profileimage', {
-            profileimage: base64Image
-        });
-        // 서버가 S3 URL 반환 → 화면에 반영
-        setUser(prev => ({ ...prev, profileimage: response.data }));
-        alert('프로필 사진이 성공적으로 변경되었습니다! ✅');
-    } catch (error) {
-        console.error('프로필 이미지 업로드 실패:', error);
-        setErrors(prev => ({ ...prev, general: '프로필 사진 변경 중 오류가 발생했습니다.' }));
-    }
-};
+    const uploadProfileImage = async (base64Image: string) => {
+        setErrors({ profileimage: '', general: '' });
+        try {
+            const response = await customAxios.post('/mypage/update-profileimage', {
+                profileimage: base64Image   // JSON으로 전송
+            });
+            setUser(prev => ({ ...prev, profileimage: response.data }));
+            alert('프로필 사진이 성공적으로 변경되었습니다! ✅');
+        } catch (error) {
+            console.error('프로필 이미지 업로드 실패:', error);
+            setErrors(prev => ({ ...prev, general: '프로필 사진 변경 중 오류가 발생했습니다.' }));
+        }
+    };
 
-// handleProfileImageChange: 원래대로 base64 변환 후 전송
 const handleProfileImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { files } = event.target;
-    if (!files || files.length === 0) {
-        alert('이미지 파일을 선택해주셔야 합니다');
-        return;
-    }
+    if (!files || files.length === 0) return;
     const file = files[0];
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onloadend = () => {
-        uploadProfileImage(reader.result as string);
+        const base64 = reader.result as string;
+        setUser(prev => ({ ...prev, profileimage: base64 })); // 미리보기
+        uploadProfileImage(base64);
     };
 };
-
     return (
         <Container className="py-4">
             {/* 1. 내 정보 페이지 ('info') 일 때만 렌더링 */}

@@ -33,3 +33,5 @@ public class RecipeIngredient {
     @Column(name = "is_required", nullable = false)
     private boolean isRequired; // 💡 서비스 단의 관례적 setter와 자동 매핑됨
 }
+
+{/* 커밋 */}

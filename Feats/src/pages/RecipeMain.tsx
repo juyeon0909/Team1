@@ -389,4 +389,4 @@ useEffect(() => {
 
 export default RecipeMain;
 
-{/* 커밋 */}
+/* 커밋 */

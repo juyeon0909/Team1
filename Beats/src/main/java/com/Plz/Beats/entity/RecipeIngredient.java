@@ -34,4 +34,4 @@ public class RecipeIngredient {
     private boolean isRequired; // 💡 서비스 단의 관례적 setter와 자동 매핑됨
 }
 
-{/* 커밋 */}
+/* 커밋 */

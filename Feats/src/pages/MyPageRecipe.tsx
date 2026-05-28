@@ -148,5 +148,5 @@ const MyPageRecipe = () => {
     </div>
   );
 };
-{/* 커밋 체크 */}{/* 커밋 */}
+/* 커밋 */
 export default MyPageRecipe;

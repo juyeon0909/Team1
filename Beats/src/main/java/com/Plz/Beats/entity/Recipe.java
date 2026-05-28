@@ -95,4 +95,5 @@ public class Recipe {
     //       (그대로 둘지 'yyyy-MM-dd HH:mm:ss' 로 바꿀지는 결정 필요 — 값은 임의로 변경하지 않았습니다.)
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime updatedAt;
-}{/* 커밋 */}
+}
+/* 커밋 */

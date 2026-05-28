@@ -15,10 +15,10 @@ public class AdminRecipeController {
 
     private final RecipeService recipeService;
 
-    @GetMapping("/pending")
-    public ResponseEntity<List<AdminRecipeDto>> getPending() {
-        return ResponseEntity.ok(recipeService.getPendingRecipes());
-    }
+//    @GetMapping("/pending")
+//    public ResponseEntity<List<AdminRecipeDto>> getPending() {
+//        return ResponseEntity.ok(recipeService.getPendingRecipes());
+//    }
 
     @PostMapping("/{id}/approve")
     public ResponseEntity<?> approve(@PathVariable Long id) {

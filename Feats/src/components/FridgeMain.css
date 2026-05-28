@@ -245,13 +245,13 @@
   margin-bottom: 0;
 }
 
-/* 🟢 유통기한 정상 (넉넉함) */
+/*  유통기한 정상 (넉넉함) */
 .expiry-normal {
-  background-color: #fafafa;
+  background-color: #ffffff;
   border-color: #f0f0f0;
 }
 
-/* 🟠 유통기한 일주일 이하 (주황 경고) */
+/*  유통기한 일주일 이하 (주황 경고) */
 .expiry-warning {
   background-color: #fff6eb !important; /* 주황색 틴트 배경 */
   border-color: #ffe0b3 !important;

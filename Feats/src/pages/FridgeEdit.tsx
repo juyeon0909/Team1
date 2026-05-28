@@ -125,6 +125,25 @@ const FridgeEdit: React.FC = () => {
       alert('모든 항목을 입력해주세요!');
       return;
     }
+    if (Number(quantity) > 20000) {
+      alert('무게는 20000 이하여야 합니다.');
+      return;
+        }
+
+    if (Number(quantity) < 1) {
+      alert('무게는 1 이상이어야 합니다.')
+      return
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+  
+    const selectedDate = new Date(expirationdate);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      alert('이미 유통기한이 지난 날짜는 등록할 수 없습니다.');
+      return;
+    }
 
     const stored = localStorage.getItem('user');
     if (!stored) {
@@ -155,7 +174,7 @@ const FridgeEdit: React.FC = () => {
         headers: { Authorization: token ? `Bearer ${token}` : '' }
       });
 
-      alert(`[${itemname}] 재료가 성공적으로 변경되었습니다.`);
+      alert(`${itemname}(이)가 성공적으로 변경되었습니다.`);
       navigate('/product/insert');
     } catch (error) {
       alert('수정 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -174,7 +193,7 @@ const FridgeEdit: React.FC = () => {
         <div style={{ marginBottom: '25px' }}>
           <h3 className="fridge-form-title">재료 수정</h3>
           <p className="fridge-form-subtitle">
-            보관 중인 재료의 변경된 정보를 수정합니다.
+            보관 중인 재료의 정보를 수정합니다.
           </p>
         </div>
 
@@ -259,11 +278,11 @@ const FridgeEdit: React.FC = () => {
           <input
             type="number"
             min={1}
-            max={1000}
+            max={20000}
             className="fridge-form-input"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="예: 3"
+            placeholder="예: 200"
           />
         </div>
 

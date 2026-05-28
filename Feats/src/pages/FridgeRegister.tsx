@@ -105,7 +105,25 @@ const FridgeRegister: React.FC = () => {
       alert('모든 항목을 입력해주세요!');
       return;
     }
+    if (Number(quantity) > 20000) {
+      alert('무게는 20000 이하여야 합니다.');
+      return; 
+    }
 
+    if (Number(quantity) < 1) {
+      alert('무게는 1 이상이어야 합니다.');
+      return; 
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // 날짜만 비교하기 위해 시분초 초기화
+  
+    const selectedDate = new Date(expirationdate);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      alert('이미 유통기한이 지난 날짜는 등록할 수 없습니다.');
+      return; 
+    }
     const stored = localStorage.getItem('user');
     if (!stored) {
       alert('로그인이 필요합니다.');
@@ -142,7 +160,7 @@ const FridgeRegister: React.FC = () => {
         <div style={{ marginBottom: '25px' }}>
           <h3 className="fridge-form-title">재료 등록</h3>
           <p className="fridge-form-subtitle">
-            냉장고에 새로 넣을 신선한 재료 정보를 입력해주세요.
+            냉장고에 새로 넣을 재료 정보를 입력해주세요.
           </p>
         </div>
 
@@ -213,7 +231,7 @@ const FridgeRegister: React.FC = () => {
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
                   >
                     <strong style={{ color: '#333', marginRight: '8px' }}>{displayName}</strong>
-                    <span style={{ color: '#888', fontSize: '13px', flexGrow: 1 }}>{item.itemUnit || ''}</span>
+                    <span style={{ color: '#888', fontSize: '13px', flexGrow: 1 }}>{item.itemUnit || '개'}</span>
                     <span style={{ color: '#aaa', fontSize: '12px', background: '#eee', padding: '2px 6px', borderRadius: '10px' }}>{item.category}</span>
                   </li>
                 );
@@ -227,11 +245,11 @@ const FridgeRegister: React.FC = () => {
           <input
             type="number"
             min={1}
-            max={1000}
+            max={20000}
             className="fridge-form-input"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="예: 3"
+            placeholder="예: 200"
           />
         </div>
 

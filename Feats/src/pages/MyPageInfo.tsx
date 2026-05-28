@@ -61,7 +61,7 @@ function App() {
                 profileimage: base64Image   // JSON으로 전송
             });
             setUser(prev => ({ ...prev, profileimage: response.data }));
-            alert('프로필 사진이 성공적으로 변경되었습니다! ✅');
+            alert('프로필 사진이 성공적으로 변경되었습니다!');
         } catch (error) {
             console.error('프로필 이미지 업로드 실패:', error);
             setErrors(prev => ({ ...prev, general: '프로필 사진 변경 중 오류가 발생했습니다.' }));
@@ -163,15 +163,20 @@ const handleProfileImageChange = (event: ChangeEvent<HTMLInputElement>) => {
                             </div>
                         </button>
                     </div>
-
-                    {/* 요청하신 코드로 변경 및 부모(info) 안쪽 제자리 배치 완료 */}
-                    {/* navigate 경로 수정 */}
-                    <div className="withdraw-box">
-                        <span className="withdraw-link" onClick={() => navigate('/delete')}>회원 탈퇴를 원하시나요?</span>
-                    </div> 
+                    
+                    <div className="withdraw-box" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        {isPasswordless && (
+                            <span className="withdraw-link" onClick={() => navigate('/member/reset-register')}>
+                                패스워드리스를 해제하시겠어요?
+                            </span>
+                        )}
+                        <span className="withdraw-link" onClick={() => navigate('/delete')}>
+                            회원 탈퇴를 하시겠어요?
+                        </span>
+                    </div>
+                    
                 </div>
 
-            
         </Container>
     );
 }

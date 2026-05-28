@@ -66,8 +66,17 @@ const MyPageRecipe = () => {
           <span>메인으로</span>
         </div>
         <button
-          onClick={() => navigate('/recipeMain/register')}
-          className="add-recipe-btn"
+          onClick={() => navigate('/recipeMain/register')} // 소문자 등록 페이지 경로 통일
+          style={{
+            padding: '8px 16px',
+            background: '#6FBC44',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '13px',
+            fontWeight: '500'
+          }}
         >
           + 새 레시피 등록
         </button>
@@ -99,11 +108,11 @@ const MyPageRecipe = () => {
               </div>
 
               {/* 텍스트 컨텐츠 영역 */}
-              <div className="recipe-card-content">
-                <span className="recipe-card-category">{recipe.category}</span>
-                <h3 className="recipe-card-title-text">{recipe.title}</h3>
-                <p className="recipe-card-desc-text">
-                  {recipe.description}
+              <div style={{ padding: '14px' }}>
+                <span style={{ fontSize: '11px', color: '#6FBC44', fontWeight: 'bold' }}>{recipe.cat}</span>
+                <h3 style={{ fontSize: '14px', margin: '4px 0 6px 0', color: '#111', fontWeight: '500' }}>{recipe.name}</h3>
+                <p style={{ fontSize: '12px', color: '#666', margin: '0 0 12px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {recipe.desc}
                 </p>
               </div>
 

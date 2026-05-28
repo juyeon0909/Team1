@@ -41,7 +41,7 @@
 }
 
 .storage-search-input:focus {
-  border-color: var(--green, #0BA574);
+  border-color: var(--green, #6FBC44);
   background-color: var(--white, #fff);
   box-shadow: 0 0 0 3px rgba(11, 165, 116, 0.15);
 }
@@ -74,7 +74,7 @@
   
   color: var(--text-dark, #333333); 
   
-  border: 1px solid var(--green, #0BA574); 
+  border: 1px solid var(--green, #6FBC44); 
   border-radius: 30px;      
   font-size: 17px;
   font-weight: 600;         
@@ -89,7 +89,7 @@
 
 
 .storage-add-btn:hover {
-  background-color: var(--green, #0BA574); 
+  background-color: var(--green, #6FBC44); 
   color: var(--white, #fff);               
   box-shadow: 0 0 0 3px rgba(11, 165, 116, 0.15);
 }

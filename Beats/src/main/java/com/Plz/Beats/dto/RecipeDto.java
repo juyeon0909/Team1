@@ -30,5 +30,3 @@ public class RecipeDto {
         private String quantity;
     }
 }
-
-/* 커밋 */

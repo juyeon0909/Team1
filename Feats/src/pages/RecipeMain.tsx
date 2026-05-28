@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
+
 import '../components/RecipeMain.css'; // 💡 분리한 CSS 파일 임포트
 
 interface Recipe {
@@ -24,6 +26,7 @@ interface Recipe {
   steps: string[];
 }
 
+// 💡 서버 연동 실패 혹은 데이터가 비어있을 때 활성화될 안심 백업 데이터
 const INITIAL_RECIPES: Recipe[] = [
   {
     id: 1, name: '두부 계란찜', cat: '한식', time: 15, match: 100, emoji: '🍳', bg: '#E1F5EE', desc: '부드러운 두부와 계란의 초간단 한식 반찬', tags: ['초간단', '15분'], heart: 234, star: 48, urgent: true, isHearted: false, isScrapped: false,
@@ -75,12 +78,11 @@ const RecipeMain = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 6;
-
-  useEffect(() => {
-    const fetchRecipes = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('/recipeMain', { withCredentials: true });
+useEffect(() => {
+  const fetchRecipes = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get('/recipeMain');
 
         if (response.data && Array.isArray(response.data) && response.data.length > 0) {
           const categoryDecoder: { [key: string]: string } = {
@@ -133,6 +135,16 @@ const RecipeMain = () => {
       setMustIngredients(currentRecipe.mustIngredients ? currentRecipe.mustIngredients.map(item => ({ ...item })) : []);
     }
   }, [currentRecipe]);
+
+  const toggleHeart = (id: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setRecipes(prev => prev.map(r => r.id === id ? { ...r, isHearted: !r.isHearted, heart: !r.isHearted ? r.heart + 1 : Math.max(0, r.heart - 1) } : r));
+  };
+
+  const toggleScrap = (id: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setRecipes(prev => prev.map(r => r.id === id ? { ...r, isScrapped: !r.isScrapped, star: !r.isScrapped ? r.star + 1 : Math.max(0, r.star - 1) } : r));
+  };
 
   const filteredRecipes = useMemo(() => {
     let result = recipes.filter(r => {
@@ -399,3 +411,5 @@ const RecipeMain = () => {
 };
 
 export default RecipeMain;
+
+{/* 커밋 */}

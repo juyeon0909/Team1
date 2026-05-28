@@ -2,10 +2,13 @@ package com.Plz.Beats.controller;
 
 import com.Plz.Beats.dto.*;
 import com.Plz.Beats.service.MyPageService; // MyPageService 사용
+import com.Plz.Beats.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 
 @RestController
@@ -14,6 +17,7 @@ import java.security.Principal;
 public class MyPageController {
 
     private final MyPageService myPageService; // 👈 알맞은 서비스 주입
+    private final S3Service s3Service;
 
     //프로필 조회
     @GetMapping("/info")
@@ -27,11 +31,16 @@ public class MyPageController {
     //프로필 이미지 변경
     @PostMapping("/update-profileimage")
     public ResponseEntity<?> updateProfileImage(
-            @RequestBody ProfileImageDto request,
+            @RequestParam("file") MultipartFile file,
             Principal principal) {
-        String email = principal.getName();
-        myPageService.updateProfileImage(email, request.getProfileimage());
-        return ResponseEntity.ok().body("프로필 사진이 성공적으로 변경되었습니다.");
+        try {
+            String email = principal.getName();
+            String imageUrl = s3Service.uploadFile(file); // S3 업로드 후 URL 반환
+            myPageService.updateProfileImage(email, imageUrl);
+            return ResponseEntity.ok().body(imageUrl); // URL을 프론트로 반환
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("이미지 업로드 실패");
+        }
     }
 
     //이름 변경

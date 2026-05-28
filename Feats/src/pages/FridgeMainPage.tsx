@@ -41,11 +41,11 @@ const FridgeMain: React.FC = () => {
   const handleDelete = async (id: number, name: string, e: React.MouseEvent): Promise<void> => {
     e.stopPropagation();
 
-    if (!window.confirm(`[${name}] 재료를 삭제하시겠습니까?`)) return;
+    if (!window.confirm(`${name} 재료를 삭제하시겠습니까?`)) return;
 
     try {
       await axiosInstance.post(`/product/delete/${id}`, {});
-      alert(`[${name}] 재료가 성공적으로 삭제되었습니다.`);
+      alert(`${name} 재료가 성공적으로 삭제되었습니다.`);
       setIngredients(prev => prev.filter(item => item.id !== id));
     } catch (error) {
       console.error("재료 삭제 중 에러 발생:", error);
@@ -57,10 +57,13 @@ const FridgeMain: React.FC = () => {
   const getExpiryClass = (expiryDateStr: string): string => {
     if (!expiryDateStr) return 'expiry-normal';
     const today = new Date();
+    today.setHours(0, 0, 0, 0); //순수 날짜비교를 위해 
+    
     const expiry = new Date(expiryDateStr);
+    expiry.setHours(0, 0, 0, 0);
     
     const diffTime = expiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // 밀림 없는 하루 단위 변환
 
     if (diffDays <= 3) return 'expiry-danger';   
     if (diffDays <= 7) return 'expiry-warning';  
@@ -79,7 +82,13 @@ const FridgeMain: React.FC = () => {
       if (sortType === "재고순") {
         return b.quantity - a.quantity; 
       }
+      if (sortType === "등록순"){
+        return b.id - a.id;
+      }
       if (sortType === "유통기한순") {
+        const dateA = a.expirationdate ? new Date(a.expirationdate).getTime() : 0;
+        const dateB = b.expirationdate ? new Date(b.expirationdate).getTime() : 0;
+
         if (!a.expirationdate) return 1;
         if (!b.expirationdate) return -1;
         return new Date(a.expirationdate).getTime() - new Date(b.expirationdate).getTime(); 
@@ -128,6 +137,7 @@ const FridgeMain: React.FC = () => {
       <option value="유통기한순">유통기한순</option>
       <option value="가나다순">가나다순</option>
       <option value="재고순">재고순</option>
+      <option value="등록순">등록순</option>
     </select>
   );
 

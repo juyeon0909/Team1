@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import customAxios from './../api/axiosInstance';
-import { API_BASE_URL } from '../config/config';
 
 interface AdminQnaItem {
     id: number;
@@ -24,7 +23,7 @@ export default function AdminQna() {
 
     const fetchQnas = async () => {
         try {
-            const res = await customAxios.get(`${API_BASE_URL}/admin/qnas`);
+            const res = await customAxios.get('/admin/qnas');
             setQnas(res.data || []);
         } catch (e) {
             console.error('Q&A 목록 불러오기 실패:', e);
@@ -37,7 +36,7 @@ export default function AdminQna() {
         const answer = answerInputs[id]?.trim();
         if (!answer) { alert('답변 내용을 입력해 주세요.'); return; }
         try {
-            await customAxios.post(`${API_BASE_URL}/admin/qnas/${id}/answer`, { answer });
+            await customAxios.post(`/admin/qnas/${id}/answer`, { answer });
             alert('답변이 등록되었습니다.');
             await fetchQnas();
             setExpandedId(null);

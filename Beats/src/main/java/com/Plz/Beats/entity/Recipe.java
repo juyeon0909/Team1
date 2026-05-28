@@ -96,4 +96,3 @@ public class Recipe {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime updatedAt;
 }
-/* 커밋 */

@@ -1,5 +1,6 @@
 package com.Plz.Beats.repository;
 
+import com.Plz.Beats.constant.ApprovalStatus;
 import com.Plz.Beats.entity.Member;
 import com.Plz.Beats.entity.Recipe;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
+    List<Recipe> findByApprovalStatus(ApprovalStatus status);
 
     /**
      * 💡 [추후 확장용] 특정 회원이 작성한 레시피 목록만 조회하고 싶을 때 사용
@@ -18,4 +20,3 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     List<Recipe> findByMemberEmail(String email);
 }
 
-/* 커밋 */

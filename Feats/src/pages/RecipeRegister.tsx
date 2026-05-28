@@ -135,21 +135,37 @@ const RecipeRegister = () => {
       return alert("필수 재료를 최소 한 개 이상 입력해주세요.");
     }
 
-    const numericTime = parseInt(cookingTime.replace(/[^0-9]/g, "")) || 15;
-    const stepsArray = method ? method.split('\n').map(s => s.trim()).filter(Boolean) : [];
-    const finalDescription = optIngredients.trim() ? `${intro || title} (선택 재료: ${optIngredients})` : intro || `${title} 레시피입니다.`;
+    try {
+        setLoading(true);
 
-    const recipePayload = {
-      title: title,
-      dishName: title,
-      category: categoryMapper[category] || "KOR",
-      cookingTime: numericTime,
-      description: finalDescription,
-      image: imagePreview || "default.png",
-      mustIngredients: filteredMustIngredients,
-      steps: stepsArray
-    };
+        // 1단계: 이미지가 있으면 S3에 먼저 업로드
+        let imageUrl = "default.png";
+        if (imagePreview) {  // imageFile 대신 imagePreview(base64) 사용
+          const uploadRes = await axiosInstance.post('/recipeMain/upload-image', {
+            image: imagePreview  // base64 전송
+          });
+          imageUrl = uploadRes.data;
+        }
 
+        // 2단계: 레시피 데이터 등록
+        const numericTime = parseInt(cookingTime.replace(/[^0-9]/g, "")) || 15;
+        const stepsArray = method ? method.split('\n').map(s => s.trim()).filter(Boolean) : [];
+        const finalDescription = optIngredients.trim()
+            ? `${intro || title} (선택 재료: ${optIngredients})`
+            : intro || `${title} 레시피입니다.`;
+
+        const recipePayload = {
+            title,
+            dishName: title,
+            category: categoryMapper[category] || "KOR",
+            cookingTime: numericTime,
+            description: finalDescription,
+            image: imageUrl, // ← S3 URL 사용
+            mustIngredients: filteredMustIngredients,
+            steps: stepsArray
+        };
+
+        const response = await axiosInstance.post('/recipeMain/register', recipePayload);
     const token = localStorage.getItem('ssToken');
 
     try {
@@ -160,28 +176,28 @@ const RecipeRegister = () => {
         }
       });
 
-      if (response.status === 200 || response.status === 201) {
-        alert('레시피 등록 서버 전송 완료!');
-        navigate('/recipeMain');
-      }
+        if (response.status === 200 || response.status === 201) {
+            alert('레시피 등록 서버 전송 완료!');
+            navigate('/recipeMain');
+        }
     } catch (error: any) {
-      console.error("서버 저장 실패:", error);
-      if (error.response?.status === 401) {
-        alert("로그인 세션이 만료되었거나 로그인 상태가 아닙니다.");
-      } else {
-        alert("서버 통신 장애가 발생했습니다.");
-      }
+        console.error("서버 저장 실패:", error);
+        if (error.response?.status === 401) {
+            alert("로그인 세션이 만료되었거나 로그인 상태가 아닙니다.");
+        } else {
+            alert("서버 통신 장애가 발생했습니다.");
+        }
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   if (loading) return <div className="register-loading-box">레시피 정보를 저장 중입니다...</div>;
 
   return (
-    <div className="recipe-register-container">
-      <div className="back-link" onClick={() => navigate('/recipeMain')}>
-        <span>{id ? '⬅ 레시피 상세로' : '⬅ 레시피 목록으로'}</span>
+    <div style={pageContainerStyle}>
+      <div style={backLinkStyle} onClick={() => navigate('/recipeMain')}>
+        <span>{id ? ' 레시피 상세로' : ' 레시피 목록으로'}</span>
       </div>
 
       <div className="register-card">

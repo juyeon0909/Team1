@@ -64,12 +64,10 @@ public class RecipeService {
                 RecipeIngredient ingredient = new RecipeIngredient();
 
                 // 💡 [핵심 변경 포인트]: DB에 유저가 입력한 재료가 없을 경우의 유연한 처리
-                // 사용자가 직접 타이핑하여 없는 재료를 입력하더라도 서버가 터지지 않고 즉석에서 신규 Item을 생성해 영속화합니다.
                 Item item = itemRepository.findByName(ingDto.getName().trim())
                         .orElseGet(() -> {
                             Item newItem = new Item();
                             newItem.setName(ingDto.getName().trim());
-                            // 만약 Item 엔티티에 다른 필수 필드(ex: category 등)가 있다면 여기에 기본값 세팅이 필요합니다.
                             return itemRepository.save(newItem);
                         });
 
@@ -121,6 +119,42 @@ public class RecipeService {
             return dto;
         }).collect(Collectors.toList());
     }
-}
 
-/* 커밋 */
+    /**
+     * 내가 등록한 레시피 목록 조회 (마이페이지용)
+     */
+    public List<RecipeDto> getMyRecipes(String email) {
+        // 1. 이메일로 회원 정보 조회
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 2. 해당 회원이 작성한 레시피만 조회 (RecipeRepository의 findByMember 활용)
+        List<Recipe> myRecipes = recipeRepository.findByMember(member);
+
+        // 3. Entity -> DTO 변환 로직 진행
+        return myRecipes.stream().map(recipe -> {
+            RecipeDto dto = new RecipeDto();
+            dto.setId(recipe.getId());
+            dto.setTitle(recipe.getTitle());
+            dto.setDishName(recipe.getDishName());
+            dto.setCategory(recipe.getCategory().name());
+            dto.setCookingTime(recipe.getCookingTime());
+            dto.setDescription(recipe.getDescription());
+            dto.setImage(recipe.getImage());
+
+            if (recipe.getCookingMethod() != null) {
+                dto.setSteps(Arrays.asList(recipe.getCookingMethod().split("\n")));
+            }
+
+            List<RecipeDto.MustIngredientDto> ingDtos = recipe.getRecipeIngredients().stream()
+                    .map(ing -> new RecipeDto.MustIngredientDto(
+                            ing.getItem() != null ? ing.getItem().getName() : "알 수 없는 재료",
+                            ing.getQuantity()
+                    ))
+                    .collect(Collectors.toList());
+            dto.setMustIngredients(ingDtos);
+
+            return dto;
+        }).collect(Collectors.toList());
+    }
+}

@@ -39,6 +39,8 @@ public class SecurityConfig {
                 "/fruit/**",
                 "/css/**",
                 "/js/**",
+                "/api/recipeMain",
+                "/api/recipeMain/**",
                 "/api/member/signup",
                 "/api/member/login",
                 "/product/**",
@@ -65,6 +67,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/member/join").permitAll()
                                 .requestMatchers("/api/recipeMain").permitAll()
                                 .requestMatchers("/api/recipeMain/**").permitAll()
+                                .requestMatchers("/api/recipeMain/register").authenticated()
+                                .requestMatchers("/api/recipeMain/edit").authenticated()
                                 .requestMatchers("/api/ingredients/**").permitAll()
                         .requestMatchers("/api/product/**").permitAll()
                         .requestMatchers("/api/mypage/**").authenticated()

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-// 💡 [핵심] 기존의 생 axios를 제거하고 FridgeRegister와 동일한 axiosInstance를 가져옵니다.
 import axiosInstance from '../api/axiosInstance';
+import '../components/RecipeRegister.css'; // 💡 분리된 CSS 파일 임포트
 
 interface IngredientRow {
   name: string;
@@ -31,7 +31,7 @@ const RecipeRegister = () => {
 
   const dropdownRefs = useRef<Array<HTMLDivElement | null>>([]);
 
-  // 외부 클릭 시 닫기 (FridgeRegister와 동일 메커니즘)
+  // 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       dropdownRefs.current.forEach((ref, idx) => {
@@ -46,7 +46,7 @@ const RecipeRegister = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 식재료 검색 (Debounce) - FridgeRegister와 100% 동일화 완료
+  // 식재료 검색 (Debounce)
   const handleIngredientChange = (index: number, field: 'name' | 'quantity', value: string) => {
     const newIngredients = [...mustIngredients];
     newIngredients[index][field] = value;
@@ -69,7 +69,6 @@ const RecipeRegister = () => {
       try {
         const token = localStorage.getItem('ssToken');
 
-        // 💡 이제 정상적으로 임포트된 axiosInstance를 사용해 상대 경로로 찌릅니다.
         const response = await axiosInstance.get(`/product/search?name=${encodeURIComponent(value)}`, {
           headers: {
             Authorization: token ? `Bearer ${token}` : ''
@@ -89,7 +88,7 @@ const RecipeRegister = () => {
     return () => clearTimeout(delayDebounce);
   };
 
-  // 항목 선택 핸들러 (FridgeRegister처럼 itemName과 name 모두 대응)
+  // 항목 선택 핸들러
   const handleSelectItem = (index: number, prod: any) => {
     const finalName = prod.itemName || prod.name || '';
     setMustIngredients(prev =>
@@ -155,8 +154,7 @@ const RecipeRegister = () => {
 
     try {
       setLoading(true);
-      // 💡 통일성 및 쿠키/인증 처리를 위해 등록 요청도 axiosInstance를 활용해 상대 경로로 변경합니다.
-      const response = await axiosInstance.post('/api/recipeMain/register', recipePayload, {
+      const response = await axiosInstance.post('/recipeMain/register', recipePayload, {
         headers: {
           Authorization: token ? `Bearer ${token}` : ''
         }
@@ -178,79 +176,71 @@ const RecipeRegister = () => {
     }
   };
 
-  // 스타일 설정 정의
-  const pageContainerStyle = { padding: '28px 40px', background: '#f8f9fa', minHeight: 'calc(100vh - 56px)', fontFamily: 'sans-serif' };
-  const backLinkStyle = { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', cursor: 'pointer', fontSize: '13px', color: '#666' };
-  const cardStyle = { maxWidth: '600px', margin: '0 auto', background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', padding: '28px 32px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' };
-  const labelStyle = { display: 'block', fontSize: '12px', color: '#555', marginBottom: '5px', fontWeight: '500' };
-  const subLabelStyle = { fontSize: '11px', color: '#999', marginLeft: '4px' };
-  const inputStyle = { width: '100%', padding: '9px 12px', fontSize: '13px', border: '0.5px solid #ccc', borderRadius: '6px', background: '#fafafa', color: '#111', outline: 'none', boxSizing: 'border-box' as const };
-
-  if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>레시피 정보를 저장 중입니다...</div>;
+  if (loading) return <div className="register-loading-box">레시피 정보를 저장 중입니다...</div>;
 
   return (
-    <div style={pageContainerStyle}>
-      <div style={backLinkStyle} onClick={() => navigate('/recipeMain')}>
+    <div className="recipe-register-container">
+      <div className="back-link" onClick={() => navigate('/recipeMain')}>
         <span>{id ? '⬅ 레시피 상세로' : '⬅ 레시피 목록으로'}</span>
       </div>
 
-      <div style={cardStyle}>
-        <div style={{ fontSize: '18px', fontWeight: '500', color: '#111', marginBottom: '22px' }}>
+      <div className="register-card">
+        <div className="register-card-title">
           {id ? `레시피 수정 (ID: ${id})` : '레시피 등록'}
         </div>
 
         {/* 이미지 업로드 */}
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>요리 대표 이미지</label>
-          <input type="file" accept="image/*" onChange={handleImageChange} style={{ marginBottom: '8px', fontSize: '12px' }} />
+        <div className="form-group">
+          <label className="form-label">요리 대표 이미지</label>
+          <input type="file" accept="image/*" onChange={handleImageChange} className="file-input-text" />
           {imagePreview && (
-            <div style={{ position: 'relative', borderRadius: '6px', overflow: 'hidden', border: '0.5px solid #eee' }}>
-              <img src={imagePreview} alt="대표" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} />
-              <button type="button" onClick={handleRemoveImage} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer' }}>✕</button>
+            <div className="image-preview-wrapper">
+              <img src={imagePreview} alt="대표" className="preview-image" />
+              <button type="button" onClick={handleRemoveImage} className="image-delete-btn">✕</button>
             </div>
           )}
         </div>
 
         {/* 레시피 이름 */}
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>레시피 이름 *</label>
-          <input style={inputStyle} type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="예: 두부 계란찜" />
+        <div className="form-group">
+          <label className="form-label">레시피 이름 *</label>
+          <input className="form-input" type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="예: 두부 계란찜" />
         </div>
 
         {/* 카테고리 & 조리시간 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+        <div className="grid-two-columns">
           <div>
-            <label style={labelStyle}>카테고리 *</label>
-            <select style={inputStyle} value={category} onChange={(e) => setCategory(e.target.value)}>
+            <label className="form-label">카테고리 *</label>
+            <select className="form-input" value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="">선택하세요</option>
               <option>한식</option><option>양식</option><option>일식</option><option>중식</option>
               <option>간식</option><option>야식</option><option>다이어트</option><option>밀프랩</option>
             </select>
           </div>
           <div>
-            <label style={labelStyle}>조리 시간</label>
-            <input style={inputStyle} type="text" value={cookingTime} onChange={(e) => setCookingTime(e.target.value)} placeholder="예: 15분" />
+            <label className="form-label">조리 시간</label>
+            <input className="form-input" type="text" value={cookingTime} onChange={(e) => setCookingTime(e.target.value)} placeholder="예: 15분" />
           </div>
         </div>
 
         {/* 간단 소개 */}
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>간단 소개</label>
-          <input style={inputStyle} type="text" value={intro} onChange={(e) => setIntro(e.target.value)} placeholder="레시피를 한 줄로 소개해주세요" />
+        <div className="form-group">
+          <label className="form-label">간단 소개</label>
+          <input className="form-input" type="text" value={intro} onChange={(e) => setIntro(e.target.value)} placeholder="레시피를 한 줄로 소개해주세요" />
         </div>
 
         {/* 필수 재료 및 용량 영역 */}
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>필수 재료 및 용량 *</label>
+        <div className="form-group">
+          <label className="form-label">필수 재료 및 용량 *</label>
           {mustIngredients.map((item, index) => (
             <div
               key={index}
               ref={el => { dropdownRefs.current[index] = el; }}
-              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px', marginBottom: '12px', alignItems: 'center', position: 'relative' }}
+              className="ingredient-row"
             >
-              <div style={{ position: 'relative' }}>
+              <div className="relative-wrapper">
                 <input
-                  style={inputStyle}
+                  className="form-input"
                   type="text"
                   value={item.name}
                   onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
@@ -259,25 +249,18 @@ const RecipeRegister = () => {
                 />
 
                 {item.showDropdown && item.searchResults && item.searchResults.length > 0 && (
-                  <ul style={{
-                    position: 'absolute', top: '100%', left: 0, right: 0,
-                    backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '4px',
-                    maxHeight: '180px', overflowY: 'auto', zIndex: 9999, padding: 0, margin: '4px 0 0 0',
-                    listStyle: 'none', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', textAlign: 'left'
-                  }}>
+                  <ul className="search-dropdown-list">
                     {item.searchResults.map((prod, pIdx) => {
                       const displayName = prod.itemName || prod.name || '이름 없음';
                       return (
                         <li
                           key={prod.id || prod.itemId || pIdx}
                           onClick={() => handleSelectItem(index, prod)}
-                          style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', borderBottom: '1px solid #f5f5f5', alignItems: 'center' }}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f7ff')}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+                          className="dropdown-item"
                         >
-                          <strong style={{ color: '#333', marginRight: '8px', fontSize: '13px' }}>{displayName}</strong>
+                          <strong className="dropdown-item-name">{displayName}</strong>
                           {prod.category && (
-                            <span style={{ color: '#aaa', fontSize: '11px', background: '#eee', padding: '2px 6px', borderRadius: '10px', marginLeft: 'auto' }}>
+                            <span className="dropdown-item-category">
                               {prod.category}
                             </span>
                           )}
@@ -289,42 +272,42 @@ const RecipeRegister = () => {
               </div>
 
               <input
-                style={inputStyle}
+                className="form-input"
                 type="text"
                 value={item.quantity}
                 onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
                 placeholder="예: 1모, 150g"
               />
               {mustIngredients.length > 1 && (
-                <button type="button" onClick={() => removeIngredientRow(index)} style={{ background: '#fff', border: '0.5px solid #ccc', color: '#ff4d4f', padding: '8px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>✕</button>
+                <button type="button" onClick={() => removeIngredientRow(index)} className="row-remove-btn">✕</button>
               )}
             </div>
           ))}
-          <button type="button" onClick={addIngredientRow} style={{ background: 'none', border: '1px dashed #1D9E75', color: '#1D9E75', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', width: '100%', marginTop: '4px' }}>+ 재료 추가</button>
+          <button type="button" onClick={addIngredientRow} className="add-row-dashed-btn">+ 재료 추가</button>
         </div>
 
         {/* 선택 재료 */}
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>선택 재료 <span style={subLabelStyle}>쉼표로 구분</span></label>
-          <input style={inputStyle} type="text" value={optIngredients} onChange={(e) => setOptIngredients(e.target.value)} placeholder="예: 참기름, 소금" />
+        <div className="form-group">
+          <label className="form-label">선택 재료 <span className="form-sublabel">쉼표로 구분</span></label>
+          <input className="form-input" type="text" value={optIngredients} onChange={(e) => setOptIngredients(e.target.value)} placeholder="예: 참기름, 소금" />
         </div>
 
         {/* 조리 방법 */}
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>조리 방법</label>
-          <textarea style={{ ...inputStyle, minHeight: '100px', resize: 'vertical', fontFamily: 'inherit', lineHeight: '1.5' }} value={method} onChange={(e) => setMethod(e.target.value)} placeholder={`조리 순서를 입력해주세요\n1. 두부를 먹기 좋은 크기로 썰어요\n2. ...`} />
+        <div className="form-group">
+          <label className="form-label">조리 방법</label>
+          <textarea className="form-input form-textarea" value={method} onChange={(e) => setMethod(e.target.value)} placeholder={`조리 순서를 입력해주세요\n1. 두부를 먹기 좋은 크기로 썰어요\n2. ...`} />
         </div>
 
         {!id && (
-          <div style={{ background: '#FAEEDA', border: '0.5px solid #FAC775', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', color: '#633806', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+          <div className="info-banner-box">
             <span>ℹ️</span>
             등록된 레시피는 승인 후 등록됩니다.
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-          <button type="button" onClick={() => navigate(-1)} style={{ padding: '8px 18px', fontSize: '13px', borderRadius: '6px', cursor: 'pointer', border: '0.5px solid #ccc', background: '#fff', color: '#666' }}>취소</button>
-          <button type="button" onClick={onSave} style={{ padding: '8px 18px', fontSize: '13px', borderRadius: '6px', cursor: 'pointer', background: '#1D9E75', color: '#fff', border: 'none', fontWeight: '500' }}>
+        <div className="action-button-group">
+          <button type="button" onClick={() => navigate(-1)} className="cancel-action-btn">취소</button>
+          <button type="button" onClick={onSave} className="submit-action-btn">
             {id ? '저장하기' : '등록 신청'}
           </button>
         </div>
@@ -332,5 +315,5 @@ const RecipeRegister = () => {
     </div>
   );
 };
-{/* 커밋 */}
+
 export default RecipeRegister;

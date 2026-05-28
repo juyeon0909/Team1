@@ -53,6 +53,20 @@ public class RecipeController {
         RecipeDto saved = recipeService.createRecipe(recipeDto, principal.getName());
         return ResponseEntity.ok(saved);
     }
+
+    // 🟢 내가 등록한 마이페이지 레시피 목록 조회 API 추가
+    @GetMapping("/api/mypage/recipe") // ⚠️ 기본 설정을 무시하고 절대 경로로 매핑
+    public ResponseEntity<?> getMyPageRecipes(Principal principal) {
+        // 비로그인 유저 예외 처리
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요한 서비스입니다.");
+        }
+
+        String email = principal.getName();
+        // 💡 Service에 내 이메일로 등록된 레시피만 가져오는 메서드 호출
+        List<RecipeDto> myRecipes = recipeService.getRecipes(email);
+        return ResponseEntity.ok(myRecipes);
+    }
 }
 
 /* 커밋 */

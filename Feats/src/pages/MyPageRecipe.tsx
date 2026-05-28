@@ -74,7 +74,7 @@ const MyPageRecipe = () => {
           onClick={() => navigate('/recipeMain/register')} // 소문자 등록 페이지 경로 통일
           style={{
             padding: '8px 16px',
-            background: '#1D9E75',
+            background: '#6FBC44',
             color: '#fff',
             border: 'none',
             borderRadius: '6px',
@@ -114,7 +114,7 @@ const MyPageRecipe = () => {
 
               {/* 텍스트 컨텐츠 영역 */}
               <div style={{ padding: '14px' }}>
-                <span style={{ fontSize: '11px', color: '#1D9E75', fontWeight: 'bold' }}>{recipe.cat}</span>
+                <span style={{ fontSize: '11px', color: '#6FBC44', fontWeight: 'bold' }}>{recipe.cat}</span>
                 <h3 style={{ fontSize: '14px', margin: '4px 0 6px 0', color: '#111', fontWeight: '500' }}>{recipe.name}</h3>
                 <p style={{ fontSize: '12px', color: '#666', margin: '0 0 12px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {recipe.desc}

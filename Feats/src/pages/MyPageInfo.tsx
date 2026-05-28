@@ -4,7 +4,6 @@ import "../components/MyPage.css";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import customAxios from './../api/axiosInstance'; // 사용자 정의 axios 인스턴스
-import { API_BASE_URL } from "../config/config";
 
 function App() {
     console.log('자바스크립트 코딩 영역');
@@ -26,8 +25,7 @@ function App() {
         const fetchUserInfo = async () => {
             try {
                 // 백엔드의 내 정보 조회 API 엔드포인트
-                const url = `${API_BASE_URL}/mypage/info`;
-                const response = await customAxios.get(url);
+                const response = await customAxios.get('/mypage/info');
 
                 // 서버가 준 진짜 데이터(닉네임, 이미지 등)로 상태 변경!
                 // 백엔드가 주는 데이터 구조(예: response.data.name)에 맞게 맞추시면 됩니다.
@@ -38,7 +36,7 @@ function App() {
                 });
 
                 // 패스워드리스 등록 여부 확인
-                const plResponse = await customAxios.get(`${API_BASE_URL}/passwordless/check-status`, {
+                const plResponse = await customAxios.get('/passwordless/check-status', {
                     params: { email: response.data.email }
                 });
                 setIsPasswordless(plResponse.data === true);

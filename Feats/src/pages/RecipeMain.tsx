@@ -1,60 +1,31 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import type { Recipe } from '../types/Recipe';
+import type { User } from '../types/User';
+import customAxios from './../api/axiosInstance';
+import axios from "axios";
 
-interface Recipe {
-  id: number;
-  name: string;
-  cat: string;
-  time: number;
-  match: number;
-  emoji: string;
-  bg: string;
-  desc: string;
-  tags: string[];
-  heart: number;
-  star: number;
-  urgent: boolean;
-  isHearted?: boolean;
-  isScrapped?: boolean;
-  mustIngredients: { name: string; quantity: string }[];
-  selectIngredients: string[];
-  missingIngredients: string[];
-  steps: string[];
-}
+import { API_BASE_URL } from "../config/config";
 
-const INITIAL_RECIPES: Recipe[] = [
-  {
-    id: 1, name: '두부 계란찜', cat: '한식', time: 15, match: 100, emoji: '🍳', bg: '#E1F5EE', desc: '부드러운 두부와 계란의 초간단 한식 반찬', tags: ['초간단', '15분'], heart: 234, star: 48, urgent: true, isHearted: false, isScrapped: false,
-    mustIngredients: [{ name: '두부', quantity: '1모' }, { name: '계란', quantity: '2개' }, { name: '대파', quantity: '1/4대' }],
-    selectIngredients: ['멸치육수 1/2컵', '참기름 0.5T', '소금 약간'],
-    missingIngredients: ['멸치육수', '참기름'],
-    steps: ['두부를 2cm 두께로 썰어 내열 용기에 담아요.', '계란 2개에 멸치육수 1/2컵을 넣고 잘 풀어줍니다.', '두부 위에 계란물을 붓고 뚜껑을 닫아 약불에서 12분 쪄요.', '대파를 송송 썰어 올리고 참기름을 살짝 뿌려 완성!']
-  },
-  {
-    id: 2, name: '대파 된장찌개', cat: '한식', time: 20, match: 85, emoji: '🥘', bg: '#FAEEDA', desc: '구수한 된장과 신선한 대파의 조화', tags: ['국물', '20분'], heart: 189, star: 35, urgent: true, isHearted: false, isScrapped: false,
-    mustIngredients: [{ name: '대파', quantity: '1대' }, { name: '두부', quantity: '반모' }, { name: '된장', quantity: '2T' }],
-    selectIngredients: ['감자 1개', '청양고추 1개'],
-    missingIngredients: ['감자'],
-    steps: ['냄비에 물을 붓고 된장을 채에 걸러 풀어줍니다.', '감자와 두부를 먹기 좋은 크기로 썰어 넣고 끓입니다.', '국물이 끓으면 송송 썬 대파와 고추를 넣어 한소끔 더 끓입니다.']
-  },
-  {
-    id: 3, name: '치즈 오믈렛', cat: '양식', time: 10, match: 85, emoji: '🧀', bg: '#FCEBEB', desc: '촉촉하고 부드러운 프렌치 스타일 오믈렛', tags: ['양식', '10분'], heart: 305, star: 92, urgent: false, isHearted: false, isScrapped: false,
-    mustIngredients: [{ name: '계란', quantity: '3개' }, { name: '모짜렐라 치즈', quantity: '50g' }, { name: '버터', quantity: '1T' }],
-    selectIngredients: ['소금 약간', '후추 약간'],
-    missingIngredients: ['모짜렐라 치즈'],
-    steps: ['계란을 그릇에 깨 넣고 소금, 후추와 함께 잘 풀어줍니다.', '달군 팬에 버터를 녹인 후 계란물을 붓고 스크램블하듯 젓습니다.', '계란이 반숙 상태가 되면 치즈를 올리고 반으로 접어 모양을 잡습니다.']
-  }
-];
+import Paging from "./paging";
 
-const RecipeMain = () => {
+import FieldSearch from './FieldSearch';
+
+import { initialPagingInfo, type PagingInfo } from "../types/Paging";
+
+import { initialSearchCondition, type SearchCondition } from '../types/SearchCondition';
+import Button from 'react-bootstrap/esm/Button';
+
+type ProductProps = { // user: User는 자바의 객체: 클래스 정도로 이해하면 됨
+    user: User | null; // 로그인하면 의미 있는 객체, 아니면 null
+};
+
+function RecipeMain({ user }: ProductProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { id: urlId } = useParams();
 
-  const [recipes, setRecipes] = useState<Recipe[]>(() => {
-    const localData = localStorage.getItem('user_recipes');
-    return localData ? JSON.parse(localData) : INITIAL_RECIPES;
-  });
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
 
   const view = urlId ? 'detail' : 'list';
   const selectedRecipeId = urlId ? parseInt(urlId, 10) : null;
@@ -69,20 +40,158 @@ const RecipeMain = () => {
   const [activeTime, setActiveTime] = useState('전체');
   const [urgentOnly, setUrgentOnly] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const perPage = 6;
+  // 관련 스테이트 정의 (ts.가져오기)
+    const [paging, setPaging] = useState<PagingInfo>(initialPagingInfo);
 
-  const currentRecipe = useMemo(() => {
-    return recipes.find(r => r.id === selectedRecipeId) || null;
-  }, [recipes, selectedRecipeId]);
+    // 2) 관련 스테이트 정의
+    const [searchCondition, setSearchCondition] = useState<SearchCondition>(initialSearchCondition);
+
+
 
   useEffect(() => {
-    if (currentRecipe) {
-      setMustIngredients(
-        currentRecipe.mustIngredients ? currentRecipe.mustIngredients.map(item => ({ ...item })) : []
-      );
+    const url = `${API_BASE_URL}/recipeMain`;
+
+
+      // 페이징 처리 관련 parameters 항목을 추가함
+    const parameters = {
+        params: {
+            pageNumber: paging.pageNumber,
+            pageSize: paging.pageSize,
+
+            // 3) useEffect() Hook 수정 : 검색 관련 항목들을 parameters 항목에 추가합니다.
+            // 검색 조건들
+            searchDateType: searchCondition.searchDateType,
+            category: searchCondition.category,
+            searchMode: searchCondition.searchMode,
+            searchKeyword: searchCondition.searchKeyword
+        }
     }
-  }, [currentRecipe]);
+
+    customAxios.get(url, parameters)
+            .then((response) => {
+                console.log('응답 받은 데이터');
+
+                // setRecipes() 메소드 수정 - 응답 받은 데이터 response.data → response.data.content으로 수정
+                console.log(response.data.content);
+                setRecipes(response.data.content || []);
+
+                // then() 구문 하단 - setPaging() 메소드를 사용한 paging 업데이트하기
+                setPaging((prev) => {
+                    // pageable (스프링에 들어있는 인터페이스) : 항목의 수를 반환?해주는?
+                    const { totalElements, totalPages, pageable } = response.data;
+
+                    // pageable이라는 데이터가 정상적으로 안들어와도 돌아가게 안전빵으로 ?하나 주기
+                    // ??(물음표 2개)의 의미 : 왼쪽 데이터가 null이거나 undefined이면 오른쪽 데이터로 설정해라
+                    const pageNumber = pageable?.pageNumber ?? 0;
+                    const pageSize = pageable?.pageSize ?? prev.pageSize;
+
+                    // Math.floor는 소수점을 버리는 함수임
+                    // 현재 페이지가 속한 그룹의 시작 번호(beginPage) 계산하는 방법
+                    const beginPage = Math.floor(pageNumber / prev.pageCount) * prev.pageCount;
+
+                    // 현재 페이지가 속한 그룹의 끝 번호(endpage) 계산하는 방법
+                    //const endPage = beginPage + prev.pageCount - 1 ;
+                    // 그러나 이렇게 endPage를 계산했을때 totalPages보다 endPage가 커지는 경우도 발생함
+                    // 따라서 2개의 옵션을 주고 그것에 대한 최솟값을 endPage에 적용함
+                    const endPage = Math.min(
+                        beginPage + prev.pageCount - 1,
+                        totalPages - 1
+                    );
+
+                    // 삼항연산자 사용
+                    const pagingStatus =
+                        totalPages === 0
+                            ? "0/0 페이지"
+                            : `${pageNumber + 1}/${totalPages} 페이지`;
+
+
+                    return {
+                        ...prev,
+                        totalElements,
+                        totalPages,
+                        pageNumber,
+                        pageSize,
+                        beginPage,
+                        endPage,
+                        pagingStatus
+                    };
+                });
+
+            })
+            .catch((error) => {
+                console.log(error);
+            }); // 두 번째 매개 변수에 paging.pageNumber를 추가합니다.
+        // 3) useEffect() Hook 수정 : 두 번째 매개 변수에 searchCondition 연관 항목들을 추가합니다.
+    }, [
+        paging.pageNumber,
+        searchCondition.searchDateType,
+        searchCondition.category,
+        searchCondition.searchMode,
+        searchCondition.searchKeyword
+    ]);
+
+
+    const makeAdminButtons = (item: Recipe, user: User | null, navigate: any) => {
+        if (user?.role !== 'ADMIN') return null;
+
+        return (
+            <div className="d-flex justify-content-center">
+                <Button // 수정을 위한 <Button>을 추가합니다.
+                    variant="warning"
+                    className="mb-2"
+                    size="sm"
+                    onClick={(event) => {
+                        event.stopPropagation(); // 이벤트 버블링 방지
+                        navigate(`/product/update/${item.id}`); // 유일한 id가 있음
+                    }}>
+                    수정
+                </Button>
+
+                &nbsp;
+
+                <Button // 삭제를 위한 <Button>을 추가합니다. (confirm 함수 이용)(alert과는 다름)
+                    variant="danger"
+                    className="mb-2"
+                    size="sm"
+                    onClick={async (event) => {
+                        event.stopPropagation(); // 이벤트 버블링 방지
+
+                        const isDelete = window.confirm(`${item.name} 레시피를 삭제하시겠습니까?`);
+
+                        if (isDelete === false) {
+                            /* sweet alert2 사이트에 이쁜거 많음 */
+                            alert(`${item.name} 레시피 삭제를 취소하였습니다.`)
+                            return;
+                        }
+
+                        try { // 전체 배열에서 일부 데이터만 필터할 수 있음
+                            const url = `${API_BASE_URL}/recipe/delete/${item.id}`;
+                            await axios.delete(url);
+                            alert(`'${item.name}' 레시피가 삭제되었습니다.`)
+
+                            // 레시피를 갱신해주는 setter
+                            // 이전(prev) 레시피 정보를 가져와서 필터링하는데
+                            // 이전 레시피의 id와 해당 레시피 id가 같지 않으면 - 레시피 데이터에 해당 레시피가 없으면
+                            // 레시피(목록)을 갱신해라
+                            setRecipes(prev => prev.filter(r => r.id !== item.id));
+
+                            navigate('/recipe/list');
+
+                        } catch (error) {
+                            console.log(error);
+                            if (axios.isAxiosError(error)) {
+                                alert(`레시피 삭제 실패 : ${error.response?.data || error.message}`);
+                            } else {
+                                console.log('알수 없는 에러 : ' + error);
+                            }
+                        };
+                    }}>
+                    삭제
+                </Button>
+            </div>
+        );
+    };
+
 
   useEffect(() => {
     const localData = localStorage.getItem('user_recipes');

@@ -213,7 +213,7 @@ const FridgeRegister: React.FC = () => {
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
                   >
                     <strong style={{ color: '#333', marginRight: '8px' }}>{displayName}</strong>
-                    <span style={{ color: '#888', fontSize: '13px', flexGrow: 1 }}>{item.itemUnit || '개'}</span>
+                    <span style={{ color: '#888', fontSize: '13px', flexGrow: 1 }}>{item.itemUnit || ''}</span>
                     <span style={{ color: '#aaa', fontSize: '12px', background: '#eee', padding: '2px 6px', borderRadius: '10px' }}>{item.category}</span>
                   </li>
                 );
@@ -223,7 +223,7 @@ const FridgeRegister: React.FC = () => {
         </div>
 
         <div className="fridge-form-group">
-          <label className="fridge-form-label">수량 (개)</label>
+          <label className="fridge-form-label">무게 (g)</label>
           <input
             type="number"
             min={1}

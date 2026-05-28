@@ -175,7 +175,7 @@ const FridgeMain: React.FC = () => {
                     <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>
                       {finalName}
                     </span>
-                    <span className="item-quantity">{item.quantity}개</span>
+                    <span className="item-quantity">{item.quantity}g</span>
                     
                     <span className="item-expiry item-expiry-wrapper">
                       {item.expirationdate}
@@ -210,7 +210,7 @@ const FridgeMain: React.FC = () => {
                     <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>
                       {finalName}
                     </span>
-                    <span className="item-quantity">{item.quantity}개</span>
+                    <span className="item-quantity">{item.quantity}g</span>
                     
                     <span className="item-expiry item-expiry-wrapper">
                       {item.expirationdate}
@@ -245,7 +245,7 @@ const FridgeMain: React.FC = () => {
                     <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>
                       {finalName}
                     </span>
-                    <span className="item-quantity">{item.quantity}개</span>
+                    <span className="item-quantity">{item.quantity}g</span>
                     
                     <span className="item-expiry item-expiry-wrapper">
                       {item.expirationdate}

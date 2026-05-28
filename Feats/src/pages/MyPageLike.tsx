@@ -3,7 +3,6 @@ import { Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import customAxios from './../api/axiosInstance';
 import '../components/MyPage.css';
-import { API_BASE_URL } from '../config/config';
 
 interface Recipe {
   id: number;
@@ -50,8 +49,7 @@ export default function LikedRecipes() {
   useEffect(() => {
     const fetchLikedRecipes = async () => {
       try {
-        const url = `${API_BASE_URL}/mypage/like`;;
-        const response = await customAxios.get(url);
+        const response = await customAxios.get('/mypage/like');
         setRecipes(response.data || []);
       } catch (error) {
         console.error('좋아요 내역 불러오기 실패:', error);
@@ -85,8 +83,7 @@ export default function LikedRecipes() {
 
     setTimeout(async () => {
       try {
-        const url = `${API_BASE_URL}/recipe/${id}/like`;
-        await customAxios.post(url);
+        await customAxios.post(`/recipe/${id}/like`);
 
         // 실제 리스트에서 제거 및 상태 초기화
         setRecipes((prev) => prev.filter((r) => r.id !== id));

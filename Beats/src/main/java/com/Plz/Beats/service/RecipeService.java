@@ -147,6 +147,7 @@ public class RecipeService {
                 dto.setSteps(Arrays.asList(recipe.getCookingMethod().split("\n")));
             }
 
+
             List<RecipeDto.MustIngredientDto> ingDtos = recipe.getRecipeIngredients().stream()
                     .map(ing -> new RecipeDto.MustIngredientDto(
                             ing.getItem() != null ? ing.getItem().getName() : "알 수 없는 재료",

@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
+
 
 interface Recipe {
   id: number;
@@ -79,7 +81,7 @@ useEffect(() => {
   const fetchRecipes = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:9000/api/recipeMain', { withCredentials: true });
+      const response = await axiosInstance.get('/recipeMain');
 
       // response.data가 존재하고 배열일 때만 매핑 실행
       if (response.data && Array.isArray(response.data) && response.data.length > 0) {

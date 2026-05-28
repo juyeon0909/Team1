@@ -74,7 +74,7 @@ public class RecipeController {
     }
 
     // 🟢 내가 등록한 마이페이지 레시피 목록 조회 API 추가
-    @GetMapping("/api/mypage/recipe") // ⚠️ 기본 설정을 무시하고 절대 경로로 매핑
+    @GetMapping("/mypage/recipe") // ⚠️ 기본 설정을 무시하고 절대 경로로 매핑
     public ResponseEntity<?> getMyPageRecipes(Principal principal) {
         // 비로그인 유저 예외 처리
         if (principal == null || "anonymousUser".equals(principal.getName())) {

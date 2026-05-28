@@ -17,6 +17,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
      * 엔티티 내부의 'member' 필드와 그 안의 'email'을 타고 들어가서 조회하는 JPA 메서드 낚시 규칙입니다.
      */
     List<Recipe> findByMember(Member member);
-    List<Recipe> findByMemberEmail(String email);
+
 }
 

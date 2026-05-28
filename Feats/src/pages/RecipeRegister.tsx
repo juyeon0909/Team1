@@ -67,7 +67,7 @@ const RecipeRegister = () => {
 
     const delayDebounce = setTimeout(async () => {
       try {
-        const token = localStorage.getItem('ssToken');
+        const token = localStorage.getItem('accessToken');
 
         const response = await axiosInstance.get(`/product/search?name=${encodeURIComponent(value)}`, {
           headers: {
@@ -166,7 +166,7 @@ const RecipeRegister = () => {
         };
 
         const response = await axiosInstance.post('/recipeMain/register', recipePayload);
-    const token = localStorage.getItem('ssToken');
+    const token = localStorage.getItem('accessToken');
 
     try {
       setLoading(true);

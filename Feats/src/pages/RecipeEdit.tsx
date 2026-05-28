@@ -51,7 +51,7 @@ const RecipeEdit = () => {
     const fetchRecipeData = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('ssToken');
+        const token = localStorage.getItem('accessToken');
 
         const response = await axiosInstance.get(`/recipeMain/${id}`, {
           headers: {
@@ -116,7 +116,7 @@ const RecipeEdit = () => {
 
     const delayDebounce = setTimeout(async () => {
       try {
-        const token = localStorage.getItem('ssToken');
+        const token = localStorage.getItem('accessToken');
 
         const response = await axiosInstance.get(`/product/search?name=${encodeURIComponent(value)}`, {
           headers: {

@@ -1,21 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+// 💡 [핵심] 기존의 생 axios를 제거하고 FridgeRegister와 동일한 axiosInstance를 가져옵니다.
+import axiosInstance from '../api/axiosInstance';
+
+interface IngredientRow {
+  name: string;
+  quantity: string;
+  showDropdown: boolean;
+  searchResults: Array<{ id?: number; itemId?: number; name?: string; itemName?: string; category?: string }>;
+}
 
 const RecipeRegister = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(false);
-
-  // 상태 변수 정의
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [cookingTime, setCookingTime] = useState("");
   const [intro, setIntro] = useState("");
 
-  // 필수 재료 구조 (기존 단순 name, quantity 구조)
   const [mustIngredients, setMustIngredients] = useState<IngredientRow[]>([
-    { name: "", quantity: "" }
+    { name: "", quantity: "", showDropdown: false, searchResults: [] }
   ]);
   const [optIngredients, setOptIngredients] = useState("");
   const [method, setMethod] = useState("");
@@ -23,13 +29,77 @@ const RecipeRegister = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
+  const dropdownRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  // 외부 클릭 시 닫기 (FridgeRegister와 동일 메커니즘)
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      dropdownRefs.current.forEach((ref, idx) => {
+        if (ref && !ref.contains(event.target as Node)) {
+          setMustIngredients(prev =>
+            prev.map((item, i) => i === idx ? { ...item, showDropdown: false } : item)
+          );
+        }
+      });
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // 식재료 검색 (Debounce) - FridgeRegister와 100% 동일화 완료
   const handleIngredientChange = (index: number, field: 'name' | 'quantity', value: string) => {
     const newIngredients = [...mustIngredients];
     newIngredients[index][field] = value;
+
+    if (field === 'quantity') {
+      setMustIngredients(newIngredients);
+      return;
+    }
+
+    if (!value.trim()) {
+      newIngredients[index].showDropdown = false;
+      newIngredients[index].searchResults = [];
+      setMustIngredients(newIngredients);
+      return;
+    }
+
     setMustIngredients(newIngredients);
+
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem('ssToken');
+
+        // 💡 이제 정상적으로 임포트된 axiosInstance를 사용해 상대 경로로 찌릅니다.
+        const response = await axiosInstance.get(`/product/search?name=${encodeURIComponent(value)}`, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : ''
+          }
+        });
+
+        setMustIngredients(prev =>
+          prev.map((item, i) =>
+            i === index ? { ...item, searchResults: response.data, showDropdown: response.data.length > 0 } : item
+          )
+        );
+      } catch (error) {
+        console.error('식재료 검색 실패:', error);
+      }
+    }, 200);
+
+    return () => clearTimeout(delayDebounce);
   };
 
-  const addIngredientRow = () => setMustIngredients([...mustIngredients, { name: "", quantity: "" }]);
+  // 항목 선택 핸들러 (FridgeRegister처럼 itemName과 name 모두 대응)
+  const handleSelectItem = (index: number, prod: any) => {
+    const finalName = prod.itemName || prod.name || '';
+    setMustIngredients(prev =>
+      prev.map((item, i) =>
+        i === index ? { ...item, name: finalName, showDropdown: false, searchResults: [] } : item
+      )
+    );
+  };
+
+  const addIngredientRow = () => setMustIngredients([...mustIngredients, { name: "", quantity: "", showDropdown: false, searchResults: [] }]);
   const removeIngredientRow = (index: number) => setMustIngredients(mustIngredients.filter((_, i) => i !== index));
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,7 +121,7 @@ const RecipeRegister = () => {
 
   const categoryMapper: { [key: string]: string } = {
     "한식": "KOR", "양식": "YANG", "일식": "JAN", "중식": "CHN",
-        "간식": "GAN", "야식": "YA", "다이어트": "DIET", "밀프랩": "RAP"
+    "간식": "GAN", "야식": "YA", "다이어트": "DIET", "밀프랩": "RAP"
   };
 
   const onSave = async () => {
@@ -59,7 +129,8 @@ const RecipeRegister = () => {
     if (!category) return alert("카테고리를 선택해주세요.");
 
     const filteredMustIngredients = mustIngredients
-      .filter(item => item.name.trim() !== "" && item.quantity.trim() !== "");
+      .filter(item => item.name.trim() !== "" && item.quantity.trim() !== "")
+      .map(item => ({ name: item.name, quantity: item.quantity }));
 
     if (filteredMustIngredients.length === 0) {
       return alert("필수 재료를 최소 한 개 이상 입력해주세요.");
@@ -80,14 +151,15 @@ const RecipeRegister = () => {
       steps: stepsArray
     };
 
-    // 로컬 스토리지에서 토큰 꺼내기
-    const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+    const token = localStorage.getItem('ssToken');
 
     try {
       setLoading(true);
-      const response = await axios.post('http://localhost:9000/api/recipeMain/register', recipePayload, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-        withCredentials: true
+      // 💡 통일성 및 쿠키/인증 처리를 위해 등록 요청도 axiosInstance를 활용해 상대 경로로 변경합니다.
+      const response = await axiosInstance.post('/api/recipeMain/register', recipePayload, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : ''
+        }
       });
 
       if (response.status === 200 || response.status === 201) {
@@ -98,8 +170,6 @@ const RecipeRegister = () => {
       console.error("서버 저장 실패:", error);
       if (error.response?.status === 401) {
         alert("로그인 세션이 만료되었거나 로그인 상태가 아닙니다.");
-      } else if (error.response?.status === 403) {
-        alert("접근 권한이 없습니다. (백엔드 시큐리티 차단)");
       } else {
         alert("서버 통신 장애가 발생했습니다.");
       }
@@ -108,6 +178,7 @@ const RecipeRegister = () => {
     }
   };
 
+  // 스타일 설정 정의
   const pageContainerStyle = { padding: '28px 40px', background: '#f8f9fa', minHeight: 'calc(100vh - 56px)', fontFamily: 'sans-serif' };
   const backLinkStyle = { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', cursor: 'pointer', fontSize: '13px', color: '#666' };
   const cardStyle = { maxWidth: '600px', margin: '0 auto', background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', padding: '28px 32px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' };
@@ -168,18 +239,55 @@ const RecipeRegister = () => {
           <input style={inputStyle} type="text" value={intro} onChange={(e) => setIntro(e.target.value)} placeholder="레시피를 한 줄로 소개해주세요" />
         </div>
 
-        {/* 필수 재료 영역 (순수 Input 폼) */}
+        {/* 필수 재료 및 용량 영역 */}
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>필수 재료 및 용량 *</label>
           {mustIngredients.map((item, index) => (
-            <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
-              <input
-                style={inputStyle}
-                type="text"
-                value={item.name}
-                onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
-                placeholder="예: 두부"
-              />
+            <div
+              key={index}
+              ref={el => { dropdownRefs.current[index] = el; }}
+              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px', marginBottom: '12px', alignItems: 'center', position: 'relative' }}
+            >
+              <div style={{ position: 'relative' }}>
+                <input
+                  style={inputStyle}
+                  type="text"
+                  value={item.name}
+                  onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
+                  placeholder="예: 두부"
+                  autoComplete="off"
+                />
+
+                {item.showDropdown && item.searchResults && item.searchResults.length > 0 && (
+                  <ul style={{
+                    position: 'absolute', top: '100%', left: 0, right: 0,
+                    backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '4px',
+                    maxHeight: '180px', overflowY: 'auto', zIndex: 9999, padding: 0, margin: '4px 0 0 0',
+                    listStyle: 'none', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', textAlign: 'left'
+                  }}>
+                    {item.searchResults.map((prod, pIdx) => {
+                      const displayName = prod.itemName || prod.name || '이름 없음';
+                      return (
+                        <li
+                          key={prod.id || prod.itemId || pIdx}
+                          onClick={() => handleSelectItem(index, prod)}
+                          style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', borderBottom: '1px solid #f5f5f5', alignItems: 'center' }}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f7ff')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+                        >
+                          <strong style={{ color: '#333', marginRight: '8px', fontSize: '13px' }}>{displayName}</strong>
+                          {prod.category && (
+                            <span style={{ color: '#aaa', fontSize: '11px', background: '#eee', padding: '2px 6px', borderRadius: '10px', marginLeft: 'auto' }}>
+                              {prod.category}
+                            </span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+
               <input
                 style={inputStyle}
                 type="text"
@@ -210,7 +318,7 @@ const RecipeRegister = () => {
         {!id && (
           <div style={{ background: '#FAEEDA', border: '0.5px solid #FAC775', borderRadius: '6px', padding: '10px 14px', fontSize: '12px', color: '#633806', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
             <span>ℹ️</span>
-            등록된 레시피는 승인 후 피드에 노출됩니다.
+            등록된 레시피는 승인 후 등록됩니다.
           </div>
         )}
 

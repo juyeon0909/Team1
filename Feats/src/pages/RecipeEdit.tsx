@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+// 💡 [핵심] 등록 화면과 동일하게 인증 인터셉터가 포함된 axiosInstance를 사용합니다.
+import axiosInstance from '../api/axiosInstance';
 
 interface IngredientRow {
   name: string;
   quantity: string;
+  showDropdown: boolean; // 드롭다운 노출 여부 독립 관리
+  searchResults: Array<{ id?: number; itemId?: number; name?: string; itemName?: string; category?: string }>; // 검색 결과 저장
 }
 
 const RecipeEdit = () => {
@@ -19,30 +22,51 @@ const RecipeEdit = () => {
   const [cookingTime, setCookingTime] = useState("");
   const [intro, setIntro] = useState("");
 
-  // 필수 재료 구조 (기존 단순 name, quantity 구조)
+  // 💡 필수 재료 구조를 Register와 완전히 일치시킵니다.
   const [mustIngredients, setMustIngredients] = useState<IngredientRow[]>([
-    { name: "", quantity: "" }
+    { name: "", quantity: "", showDropdown: false, searchResults: [] }
   ]);
   const [optIngredients, setOptIngredients] = useState("");
   const [method, setMethod] = useState("");
 
   const [imagePreview, setImagePreview] = useState<string>("");
 
-  // 💡 기존 레시피 데이터 불러오기
+  // 개별 행의 드롭다운 영역을 참조하기 위한 useRef 배열
+  const dropdownRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  // 💡 외부 클릭 시 드롭다운 닫기 (Register와 동일)
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      dropdownRefs.current.forEach((ref, idx) => {
+        if (ref && !ref.contains(event.target as Node)) {
+          setMustIngredients(prev =>
+            prev.map((item, i) => i === idx ? { ...item, showDropdown: false } : item)
+          );
+        }
+      });
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // 💡 기존 레시피 데이터 불러오기 및 데이터 가공
   useEffect(() => {
     const fetchRecipeData = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+        const token = localStorage.getItem('ssToken');
 
-        const response = await axios.get(`http://localhost:9000/api/recipeMain/${id}`, {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-          withCredentials: true
+        // axios -> axiosInstance로 통일하여 세션 유효화
+        const response = await axiosInstance.get(`/api/recipeMain/${id}`, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : ''
+          }
         });
 
         if (response.data) {
           const data = response.data;
           setTitle(data.title || "");
+
           // 카테고리 역매핑 (영문 DTO -> 국문 UI)
           const reverseCategoryMapper: { [key: string]: string } = {
             "HANSICK": "한식", "WESTERN": "양식", "JAPANESE": "일식", "CHINESE": "중식",
@@ -54,11 +78,13 @@ const RecipeEdit = () => {
           setMethod(data.steps ? data.steps.join('\n') : "");
           setImagePreview(data.image || "");
 
-          // 필수 재료 세팅 (불필요한 내장 객체 없이 name과 quantity만 매핑)
+          // 💡 필수 재료 세팅 시 확장된 UI 상태 초기값 세팅 (showDropdown: false)
           if (data.mustIngredients && data.mustIngredients.length > 0) {
             setMustIngredients(data.mustIngredients.map((ing: any) => ({
               name: ing.name || "",
-              quantity: ing.quantity || ""
+              quantity: ing.quantity || "",
+              showDropdown: false,
+              searchResults: []
             })));
           }
         }
@@ -75,13 +101,60 @@ const RecipeEdit = () => {
     }
   }, [id]);
 
+  // 💡 식재료 자동완성 검색 기능 (Debounce + 403 에러 철벽 방어)
   const handleIngredientChange = (index: number, field: 'name' | 'quantity', value: string) => {
     const newIngredients = [...mustIngredients];
     newIngredients[index][field] = value;
+
+    if (field === 'quantity') {
+      setMustIngredients(newIngredients);
+      return;
+    }
+
+    if (!value.trim()) {
+      newIngredients[index].showDropdown = false;
+      newIngredients[index].searchResults = [];
+      setMustIngredients(newIngredients);
+      return;
+    }
+
     setMustIngredients(newIngredients);
+
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem('ssToken');
+
+        // Register와 똑같이 상대경로 및 ssToken 인증 헤더 탑재
+        const response = await axiosInstance.get(`/product/search?name=${encodeURIComponent(value)}`, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : ''
+          }
+        });
+
+        setMustIngredients(prev =>
+          prev.map((item, i) =>
+            i === index ? { ...item, searchResults: response.data, showDropdown: response.data.length > 0 } : item
+          )
+        );
+      } catch (error) {
+        console.error('식재료 검색 실패:', error);
+      }
+    }, 200);
+
+    return () => clearTimeout(delayDebounce);
   };
 
-  const addIngredientRow = () => setMustIngredients([...mustIngredients, { name: "", quantity: "" }]);
+  // 💡 항목 선택 핸들러 (itemName과 name 통합 필터링)
+  const handleSelectItem = (index: number, prod: any) => {
+    const finalName = prod.itemName || prod.name || '';
+    setMustIngredients(prev =>
+      prev.map((item, i) =>
+        i === index ? { ...item, name: finalName, showDropdown: false, searchResults: [] } : item
+      )
+    );
+  };
+
+  const addIngredientRow = () => setMustIngredients([...mustIngredients, { name: "", quantity: "", showDropdown: false, searchResults: [] }]);
   const removeIngredientRow = (index: number) => setMustIngredients(mustIngredients.filter((_, i) => i !== index));
 
   const categoryMapper: { [key: string]: string } = {
@@ -89,13 +162,15 @@ const RecipeEdit = () => {
     "간식": "GAN", "야식": "YA", "다이어트": "DIET", "밀프랩": "RAP"
   };
 
-  // 💡 수정사항 저장하기 (PUT 또는 POST 프로젝트 규격에 맞게 사용)
+  // 💡 수정사항 저장하기 (PUT 기반 데이터 정제 처리)
   const onSave = async () => {
     if (!title.trim()) return alert("레시피 이름을 입력해주세요.");
     if (!category) return alert("카테고리를 선택해주세요.");
 
+    // DTO 규격에 맞춰 name과 quantity만 쏙 뽑아서 가공
     const filteredMustIngredients = mustIngredients
-      .filter(item => item.name.trim() !== "" && item.quantity.trim() !== "");
+      .filter(item => item.name.trim() !== "" && item.quantity.trim() !== "")
+      .map(item => ({ name: item.name, quantity: item.quantity }));
 
     if (filteredMustIngredients.length === 0) {
       return alert("필수 재료를 최소 한 개 이상 입력해주세요.");
@@ -106,7 +181,7 @@ const RecipeEdit = () => {
     const finalDescription = optIngredients.trim() ? `${intro || title} (선택 재료: ${optIngredients})` : intro || `${title} 레시피입니다.`;
 
     const recipePayload = {
-      id: id, // 수정용 ID 포함
+      id: id,
       title: title,
       dishName: title,
       category: categoryMapper[category] || "KOR",
@@ -117,14 +192,15 @@ const RecipeEdit = () => {
       steps: stepsArray
     };
 
-    const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+    const token = localStorage.getItem('ssToken');
 
     try {
       setLoading(true);
-      // 프로젝트 API 명세에 따라 PUT 주소 또는 POST 주소로 전송
-      const response = await axios.put(`http://localhost:9000/api/recipeMain/edit/${id}`, recipePayload, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-        withCredentials: true
+      // axiosInstance + 상대 경로 매핑을 통해 Security 필터 안전 통과
+      const response = await axiosInstance.put(`/api/recipeMain/edit/${id}`, recipePayload, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : ''
+        }
       });
 
       if (response.status === 200 || response.status === 201) {
@@ -136,7 +212,7 @@ const RecipeEdit = () => {
       if (error.response?.status === 401) {
         alert("로그인 세션이 만료되었거나 로그인 상태가 아닙니다.");
       } else if (error.response?.status === 403) {
-        alert("접근 권한이 없습니다. (백엔드 시큐리티 차단)");
+        alert("접근 권한이 없거나 차단되었습니다. (인증 인가 에러)");
       } else {
         alert("서버 통신 장애가 발생했습니다.");
       }
@@ -145,6 +221,7 @@ const RecipeEdit = () => {
     }
   };
 
+  // 인라인 인풋 UI 디자인 스타일 시트
   const pageContainerStyle = { padding: '28px 40px', background: '#f8f9fa', minHeight: 'calc(100vh - 56px)', fontFamily: 'sans-serif' };
   const backLinkStyle = { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', cursor: 'pointer', fontSize: '13px', color: '#666' };
   const cardStyle = { maxWidth: '600px', margin: '0 auto', background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', padding: '28px 32px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' };
@@ -193,18 +270,58 @@ const RecipeEdit = () => {
           <input style={inputStyle} type="text" value={intro} onChange={(e) => setIntro(e.target.value)} placeholder="레시피를 한 줄로 소개해주세요" />
         </div>
 
-        {/* 필수 재료 영역 (순수 Input 폼) */}
+        {/* 필수 재료 영역 (자동완성 검색 드롭다운 탑재) */}
         <div style={{ marginBottom: '14px' }}>
           <label style={labelStyle}>필수 재료 및 용량 *</label>
           {mustIngredients.map((item, index) => (
-            <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
-              <input
-                style={inputStyle}
-                type="text"
-                value={item.name}
-                onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
-                placeholder="예: 두부"
-              />
+            <div
+              key={index}
+              ref={el => { dropdownRefs.current[index] = el; }}
+              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px', marginBottom: '12px', alignItems: 'center', position: 'relative' }}
+            >
+              {/* 식재료 자동완성 검색 인풋 */}
+              <div style={{ position: 'relative' }}>
+                <input
+                  style={inputStyle}
+                  type="text"
+                  value={item.name}
+                  onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
+                  placeholder="예: 두부"
+                  autoComplete="off"
+                />
+
+                {/* 💡 FridgeRegister 스타일 규격 100% 매칭 드롭다운 리스트 */}
+                {item.showDropdown && item.searchResults && item.searchResults.length > 0 && (
+                  <ul style={{
+                    position: 'absolute', top: '100%', left: 0, right: 0,
+                    backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '4px',
+                    maxHeight: '180px', overflowY: 'auto', zIndex: 9999, padding: 0, margin: '4px 0 0 0',
+                    listStyle: 'none', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', textAlign: 'left'
+                  }}>
+                    {item.searchResults.map((prod, pIdx) => {
+                      const displayName = prod.itemName || prod.name || '이름 없음';
+                      return (
+                        <li
+                          key={prod.id || prod.itemId || pIdx}
+                          onClick={() => handleSelectItem(index, prod)}
+                          style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', borderBottom: '1px solid #f5f5f5', alignItems: 'center' }}
+                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f7ff')}
+                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+                        >
+                          <strong style={{ color: '#333', marginRight: '8px', fontSize: '13px' }}>{displayName}</strong>
+                          {prod.category && (
+                            <span style={{ color: '#aaa', fontSize: '11px', background: '#eee', padding: '2px 6px', borderRadius: '10px', marginLeft: 'auto' }}>
+                              {prod.category}
+                            </span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+
+              {/* 수량/용량 인풋 */}
               <input
                 style={inputStyle}
                 type="text"

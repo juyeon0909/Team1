@@ -75,50 +75,47 @@ const RecipeMain = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 6;
+useEffect(() => {
+  const fetchRecipes = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:9000/api/recipeMain', { withCredentials: true });
 
-  useEffect(() => {
-    const fetchRecipes = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('http://localhost:9000/api/recipeMain', { withCredentials: true });
-
-        if (response.data && response.data.length > 0) {
-          const mappedRecipes = response.data.map((item: any) => ({
-            id: item.id,
-            name: item.title,
-            cat: item.category === 'KOR' ? '한식' : item.category === 'JAN' ? '일식' : item.category,
-            time: item.cookingTime,
-            desc: item.description,
-            steps: item.steps || (item.cookingMethod ? item.cookingMethod.split('\n') : []),
-            mustIngredients: item.mustIngredients || [],
-            selectIngredients: [],
-            missingIngredients: [],
-            match: 100,
-            emoji: '🍳',
-            bg: '#E1F5EE',
-            tags: [item.category, `${item.cookingTime}분`],
-            heart: item.viewCount || 0,
-            star: 0,
-            urgent: false
-          }));
-          setRecipes(mappedRecipes);
-        } else {
-          setRecipes(INITIAL_RECIPES);
-        }
-      } catch (error: any) {
-        console.error("서버 데이터 로딩 실패 ➔ 백업 데이터 사용:", error);
+      // response.data가 존재하고 배열일 때만 매핑 실행
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        const mappedRecipes = response.data.map((item: any) => ({
+          id: item.id,
+          name: item.title,
+          cat: item.category === 'KOR' ? '한식' : item.category === 'JAN' ? '일식' : item.category,
+          time: item.cookingTime,
+          desc: item.description,
+          steps: item.steps || (item.cookingMethod ? item.cookingMethod.split('\n') : []),
+          mustIngredients: item.mustIngredients || [],
+          selectIngredients: [],
+          missingIngredients: [],
+          match: 100,
+          emoji: '🍳',
+          bg: '#E1F5EE',
+          tags: [item.category, `${item.cookingTime}분`],
+          heart: item.viewCount || 0,
+          star: 0,
+          urgent: false
+        }));
+        setRecipes(mappedRecipes);
+      } else {
+        // 서버에서 빈 배열을 주면 백업 데이터 세팅
         setRecipes(INITIAL_RECIPES);
-
-        if (error.response?.status === 401) {
-          alert("로그인이 필요합니다.");
-          navigate('/login');
-        }
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchRecipes();
-  }, [navigate, location.pathname]);
+    } catch (error) {
+      // 💡 백엔드에서 401이나 500 에러를 뱉어도 프론트가 뻗지 않도록 백업 데이터 주입!
+      console.error("서버 데이터 로딩 실패 ➔ 백업 데이터 사용:", error);
+      setRecipes(INITIAL_RECIPES);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchRecipes();
+}, [navigate, location.pathname]);
 
   const currentRecipe = useMemo(() => {
     return recipes.find(r => r.id === selectedRecipeId) || null;

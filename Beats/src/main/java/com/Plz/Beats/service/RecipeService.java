@@ -29,15 +29,18 @@ public class RecipeService {
     private final ItemRepository itemRepository;
 
     /**
-     * 레시피 등록 (DTO -> Entity 변환 저장)
+     * 레시피 등록 및 수정
      */
     @Transactional
     public RecipeDto createRecipe(RecipeDto dto, String username) {
-        // 1. 현재 로그인한 회원 조회
+        // 비로그인 상태 가로채기 방어
+        if ("GUEST".equals(username) || username == null) {
+            throw new IllegalArgumentException("레시피 등록 및 수정은 로그인 후 이용 가능합니다.");
+        }
+
         Member member = memberRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 2. Recipe 엔티티 생성 및 데이터 매핑
         Recipe recipe = new Recipe();
         recipe.setMember(member);
         recipe.setTitle(dto.getTitle());
@@ -55,34 +58,40 @@ public class RecipeService {
             recipe.setCookingMethod("1. 맛있게 요리합니다.");
         }
 
-        // 3. 자식 테이블 재료 엔티티 매핑 연동 (💡 중복 구조 완전 해결)
+        // 자식 테이블(RecipeIngredient) 연동 매핑
         if (dto.getMustIngredients() != null) {
             for (RecipeDto.MustIngredientDto ingDto : dto.getMustIngredients()) {
                 RecipeIngredient ingredient = new RecipeIngredient();
 
-                // DB에서 해당 이름의 재료 아이템을 검색
-                Item item = itemRepository.findByName(ingDto.getName())
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 재료 아이템입니다: " + ingDto.getName()));
+                // 💡 [핵심 변경 포인트]: DB에 유저가 입력한 재료가 없을 경우의 유연한 처리
+                // 사용자가 직접 타이핑하여 없는 재료를 입력하더라도 서버가 터지지 않고 즉석에서 신규 Item을 생성해 영속화합니다.
+                Item item = itemRepository.findByName(ingDto.getName().trim())
+                        .orElseGet(() -> {
+                            Item newItem = new Item();
+                            newItem.setName(ingDto.getName().trim());
+                            // 만약 Item 엔티티에 다른 필수 필드(ex: category 등)가 있다면 여기에 기본값 세팅이 필요합니다.
+                            return itemRepository.save(newItem);
+                        });
 
                 ingredient.setItem(item);
                 ingredient.setQuantity(ingDto.getQuantity());
-                ingredient.setUnit(""); // 필요한 경우 파싱해서 단위 기입 가능
-                ingredient.setRequired(true);
-                ingredient.setRecipe(recipe);
+                ingredient.setUnit("");
 
-                // Recipe 엔티티의 리스트에 추가 (CascadeType.ALL에 의해 같이 저장됨)
+                // 엔티티의 boolean isRequired 필드에 대응하는 롬복 관례 세터
+                ingredient.setRequired(true);
+
+                ingredient.setRecipe(recipe);
                 recipe.getRecipeIngredients().add(ingredient);
             }
         }
 
-        // 4. 최종 저장 및 ID 반환
         Recipe savedRecipe = recipeRepository.save(recipe);
         dto.setId(savedRecipe.getId());
         return dto;
     }
 
     /**
-     * 전체 레시피 목록 조회 (Entity -> DTO 변환)
+     * 전체 레시피 목록 조회 (username이 "GUEST"여도 정상 전체 조회)
      */
     public List<RecipeDto> getRecipes(String username) {
         List<Recipe> recipes = recipeRepository.findAll();
@@ -101,7 +110,6 @@ public class RecipeService {
                 dto.setSteps(Arrays.asList(recipe.getCookingMethod().split("\n")));
             }
 
-            // 조회할 때 Item 엔티티 내부의 재료 명칭을 꺼내와 DTO 리스트에 결합
             List<RecipeDto.MustIngredientDto> ingDtos = recipe.getRecipeIngredients().stream()
                     .map(ing -> new RecipeDto.MustIngredientDto(
                             ing.getItem() != null ? ing.getItem().getName() : "알 수 없는 재료",

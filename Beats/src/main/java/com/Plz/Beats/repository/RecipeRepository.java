@@ -16,4 +16,3 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     List<Recipe> findByMemberEmail(String email);
 }
 
-{/* 커밋 */}{/* 커밋 */}

@@ -2,6 +2,7 @@ package com.Plz.Beats.controller;
 
 import com.Plz.Beats.dto.RecipeDto;
 import com.Plz.Beats.service.RecipeService;
+import com.Plz.Beats.storage.ImageStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.List;
 public class RecipeController {
 
     private final RecipeService recipeService;
+    private final ImageStorageService imageStorageService;
 
     // 1. 메인 목록 피드 데이터 받아오기 (비로그인/로그인 전체 허용)
     @GetMapping
@@ -55,4 +57,3 @@ public class RecipeController {
     }
 }
 
-{/* 커밋 */}{/* 커밋 */}

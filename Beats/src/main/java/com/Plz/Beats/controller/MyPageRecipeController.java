@@ -29,4 +29,15 @@ public class MyPageRecipeController {
         List<RecipeDto> list = recipeService.getMyRecipes(principal.getName());
         return ResponseEntity.ok(list);
     }
+
+    // 🟢 내 레시피 삭제
+    @DeleteMapping("/recipe/{id}")
+    public ResponseEntity<?> deleteMyRecipe(@PathVariable Long id, Principal principal) {
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+        recipeService.deleteRecipe(id, principal.getName());
+        return ResponseEntity.ok("삭제 완료");
+    }
+
 }

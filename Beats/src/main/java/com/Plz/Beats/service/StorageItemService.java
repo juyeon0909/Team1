@@ -67,7 +67,6 @@ public class StorageItemService {
             dto.setItemname(item.getItem().getName());
             dto.setQuantity(item.getQuantity());
             dto.setExpirationdate(item.getExpirationdate());
-            dto.setCategory(item.getItem().getCategory());
 
             String label = switch (item.getStoragetype()) {
                 case REFRIGERATED -> "냉장";

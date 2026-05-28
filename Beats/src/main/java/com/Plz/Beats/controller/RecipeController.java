@@ -2,11 +2,14 @@ package com.Plz.Beats.controller;
 
 import com.Plz.Beats.dto.RecipeDto;
 import com.Plz.Beats.service.RecipeService;
+import com.Plz.Beats.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
@@ -16,6 +19,7 @@ import java.util.List;
 public class RecipeController {
 
     private final RecipeService recipeService;
+    private final S3Service s3Service;
 
     // 1. 메인 목록 피드 데이터 받아오기 (비로그인/로그인 전체 허용)
     @GetMapping
@@ -53,6 +57,19 @@ public class RecipeController {
         RecipeDto saved = recipeService.createRecipe(recipeDto, principal.getName());
         return ResponseEntity.ok(saved);
     }
-}
 
-{/* 커밋 */}{/* 커밋 */}
+    @PostMapping("/upload-image")
+    public ResponseEntity<String> uploadImage(
+            @RequestBody java.util.Map<String, String> body,
+            Principal principal) {
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+        try {
+            String imageUrl = s3Service.uploadBase64(body.get("image"));
+            return ResponseEntity.ok(imageUrl);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이미지 업로드 실패");
+        }
+    }
+}

@@ -2,6 +2,7 @@ package com.Plz.Beats.service;
 
 import com.Plz.Beats.constant.ApprovalStatus;
 import com.Plz.Beats.constant.Category;
+import com.Plz.Beats.dto.AdminRecipeDto;
 import com.Plz.Beats.dto.RecipeDto;
 import com.Plz.Beats.entity.Member;
 import com.Plz.Beats.entity.Recipe;
@@ -121,6 +122,38 @@ public class RecipeService {
             return dto;
         }).collect(Collectors.toList());
     }
-}
 
-{/* 커밋 */} {/* 커밋 */}
+    // 관리자용 PENDING 레시피 목록
+    public List<AdminRecipeDto> getPendingRecipes() {
+        return recipeRepository.findByApprovalStatus(ApprovalStatus.PENDING)
+                .stream().map(r -> new AdminRecipeDto(
+                        r.getId(),
+                        r.getTitle(),
+                        r.getCategory().getDescription(),
+                        r.getCookingTime(),
+                        r.getDescription(),
+                        r.getMember().getName(),
+                        r.getMember().getEmail(),
+                        r.getRecipeIngredients().stream()
+                                .map(ing -> ing.getItem() != null ? ing.getItem().getName() : "")
+                                .collect(Collectors.toList()),
+                        r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : ""
+                )).collect(Collectors.toList());
+    }
+
+    // 승인
+    @Transactional
+    public void approveRecipe(Long id) {
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
+        recipe.setApprovalStatus(ApprovalStatus.APPROVED);
+    }
+
+    // 거절
+    @Transactional
+    public void rejectRecipe(Long id) {
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
+        recipe.setApprovalStatus(ApprovalStatus.REJECTED);
+    }
+}

@@ -190,7 +190,7 @@ export default function LikedRecipes() {
               </div>
 
               <div className="box-search" style={{ display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '6px 12px', background: '#fff', minWidth: '240px' }}>
-                <span style={{ fontSize: '14px', color: '#94a3b8' }}></span>
+                <span style={{ fontSize: '14px', color: '#94a3b8' }}>🔍</span>
                 <input
                   type="text"
                   placeholder="결과 내 레시피 검색..."

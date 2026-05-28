@@ -35,7 +35,6 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                      <NavDropdown title={`레시피`}>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
-                        <NavDropdown.Item onClick={() => navigate(`/admin/recipe`)}>레시피 승인 관리</NavDropdown.Item>
                      </NavDropdown>
                      
 

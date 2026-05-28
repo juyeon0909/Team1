@@ -5,9 +5,9 @@ import '../components/FridgeRegister.css';
 
 interface SearchItem {
   id?: number;
+  itemName?: string;
   itemId?: number;
   name?: string;
-  itemName?: string;
   category: string;     
   type?: string;        
   itemUnit?: string;
@@ -125,6 +125,25 @@ const FridgeEdit: React.FC = () => {
       alert('모든 항목을 입력해주세요!');
       return;
     }
+    if (Number(quantity) > 20000) {
+      alert('무게는 20000 이하여야 합니다.');
+      return;
+        }
+
+    if (Number(quantity) < 1) {
+      alert('무게는 1 이상이어야 합니다.')
+      return
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+  
+    const selectedDate = new Date(expirationdate);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      alert('이미 유통기한이 지난 날짜는 등록할 수 없습니다.');
+      return;
+    }
 
     const stored = localStorage.getItem('user');
     if (!stored) {
@@ -150,12 +169,12 @@ const FridgeEdit: React.FC = () => {
         expiry: expirationdate,
         storagetype: koStorageType, 
         type: storagetype,
-        category
+        category: category
       }, {
         headers: { Authorization: token ? `Bearer ${token}` : '' }
       });
 
-      alert(`[${itemname}] 재료가 성공적으로 변경되었습니다.`);
+      alert(`${itemname}(이)가 성공적으로 변경되었습니다.`);
       navigate('/product/insert');
     } catch (error) {
       alert('수정 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -171,10 +190,10 @@ const FridgeEdit: React.FC = () => {
     <div className="fridge-form-container">
       <div className="fridge-form-card">
 
-        <div style={{ marginBottom: '25px' }}>
+        <div className="fridge-form-header-zone">
           <h3 className="fridge-form-title">재료 수정</h3>
           <p className="fridge-form-subtitle">
-            보관 중인 재료의 변경된 정보를 수정합니다.
+            보관 중인 재료의 정보를 수정합니다.
           </p>
         </div>
 
@@ -183,7 +202,7 @@ const FridgeEdit: React.FC = () => {
         <div className="fridge-form-group">
           <label className="fridge-form-label">카테고리</label>
           <select
-            className="fridge-form-input"
+            className="fridge-form-input select-pointer"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             style={{ cursor: 'pointer' }}
@@ -197,25 +216,23 @@ const FridgeEdit: React.FC = () => {
             <option value="콩류">콩류</option>
             <option value="양념류">양념류</option>
             <option value="버섯류">버섯류</option>
-            <option value="기타">기타</option>
           </select>
         </div>
 
         <div className="fridge-form-group">
           <label className="fridge-form-label">보관 방법</label>
           <select
-            className="fridge-form-input"
+            className="fridge-form-input select-pointer"
             value={storagetype}
             onChange={(e) => setStoragetype(e.target.value)}
-            style={{ cursor: 'pointer' }}
-          >
+            >
             <option value="REFRIGERATED">냉장</option>
             <option value="FROZEN">냉동</option>
             <option value="ROOM_TEMP">실온</option>
           </select>
         </div>
 
-        <div className="fridge-form-group" style={{ position: 'relative' }} ref={dropdownRef}>
+        <div className="fridge-form-group" ref={dropdownRef}>
           <label className="fridge-form-label">재료명</label>
           <input
             type="text"
@@ -227,12 +244,8 @@ const FridgeEdit: React.FC = () => {
           />
 
           {showDropdown && searchResults.length > 0 && (
-            <ul style={{
-              position: 'absolute', top: '100%', left: 0, right: 0,
-              backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '4px',
-              maxHeight: '180px', overflowY: 'auto', zIndex: 9999, padding: 0, margin: '4px 0 0 0',
-              listStyle: 'none', boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
-            }}>
+            <ul className="fridge-search-dropdown-menu"> 
+              
               {searchResults.map((item, index) => {
                 const displayName = item.itemName || item.name || '이름 없음';
                 const displayId = item.itemId || item.id || index;
@@ -240,13 +253,11 @@ const FridgeEdit: React.FC = () => {
                   <li
                     key={displayId}
                     onClick={() => handleSelectItem(item)}
-                    style={{ padding: '10px 12px', cursor: 'pointer', display: 'flex', borderBottom: '1px solid #f5f5f5', alignItems: 'center' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f7ff')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+                    className="fridge-search-dropdown-item" 
                   >
-                    <strong style={{ color: '#333', marginRight: '8px' }}>{displayName}</strong>
-                    <span style={{ color: '#888', fontSize: '13px', flexGrow: 1 }}>{item.itemUnit || '개'}</span>
-                    <span style={{ color: '#aaa', fontSize: '12px', background: '#eee', padding: '2px 6px', borderRadius: '10px' }}>{item.category}</span>
+                    <strong className="dropdown-item-name">{displayName}</strong>
+                    <span className="dropdown-item-unit">{item.itemUnit || ''}</span>
+                    <span className="dropdown-item-category">{item.category}</span>
                   </li>
                 );
               })}
@@ -255,15 +266,15 @@ const FridgeEdit: React.FC = () => {
         </div>
 
         <div className="fridge-form-group">
-          <label className="fridge-form-label">수량 (개)</label>
+          <label className="fridge-form-label">무게 (g)</label>
           <input
             type="number"
             min={1}
-            max={1000}
+            max={20000}
             className="fridge-form-input"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="예: 3"
+            placeholder="예: 200"
           />
         </div>
 

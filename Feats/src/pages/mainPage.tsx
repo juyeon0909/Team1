@@ -45,7 +45,7 @@ const HERO_STATS: HeroStat[] = [
     { num: 24, label: "추천 레시피" },
 ];
 
-const CATEGORIES = ["전체", "한식", "양식", "일식", "중식", "다이어트", "간식"] as const;
+const CATEGORIES = ["전체", "한식", "양식", "일식", "중식", "간식", "야식" , "다이어트" , "밀프랩" ] as const;
 
 const RECIPES: Recipe[] = [
     {

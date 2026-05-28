@@ -20,6 +20,7 @@ import FindPassword from '../pages/FindPassword.tsx'
 import AdminQna from '../pages/AdminQna';
 import PasswordlessWithdrawalPage from '../pages/PasswordlessWithdrawalPage'
 import PasswordlessRegisterPage from '../pages/PasswordlessRegisterPage'
+import AdminRecipe from '../pages/AdminRecipe';
 
 
 
@@ -53,6 +54,7 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/admin/qna' element={<AdminQna />} />
       <Route path="/member/passwordless-register" element={<PasswordlessRegisterPage />} />
       <Route path="/member/reset-register" element={<PasswordlessWithdrawalPage />} />
+      <Route path='/admin/recipe' element={<AdminRecipe />} />
 
     </Routes>
   );

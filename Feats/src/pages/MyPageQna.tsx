@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import customAxios from './../api/axiosInstance';
-import { API_BASE_URL } from '../config/config';
 import '../components/MyPage.css';
 
 interface Inquiry {
@@ -27,7 +26,7 @@ export default function MyPageQna() {
     const fetchInquiries = async () => {
         setLoading(true);
         try {
-            const res = await customAxios.get(`${API_BASE_URL}/mypage/qna`);
+            const res = await customAxios.get('/mypage/qna');
             setInquiries(res.data || []);
         } catch (e) {
             console.error('문의 내역 불러오기 실패:', e);
@@ -45,7 +44,7 @@ export default function MyPageQna() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            await customAxios.post(`${API_BASE_URL}/mypage/qna`, formData);
+            await customAxios.post('/mypage/qna', formData);
             alert('문의가 접수되었습니다.');
             setFormData({ qnaType: '', title: '', content: '' });
             await fetchInquiries();

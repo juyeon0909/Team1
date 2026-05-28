@@ -1,4 +1,4 @@
-/* 1. 글로벌 컬러 시스템 (팀원 톤앤매너 공통 변수) */
+
 :root {
     --green: #6FBC44; --green-dark: #3E8C1F; --green-light: #E8F5DA; --green-pale: #F3FAEA;   
     --border: #BDE095; --red: #e05a5a; --red-light: #fff0f0; --white: #ffffff;
@@ -27,9 +27,9 @@
   border: 1px solid var(--border); box-shadow: var(--shadow); transition: all 0.2s ease;
 }
 
+
 .storage-search-box:focus-within {
   border-color: var(--green); background-color: var(--white); box-shadow: 0 0 0 3px rgba(106, 191, 105, 0.15);
-}
 
 .storage-search-input {
   flex: 1; width: 100%; border: none; background: none; outline: none;
@@ -44,10 +44,13 @@
 
 /*  재료 등록 버튼 (RecipeMain 대입) */
 .storage-add-btn {
+
   background-color: var(--green); color: var(--white); border: none; border-radius: 8px;
   padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600; cursor: pointer;
   display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; white-space: nowrap;
   transition: background-color 0.2s, transform 0.1s;
+=======
+  
 }
 .storage-add-btn:hover { background-color: var(--green-dark); }
 .storage-add-btn:active { transform: scale(0.98); }

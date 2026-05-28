@@ -44,6 +44,7 @@ public class CorsConfig {
                 "*"
         ));
 
+        //어후
         // 쿠키 Authorization 헤더 포함 요청 허용
         configuration.setAllowCredentials(true);
 

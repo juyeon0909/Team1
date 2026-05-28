@@ -188,5 +188,5 @@ const RecipeScrap = () => {
     </div>
   );
 };
-{/* 커밋 체크  */}{/* 커밋 */}
+/* 커밋 */
 export default RecipeScrap;

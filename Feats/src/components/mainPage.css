@@ -1,6 +1,3 @@
-/* ==========================================================================
-   1. 글로벌 컬러 시스템 (팀원 톤앤매너 + 주황색 컬렉션 완벽 결합)
-   ========================================================================== */
 :root {
   --green: #6FBC44; --green-dark: #3E8C1F; --green-light: #E8F5DA; --green-pale: #F3FAEA;   
   --border: #BDE095; --red: #e05a5a; --red-light: #fff0f0; --white: #ffffff;
@@ -25,52 +22,98 @@
 .nav-links a:hover, .nav-links a.active { color: var(--white); font-weight: 700; }
 .nav-user { background: rgba(255, 255, 255, 0.22); color: var(--white); border: none; border-radius: 20px; padding: 6px 18px; font-size: 13px; font-weight: 600; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; }
 
-/* ── MAIN LAYOUT (시원한 원본 여백 보존) ── */
-.imf-main { padding: 36px 48px 48px; display: flex; flex-direction: column; gap: 28px; }
+/* ── MAIN LAYOUT  ── */
+.imf-main { padding: 36px 48px 48px; display: flex; flex-direction: column; gap: 32px; } /* 💡 박스 크기 증가에 맞춘 수직 마진 미세 조정 */
 
-/* ── HERO CARD (배너 크기 100% 원상복구 및 슬라이더 안착) ── */
+/* ── HERO CARD ── */
 .hero-card {
   background: var(--green); border-radius: 24px; 
-  padding: 70px 48px; /* 🌟 원본의 풍성한 배너 패딩 복구 */
+  padding: 76px 52px; 
   display: flex; align-items: center; justify-content: space-between;
   position: relative; overflow: hidden; box-shadow: var(--card-shadow);
   animation: imfSlideDown 0.5s ease both;
 }
 .hero-carousel-container { position: relative; flex: 1; }
 
+.hero-carousel-container { 
+  position: relative; 
+  flex: 1; 
+  overflow: hidden; 
+}
+
+.hero-carousel-track {
+  display: flex;
+  width: 500%; 
+  transition: transform 0.6s ease-in-out; 
+  will-change: transform;
+}
+
+/* 기차 트랙 내 개별 슬라이드 한 칸 규격 */
+.hero-carousel-slide {
+  width: 100%;
+  flex-shrink: 0;
+}
+
 .hero-card::before, .hero-card::after { content: ''; position: absolute; border-radius: 50%; }
 .hero-card::before { right: -60px; top: -60px; width: 280px; height: 280px; background: rgba(255, 255, 255, 0.07); }
 .hero-card::after { right: 80px; bottom: -80px; width: 200px; height: 200px; background: rgba(255, 255, 255, 0.05); }
 
 .hero-text { flex: 1; }
+.hero-text * { user-select: none; } /* 롤링 시 텍스트 드래그 방지 가드 */
 .hero-greeting { font-size: 14px; font-weight: 400; color: rgba(255, 255, 255, 0.85); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-.hero-title { font-size: 34px; font-weight: 800; color: var(--white); line-height: 1.25; margin-bottom: 10px; letter-spacing: -1px; } /* 🌟 글씨 크기 34px 원상복구 */
+.hero-title { font-size: 34px; font-weight: 800; color: var(--white); line-height: 1.25; margin-bottom: 10px; letter-spacing: -1px; } 
 .hero-title span { color: #ffe082; }
 .hero-sub { font-size: 13.5px; font-weight: 400; color: rgba(255, 255, 255, 0.75); }
 
-/* 🎛️ 슬라이더 화살표 & 도트 스펙 (디자인 최적화 수납) */
+   /*슬라이더 화살표 & 도트 위치 마스터 상세 주석 */
+
+/* 1. 좌우 이동 버튼 공통 디자인 설정 */
 .carousel-nav-btn {
   position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.3);
   border: none; border-radius: 50%; width: 34px; height: 34px; font-size: 14px; cursor: pointer;
   display: flex; align-items: center; justify-content: center; color: var(--white); transition: all 0.2s; z-index: 10;
 }
 .carousel-nav-btn:hover { background: rgba(255, 255, 255, 0.7); color: var(--text-dark); }
-.carousel-nav-btn.prev { left: -40px; }
-.carousel-nav-btn.next { right: -360px; }
 
-.carousel-page-dots { position: absolute; bottom: -15px; left: 0; display: flex; gap: 6px; }
-.carousel-dot { width: 7px; height: 7px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.4); cursor: pointer; transition: all 0.2s; }
-.carousel-dot.active { width: 18px; border-radius: 4px; background-color: var(--white); }
+.carousel-nav-btn.prev { 
+  left: 10px; 
+}
+.carousel-nav-btn.next { 
+  right: 10px; 
+}
+
+.carousel-page-dots { 
+  position: absolute; 
+  bottom: 30px; 
+  left: 48px;   
+  display: flex; 
+  gap: 6px; 
+  z-index: 10; 
+}
+
+.carousel-dot { 
+  width: 7px; 
+  height: 7px; 
+  border-radius: 50%; 
+  background-color: rgba(255, 255, 255, 0.4); 
+  cursor: pointer; 
+  transition: all 0.2s; 
+}
+.carousel-dot.active { 
+  width: 18px; 
+  border-radius: 4px; 
+  background-color: var(--white); 
+}
 
 /* ── HERO STATS ── */
-.hero-stats { display: flex; gap: 12px; flex-shrink: 0; position: relative; z-index: 1; }
+.hero-stats { display: flex; gap: 12px; flex-shrink: 0; position: relative; z-index: 1; margin-left: 24px; }
 .stat-box {
   background: rgba(255, 255, 255, 0.18); border-radius: 16px; 
-  padding: 16px 24px; /* 🌟 원본 스탯 박스 크기 복구 */
-  text-align: center; min-width: 90px; backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 20px 26px; 
+  text-align: center; min-width: 96px; backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.22);
 }
-.stat-box .num { font-size: 32px; font-weight: 400; color: var(--white); line-height: 1; } /* 🌟 숫자 크기 32px 원상복구 */
-.stat-box .num.urgent-highlight { color: #ffe082; font-weight: bold; } /* 임박재료 주황 반전 포인트 */
+.stat-box .num { font-size: 32px; font-weight: 400; color: var(--white); line-height: 1; } 
+.stat-box .num.urgent-highlight { color: #ffe082; font-weight: bold; } 
 .stat-box .label { font-size: 11.5px; color: rgba(255, 255, 255, 0.8); margin-top: 4px; font-weight: 500; }
 
 /* ── ALERT BAR ── */
@@ -91,7 +134,8 @@
 .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
 .section-card {
   border: 2px solid var(--border); border-radius: 24px; 
-  padding: 28px 28px 24px; /* 🌟 하단 카드 여백 크기 100% 복구 */
+  /*  [박스 크기 조절] 기존 28px 28px 24px에서 사방 패딩 수치를 균일하게 늘려 여유 공간 확보 */
+  padding: 32px 32px 28px; 
   background: var(--white); box-shadow: var(--card-shadow); animation: imfSlideUp 0.5s ease both; opacity: 0;
 }
 .section-card:nth-child(1) { animation-delay: 0.15s; }
@@ -115,10 +159,6 @@
 .ingredient-name { font-size: 15px; font-weight: 700; color: var(--text-dark); }
 .ingredient-qty { font-size: 12.5px; font-weight: 400; color: var(--text-light); margin-top: 1px; }
 .ingredient-where { font-size: 12px; color: var(--text-light); background: white; border: 1px solid var(--border); border-radius: 8px; padding: 2px 8px; flex-shrink: 0; }
-.progress-bar { height: 3px; border-radius: 2px; margin-top: 8px; background: #eee; }
-.progress-fill { height: 100%; border-radius: 2px; }
-.progress-fill.urgent { background: #e05a5a; }
-.progress-fill.warning { background: var(--orange); }
 
 /* ── RECIPE LIST ── */
 .recipe-search { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 12px; margin-bottom: 16px; background: var(--green-pale); }
@@ -139,6 +179,7 @@
 .recipe-name { font-size: 14.5px; font-weight: 700; color: var(--text-dark); margin-bottom: 3px; }
 .recipe-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .recipe-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--green-light); color: var(--green-dark); }
+.recipe-shadow { font-size: 12px; font-weight: 700; color: var(--green-dark); background: var(--green-light); border-radius: 8px; padding: 4px 10px; flex-shrink: 0; }
 .recipe-match { font-size: 12px; font-weight: 700; color: var(--green-dark); background: var(--green-light); border-radius: 8px; padding: 4px 10px; flex-shrink: 0; }
 
 /* ── FOOTER & ANIMATIONS ── */

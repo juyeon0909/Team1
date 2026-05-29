@@ -24,41 +24,6 @@ interface Recipe {
   steps: string[];
 }
 
-const INITIAL_RECIPES: Recipe[] = [
-  {
-    id: 1, name: '두부 계란찜', cat: '한식', time: 15, match: 100,
-    emoji: '🍳', bg: '#E1F5EE',
-    desc: '부드러운 두부와 계란의 초간단 한식 반찬',
-    tags: ['초간단', '15분'], heart: 234, scrap: 12, urgent: true,
-    isHearted: false, isScrapped: false,
-    mustIngredients: [{ name: '두부', quantity: '1모' }, { name: '계란', quantity: '2개' }, { name: '대파', quantity: '1/4대' }],
-    selectIngredients: ['멸치육수 1/2컵', '참기름 0.5T', '소금 약간'],
-    missingIngredients: ['멸치육수', '참기름'],
-    steps: ['두부를 2cm 두께로 썰어 내열 용기에 담아요.', '계란 2개에 멸치육수 1/2컵을 넣고 잘 풀어줍니다.', '두부 위에 계란물을 붓고 뚜껑을 닫아 약불에서 12분 쪄요.', '대파를 송송 썰어 올리고 참기름을 살짝 뿌려 완성!']
-  },
-  {
-    id: 2, name: '대파 된장찌개', cat: '한식', time: 20, match: 85,
-    emoji: '🥘', bg: '#FAEEDA',
-    desc: '구수한 된장과 신선한 대파의 조화',
-    tags: ['국물', '20분'], heart: 189, scrap: 8, urgent: true,
-    isHearted: false, isScrapped: false,
-    mustIngredients: [{ name: '대파', quantity: '1대' }, { name: '두부', quantity: '반모' }, { name: '된장', quantity: '2T' }],
-    selectIngredients: ['감자 1개', '청양고추 1개'],
-    missingIngredients: ['감자'],
-    steps: ['냄비에 물을 붓고 된장을 채에 걸러 풀어줍니다.', '감자와 두부를 먹기 좋은 크기로 썰어 넣고 끓입니다.', '국물이 끓으면 송송 썬 대파와 고추를 넣어 한소끔 더 끓입니다.']
-  },
-  {
-    id: 3, name: '치즈 오믈렛', cat: '양식', time: 10, match: 85,
-    emoji: '🧀', bg: '#FCEBEB',
-    desc: '촉촉하고 부드러운 프렌치 스타일 오믈렛',
-    tags: ['양식', '10분'], heart: 305, scrap: 20, urgent: false,
-    isHearted: false, isScrapped: false,
-    mustIngredients: [{ name: '계란', quantity: '3개' }, { name: '모짜렐라 치즈', quantity: '50g' }, { name: '버터', quantity: '1T' }],
-    selectIngredients: ['소금 약간', '후추 약간'],
-    missingIngredients: ['모짜렐라 치즈'],
-    steps: ['계란을 그릇에 깨 넣고 소금, 후추와 함께 잘 풀어줍니다.', '달군 팬에 버터를 녹인 후 계란물을 붓고 스크램블하듯 젓습니다.', '계란이 반숙 상태가 되면 치즈를 올리고 반으로 접어 모양을 잡습니다.']
-  },
-];
 
 const CATEGORY_DECODER: { [key: string]: string } = {
   KOR: '한식', YANG: '양식', JAN: '일식', CHN: '중식',
@@ -126,11 +91,11 @@ const RecipeMain = () => {
           }));
           setRecipes(mapped);
         } else {
-          setRecipes(INITIAL_RECIPES);
+          setRecipes([]);
         }
       } catch (error) {
-        console.error('서버 데이터 로딩 실패 → 백업 데이터 사용:', error);
-        setRecipes(INITIAL_RECIPES);
+        console.error('서버 데이터 로딩 실패:', error);
+        setRecipes([]);
       } finally {
         setLoading(false);
       }
@@ -501,7 +466,7 @@ const RecipeMain = () => {
       {/* ─── 모달 ─── */}
       {isModalOpen && (
         <div className="modal-overlay">
-          <div className="modal-content">
+          <div style={{ backgroundColor: '#fff', width: '360px', maxWidth: '90vw', borderRadius: '12px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
             <div className="modal-title">🍳 사용할 재료 및 수량 확인</div>
             <div className="modal-list">
               {mustIngredients.map((item, index) => (

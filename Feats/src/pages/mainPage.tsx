@@ -37,6 +37,8 @@ const RECIPES: Recipe[] = [
 
 //    하위 컴포넌트 1: 오토 슬라이드 히어로 배너
 
+//    하위 컴포넌트 1: 오토 슬라이드 히어로 배너
+   
 interface HeroCardProps {
     userName: string;
     totalCount: number;

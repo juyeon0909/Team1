@@ -38,18 +38,18 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/' element={<MainPage />} />
       <Route path='/product/insert' element={<FridgeMainPage />} />
       <Route path='/product/edit/:id' element={<FridgeEdit />} />
-      <Route path='/product/register' element={<FridgeRegister />} />
       <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
-      <Route path='/recipeMain' element={<RecipeMain />} />
-      <Route path="/recipeMain/:id" element={<RecipeMain />} />
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
+      <Route path='/recipeMain/edit' element={<RecipeEdit />} />
+      <Route path='/product/register' element={<FridgeRegister />} />
+      <Route path="/recipeMain/:id" element={<RecipeMain />} />
+      <Route path='/recipeMain' element={<RecipeMain />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
       <Route path="/mypage/edit" element={<MyPageEdit name={user?.name || "이름 없음"} setName={(newName) => setUser(prev => prev ? { ...prev, name: newName } : null)} triggerToast={(msg) => console.log(msg)} />} />
       <Route path='/mypage/recipe' element={<MyPageRecipe />} />
       <Route path='/mypage/like' element={<MyPageLike />} />
       <Route path='/mypage/qna' element={<MyPageQna />} />
       <Route path='/delete' element={<Delete />} />
-      <Route path='/recipeMain/edit' element={<RecipeEdit />} />
       <Route path='/member/find-password' element={<FindPassword />} />
       <Route path='/admin/qna' element={<AdminQna />} />
       <Route path="/member/passwordless-register" element={<PasswordlessRegisterPage />} />

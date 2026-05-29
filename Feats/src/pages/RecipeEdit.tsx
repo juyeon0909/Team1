@@ -184,7 +184,7 @@ const RecipeEdit = () => {
       steps: stepsArray
     };
 
-    const token = localStorage.getItem('ssToken');
+    const token = localStorage.getItem('accessToken');
 
     try {
       setLoading(true);

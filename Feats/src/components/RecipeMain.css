@@ -172,12 +172,13 @@
   padding: 14px;
 }
 
+/* 기존 card-title-row 교체 */
 .card-title-row {
-  font-weight: bold;
-  margin-bottom: 4px;
   display: flex;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 5px;
   align-items: center;
+  margin-bottom: 4px;
 }
 
 .card-category-tag {
@@ -366,4 +367,136 @@
 .loading-box {
   padding: 40px;
   text-align: center;
+}
+/* ─── 카드 이미지 영역 (배지 + 스크랩 버튼) ─── */
+.card-emoji-wrapper {
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  position: relative; /* ← 추가: 배지·버튼 absolute 기준점 */
+}
+
+/* 일치율 배지 */
+.card-match-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.badge-match-full {
+  background-color: #1D9E75;
+  color: #fff;
+}
+
+.badge-match-high {
+  background-color: #56C596;
+  color: #fff;
+}
+
+.badge-match-mid {
+  background-color: #BA7517;
+  color: #fff;
+}
+
+/* 스크랩(⭐) 버튼 */
+.card-scrap-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.35;
+  transition: opacity 0.15s, transform 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.card-scrap-btn:hover {
+  opacity: 0.7;
+  transform: scale(1.15);
+}
+
+.card-scrap-btn.scrapped {
+  opacity: 1;
+}
+
+/* ─── 카드 본문 추가 요소 ─── */
+
+/* 임박재료활용 태그 */
+.card-urgent-tag {
+  font-size: 11px;
+  color: #C0392B;
+  background-color: #FDECEA;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* 카드 이름 */
+.card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+/* 태그 목록 */
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.card-tag {
+  font-size: 11px;
+  color: #555;
+  background-color: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+/* ─── 카드 하단 메타 (⏱ ❤️ ⭐) ─── */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #888;
+}
+
+/* 하트 버튼 */
+.card-heart-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s;
+  line-height: 1;
+}
+
+.card-heart-btn:hover {
+  transform: scale(1.2);
+}
+
+.card-heart-btn.hearted {
+  color: #E74C3C;
 }

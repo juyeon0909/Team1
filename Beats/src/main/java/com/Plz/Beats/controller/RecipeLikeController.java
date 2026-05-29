@@ -17,17 +17,17 @@ public class RecipeLikeController {
 
     private final RecipeLikeService recipeLikeService;
 
-    // GET /api/user/likes
+    // GET /api/mypage/like
     @GetMapping("/mypage/like")
     public ResponseEntity<List<RecipeLikeDto>> getLikedRecipes(Principal principal) {
         return ResponseEntity.ok(recipeLikeService.getLikedRecipes(principal.getName()));
     }
 
-    // POST /api/recipe/{id}/like
-    @PostMapping("/recipe/{id}/like")
-    public ResponseEntity<Map<String, Object>> toggleLike(
+    // POST /api/mypage/{id}/like
+    @PostMapping("/mypage/{id}/like")
+    public ResponseEntity<Map<String, Object>> toggleHeart(
             @PathVariable Long id, Principal principal) {
-        boolean liked = recipeLikeService.toggleLike(principal.getName(), id);
-        return ResponseEntity.ok(Map.of("liked", liked));
+        boolean hearted = recipeLikeService.toggleLike(principal.getName(), id); // ✅ 변수명 수정
+        return ResponseEntity.ok(Map.of("hearted", hearted));                    // ✅
     }
 }

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance'; 
 import '../components/FridgeMain.css';
-import type { Ingredient } from '../types/Fridge'; 
+import type { Ingredient } from '../types/Fridge.ts'; 
+import type {User } from '../types/User.ts';
 
 const FridgeMain: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +25,8 @@ const FridgeMain: React.FC = () => {
       .catch((error) => console.error('냉장고 데이터를 가져오는 중 오류 발생:', error));
   }, []);
 
+
+  
   const handleDelete = async (id: number, name: string, e: React.MouseEvent): Promise<void> => {
     e.stopPropagation();
     if (!window.confirm(`${name} (을)를 삭제하시겠습니까?`)) return;

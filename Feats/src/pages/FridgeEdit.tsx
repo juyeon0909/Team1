@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import '../components/FridgeRegister.css';
-import type { SearchItem } from '../types/Fridge'; 
+import type { SearchItem } from '../types/Fridge.ts'; 
+import type {User } from '../types/User.ts';
 
 const FridgeEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>(); 
@@ -18,6 +19,18 @@ const FridgeEdit: React.FC = () => {
   const [expirationdate, setExpirationdate] = useState('');
   const [storagetype, setStoragetype] = useState('REFRIGERATED');
   const [category, setCategory] = useState('과일, 야채류'); 
+
+
+  useEffect(() => {
+  const stored = localStorage.getItem('user');
+  if (!stored) {
+    alert('로그인 후 이용 가능합니다.');
+    navigate('/member/login');
+    return;
+  }
+  
+  const user: User = JSON.parse(stored);
+}, [navigate]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

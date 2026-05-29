@@ -33,6 +33,7 @@
   position: relative; overflow: hidden; box-shadow: var(--card-shadow);
   animation: imfSlideDown 0.5s ease both;
 }
+.hero-carousel-container { position: relative; flex: 1; }
 
 .hero-carousel-container { 
   position: relative; 

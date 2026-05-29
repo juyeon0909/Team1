@@ -121,8 +121,8 @@ const RecipeMain = () => {
             heart:              item.likeCount  ?? 0,   // ✅ viewCount → likeCount
             scrap:              item.scrapCount ?? 0,
             urgent:             item.urgent     ?? false,
-            isHearted:          item.isHearted  ?? false,
-            isScrapped:         item.isScrapped ?? false,
+            isHearted:          item.hearted    ?? false,
+            isScrapped:         item.scrapped   ?? false,
           }));
           setRecipes(mapped);
         } else {

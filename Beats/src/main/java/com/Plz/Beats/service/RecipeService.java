@@ -132,6 +132,9 @@ public class RecipeService {
             if (currentMember != null) {
                 dto.setHearted(recipeLikeRepository.findByMemberAndRecipe(currentMember, recipe).isPresent());
                 dto.setScrapped(scrapRepository.findByMemberAndRecipe(currentMember, recipe).isPresent());
+            } else {
+                dto.setHearted(false);
+                dto.setScrapped(false);
             }
 
             return dto;

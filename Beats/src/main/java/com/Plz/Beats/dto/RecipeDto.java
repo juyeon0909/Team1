@@ -23,8 +23,8 @@ public class RecipeDto {
     private List<SelectIngredientDto> selectIngredients; // 선택 재료 리스트
     private long likeCount;
     private long scrapCount;
-    private boolean isHearted;
-    private boolean isScrapped;
+    private boolean hearted;
+    private boolean scrapped;
 
 
     @Getter

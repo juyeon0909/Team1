@@ -32,6 +32,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                      <Nav.Link onClick={() => navigate(`/`)} className="active">
                         홈
                      </Nav.Link>
+                     <Nav.Link onClick={() => navigate(`/ingredient/list`)}>재료 목록</Nav.Link>
                      <NavDropdown title={`레시피`}>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
@@ -55,6 +56,8 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                         홈
                      </Nav.Link>
                      <Nav.Link onClick={() => navigate(`/product/insert`)}>냉장고</Nav.Link>
+                     
+                     <Nav.Link onClick={() => navigate(`/ingredient/list`)}>재료 목록</Nav.Link>
 
                      <NavDropdown title={`레시피`}>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
@@ -80,7 +83,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                         홈
                      </Nav.Link>
                      <Nav.Link onClick={() => navigate(`/product/insert`)}>냉장고</Nav.Link>
-                     
+                     <Nav.Link onClick={() => navigate(`/ingredient/list`)}>재료 목록</Nav.Link>
                      <NavDropdown title={`레시피`}>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>

@@ -1,5 +1,5 @@
 package com.Plz.Beats.controller;
-
+import com.Plz.Beats.repository.ItemRepository;
 import com.Plz.Beats.dto.ProductDto;
 import com.Plz.Beats.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +14,8 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+
+    private final ItemRepository itemRepository;
 
     @GetMapping("/list")
     public ResponseEntity<List<ProductDto>> getStorageList() {
@@ -47,7 +49,28 @@ public class ProductController {
         // 2. 리액트가 목말라하던 200 OK 사인과 함께 데이터를 던져줍니다.
         return ResponseEntity.ok(searchResults);
     }
+    @GetMapping("/categories")
+    public ResponseEntity<List<String>> getCategories() {
+        List<String> categories = itemRepository.findAllDistinctCategories();
+        return ResponseEntity.ok(categories);
+    }
 
+    @PostMapping("/master/update/{id}")
+    public ResponseEntity<String> updateMasterProduct(@PathVariable("id") Long id, @RequestBody ProductDto dto) {
+        productService.updateMasterItem(id, dto);
+        return ResponseEntity.ok("마스터 식재료 정보가 성공적으로 변경되었습니다.");
+    }
+
+    @PostMapping("/master/delete/{id}")
+    public ResponseEntity<String> deleteMasterProduct(@PathVariable("id") Long id) {
+        productService.deleteMasterItem(id);
+        return ResponseEntity.ok("식재료가 마스터 사전에서 영구 삭제되었습니다.");
+    }
+    @PostMapping("/insert")
+    public ResponseEntity<String> insertMasterItem(@RequestBody ProductDto productDto) {
+        productService.saveMasterItem(productDto);
+        return ResponseEntity.ok("새로운 식재료가 성공적으로 등록되었습니다.");
+    }
     @PostMapping("/delete/{id}")
     public ResponseEntity<String> deleteStorage(@PathVariable("id") Long id) {
 

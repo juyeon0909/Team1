@@ -21,6 +21,7 @@ import AdminQna from '../pages/AdminQna';
 import PasswordlessWithdrawalPage from '../pages/PasswordlessWithdrawalPage'
 import PasswordlessRegisterPage from '../pages/PasswordlessRegisterPage'
 import AdminRecipe from '../pages/AdminRecipe';
+import IngredientList from "../pages/IngredientList.tsx";
 
 
 
@@ -39,6 +40,7 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/product/insert' element={<FridgeMainPage />} />
       <Route path='/product/edit/:id' element={<FridgeEdit />} />
       <Route path='/product/register' element={<FridgeRegister />} />
+      <Route path='/ingredient/list' element={<IngredientList />} />
       <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/recipeMain' element={<RecipeMain />} />
       <Route path="/recipeMain/:id" element={<RecipeMain />} />

@@ -193,4 +193,22 @@ public class RecipeService {
                 .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
         recipe.setApprovalStatus(ApprovalStatus.REJECTED);
     }
+
+    @Transactional
+    public void deleteRecipe(Long id, String email) {
+        System.out.println("=== deleteRecipe 호출됨 id=" + id + " email=" + email);
+
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
+
+        System.out.println("=== 레시피 작성자=" + recipe.getMember().getEmail());
+
+        if (!recipe.getMember().getEmail().equals(email)) {
+            System.out.println("=== 본인 아님!");
+            throw new RuntimeException("본인이 등록한 레시피만 삭제할 수 있습니다.");
+        }
+
+        recipeRepository.delete(recipe);
+        System.out.println("=== 삭제 완료");
+    }
 }

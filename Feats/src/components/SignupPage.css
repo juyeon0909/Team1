@@ -1,0 +1,263 @@
+/* =============================================
+   SignupPage.css
+   로그인 페이지(LoginPage.css)와 동일한 서식 기반
+   ============================================= */
+
+/* 공통 변수 */
+:root {
+  --green-primary: #4caf50;
+  --green-dark: #43a047;
+  --green-light: #a5d6a7;
+  --green-bg: #f0faf5;
+  --red-error: #e53935;
+  --orange-mid: #fb8c00;
+  --yellow-strong: #fdd835;
+  --border-default: #ccc;
+  --border-focus: #4caf50;
+  --text-hint: #aaa;
+  --text-secondary: #555;
+}
+
+/* ── 페이지 레이아웃 ── */
+.signup-page-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── 왼쪽 브랜드 섹션 (로그인과 동일) ── */
+.signup-brand-section {
+  flex: 1;
+  background-color: #6FBC44;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #fff;
+  text-align: center;
+}
+
+.brand-badge {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
+  margin-bottom: 2rem;
+}
+
+.brand-logo-img svg {
+  width: 80px;
+  height: 96px;
+  margin-bottom: 1.5rem;
+}
+
+.brand-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.brand-subtitle {
+  font-size: 14px;
+  opacity: 0.85;
+  text-align: center;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.brand-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.brand-tag {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 14px;
+  padding: 5px 14px;
+  font-size: 12px;
+}
+
+/* ── 오른쪽 폼 섹션 ── */
+.signup-form-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 3.5rem;
+  max-width: 520px;
+  overflow-y: auto;
+}
+
+.signup-form-header {
+  margin-bottom: 28px;
+}
+
+.signup-form-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 6px;
+}
+
+.signup-form-header p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ── 입력 필드 그룹 (로그인과 동일 클래스 재사용) ── */
+.custom-input-group {
+  margin-bottom: 18px;
+}
+
+.custom-input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 6px;
+}
+
+.custom-form-control {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  font-size: 14px;
+  color: #111;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.custom-form-control:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.12);
+}
+
+.custom-form-control::placeholder {
+  color: var(--text-hint);
+}
+
+/* ── 비밀번호 입력 래퍼 ── */
+.pw-input-wrap {
+  position: relative;
+}
+
+.pw-input-wrap .custom-form-control {
+  padding-right: 44px;
+}
+
+.pw-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: var(--text-hint);
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+}
+
+/* ── 비밀번호 강도 바 ── */
+.pw-strength-bar-wrap {
+  height: 4px;
+  border-radius: 2px;
+  margin-top: 7px;
+  background: #eee;
+  overflow: hidden;
+}
+
+.pw-strength-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s, background 0.3s;
+  width: 0%;
+}
+
+/* ── 힌트 / 메시지 텍스트 ── */
+.input-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 5px;
+}
+
+.input-match-hint {
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/* ── 필수 표시 ── */
+.required-mark {
+  color: var(--red-error);
+  margin-left: 2px;
+}
+
+/* ── 제출 버튼 (로그인과 동일 클래스 재사용) ── */
+.btn-submit-green {
+  width: 100%;
+  padding: 14px;
+  background: var(--green-primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  margin-bottom: 18px;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.btn-submit-green:hover {
+  background: var(--green-dark);
+}
+
+.btn-submit-green:disabled {
+  background: var(--green-light);
+  cursor: not-allowed;
+}
+
+/* ── 하단 링크 (로그인과 동일 클래스 재사용) ── */
+.login-footer-links {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.login-link-highlight {
+  color: var(--green-primary);
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.login-link-highlight:hover {
+  text-decoration: underline;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 768px) {
+  .signup-page-container {
+    flex-direction: column;
+  }
+
+  .signup-brand-section {
+    padding: 2rem 1.5rem;
+    min-height: auto;
+  }
+
+  .signup-form-section {
+    padding: 2rem 1.5rem;
+    max-width: 100%;
+  }
+}

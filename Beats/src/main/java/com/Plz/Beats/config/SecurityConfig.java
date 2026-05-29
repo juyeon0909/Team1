@@ -40,6 +40,8 @@ public class SecurityConfig {
                 "/css/**",
                 "/js/**",
                 "/api/recipeMain",
+                "/error",
+                "/api/error",
                 "/api/recipeMain/**",
                 "/api/member/signup",
                 "/api/member/login",

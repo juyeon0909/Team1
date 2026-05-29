@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
-import '../components/MyPageRecipe.css'; // 💡 분리된 마이페이지 레시피 전용 CSS 임포트
+import '../components/MyPageRecipe.css';
 
 interface Recipe {
-  recipeId: number;
+  id: number;
   title: string;
   dishName: string;
   category: string;
@@ -13,14 +13,15 @@ interface Recipe {
   image?: string;
 }
 
+const TOKEN_KEY = 'accessToken';
+
 const MyPageRecipe = () => {
   const navigate = useNavigate();
   const [myRecipes, setMyRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // 컴포넌트 마운트 시 백엔드 API에서 로드
   useEffect(() => {
-    const token = localStorage.getItem('ssToken'); // 레시피 등록 페이지와 동일한 토큰 키 사용
+    const token = localStorage.getItem(TOKEN_KEY);
 
     axiosInstance.get('/mypage/recipe', {
       headers: {
@@ -37,19 +38,26 @@ const MyPageRecipe = () => {
       });
   }, []);
 
-  // 레시피 삭제 핸들러 (서버에 DELETE 요청)
-  const handleDelete = (recipeId: number, e: React.MouseEvent) => {
+  const handleDelete = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!window.confirm("정말 이 레시피를 삭제하시겠습니까?")) return;
 
-    axiosInstance.delete(`/recipeMain/${recipeId}`)
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    axiosInstance.delete(`/mypage/recipe/${id}`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : ''
+      }
+    })
       .then(() => {
         alert("레시피가 성공적으로 삭제되었습니다.");
-        setMyRecipes(myRecipes.filter(recipe => recipe.recipeId !== recipeId));
+        setMyRecipes(myRecipes.filter(recipe => recipe.id !== id));
+        navigate('/mypage/recipe');
       })
       .catch((err) => {
         console.error("레시피 삭제 실패:", err);
         alert("삭제 중 오류가 발생했습니다.");
+        navigate('/mypage/recipe');
       });
   };
 
@@ -59,14 +67,13 @@ const MyPageRecipe = () => {
 
   return (
     <div className="mypage-recipe-container">
-      {/* 상단 네비게이션 바 */}
       <div className="top-nav-bar">
         <div className="back-to-main-link" onClick={() => navigate('/recipeMain')}>
           <i className="ti ti-arrow-left"></i>
           <span>메인으로</span>
         </div>
         <button
-          onClick={() => navigate('/recipeMain/register')} // 소문자 등록 페이지 경로 통일
+          onClick={() => navigate('/recipeMain/register')}
           style={{
             padding: '8px 16px',
             background: '#6FBC44',
@@ -94,11 +101,10 @@ const MyPageRecipe = () => {
         <div className="recipe-card-grid">
           {myRecipes.map((recipe) => (
             <div
-              key={recipe.recipeId}
-              onClick={() => navigate(`/recipeMain/${recipe.recipeId}`)}
+              key={recipe.id}
+              onClick={() => navigate(`/recipeMain/${recipe.id}`)}
               className="recipe-item-card"
             >
-              {/* 이미지 영역 */}
               <div className="recipe-card-image-box">
                 {recipe.image ? (
                   <img src={recipe.image} alt={recipe.title} className="recipe-card-img" />
@@ -107,18 +113,16 @@ const MyPageRecipe = () => {
                 )}
               </div>
 
-              {/* 텍스트 컨텐츠 영역 */}
               <div style={{ padding: '14px' }}>
-                <span style={{ fontSize: '11px', color: '#6FBC44', fontWeight: 'bold' }}>{recipe.cat}</span>
-                <h3 style={{ fontSize: '14px', margin: '4px 0 6px 0', color: '#111', fontWeight: '500' }}>{recipe.name}</h3>
+                <span style={{ fontSize: '11px', color: '#6FBC44', fontWeight: 'bold' }}>{recipe.category}</span>
+                <h3 style={{ fontSize: '14px', margin: '4px 0 6px 0', color: '#111', fontWeight: '500' }}>{recipe.dishName}</h3>
                 <p style={{ fontSize: '12px', color: '#666', margin: '0 0 12px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {recipe.desc}
+                  {recipe.description}
                 </p>
               </div>
 
-              {/* 카드 우상단 삭제(X) 버튼 */}
               <button
-                onClick={(e) => handleDelete(recipe.recipeId, e)}
+                onClick={(e) => handleDelete(recipe.id, e)}
                 className="recipe-delete-absolute-btn"
               >
                 ✕

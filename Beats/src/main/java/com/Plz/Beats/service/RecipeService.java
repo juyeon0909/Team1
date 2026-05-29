@@ -9,7 +9,9 @@ import com.Plz.Beats.entity.Recipe;
 import com.Plz.Beats.entity.RecipeIngredient;
 import com.Plz.Beats.entity.Item;
 import com.Plz.Beats.repository.MemberRepository;
+import com.Plz.Beats.repository.RecipeLikeRepository;
 import com.Plz.Beats.repository.RecipeRepository;
+import com.Plz.Beats.repository.ScrapRepository;
 import com.Plz.Beats.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,8 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
+    private final RecipeLikeRepository recipeLikeRepository;
+    private final ScrapRepository scrapRepository;
 
     /**
      * 레시피 등록 및 수정
@@ -95,6 +99,12 @@ public class RecipeService {
     public List<RecipeDto> getRecipes(String username) {
         List<Recipe> recipes = recipeRepository.findAll();
 
+        Member member = null;
+        if (!"GUEST".equals(username)) {
+            member = memberRepository.findByEmail(username).orElse(null);
+        }
+        final Member currentMember = member;
+
         return recipes.stream().map(recipe -> {
             RecipeDto dto = new RecipeDto();
             dto.setId(recipe.getId());
@@ -116,6 +126,13 @@ public class RecipeService {
                     ))
                     .collect(Collectors.toList());
             dto.setMustIngredients(ingDtos);
+
+            dto.setLikeCount(recipeLikeRepository.countByRecipe(recipe));
+            dto.setScrapCount(scrapRepository.countByRecipe(recipe));
+            if (currentMember != null) {
+                dto.setHearted(recipeLikeRepository.findByMemberAndRecipe(currentMember, recipe).isPresent());
+                dto.setScrapped(scrapRepository.findByMemberAndRecipe(currentMember, recipe).isPresent());
+            }
 
             return dto;
         }).collect(Collectors.toList());

@@ -54,7 +54,8 @@ const RecipeMainClip = () => {
       });
   }, []);
 
-  const handleScrapToggle = async (id: number) => {
+  const handleScrapToggle = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
     try {
       const res = await axiosInstance.post(`/recipeMain/${id}/clip`);
       const { scrapped } = res.data;
@@ -154,6 +155,8 @@ const RecipeMainClip = () => {
                 <div
                   key={r.id}
                   className={`scrap-card ${removingId === r.id ? 'removing' : ''}`}
+                  onClick={() => navigate(`/recipeMain/${r.id}`)}
+                  style={{ cursor: 'pointer' }}
                 >
                   <div className="scrap-card-img" style={{ background: r.bg ?? '#F0F0F0' }}>
                     <span className="scrap-card-emoji">{r.emoji ?? '🍽️'}</span>
@@ -164,7 +167,7 @@ const RecipeMainClip = () => {
                     )}
                     <button
                       className="scrap-heart-btn liked"
-                      onClick={() => handleScrapToggle(r.id)}
+                      onClick={e => handleScrapToggle(r.id, e)}
                       title="스크랩 취소"
                     >
                       ⭐

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import '../components/RecipeMain.css';
 
@@ -73,7 +73,7 @@ const getMatchBadgeClass = (match: number) => {
 
 const RecipeMain = () => {
   const navigate      = useNavigate();
-  const location      = useLocation();
+
   const { id: urlId } = useParams();
 
   const [recipes,  setRecipes]  = useState<Recipe[]>([]);
@@ -136,7 +136,7 @@ const RecipeMain = () => {
       }
     };
     fetchRecipes();
-  }, [location.pathname]);
+  }, []);
 
   // ── 파생 데이터 ───────────────────────────────────────
   const currentRecipe = useMemo(
@@ -153,34 +153,54 @@ const RecipeMain = () => {
   // ── 인터랙션 핸들러 ───────────────────────────────────
   const toggleHeart = async (id: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
+    // 낙관적 업데이트
+    let prev_isHearted = false;
+    setRecipes(prev =>
+      prev.map(r => {
+        if (r.id !== id) return r;
+        prev_isHearted = r.isHearted ?? false;
+        const next = !r.isHearted;
+        return { ...r, isHearted: next, heart: next ? r.heart + 1 : Math.max(0, r.heart - 1) };
+      })
+    );
     try {
-      const res = await axiosInstance.post(`/mypage/${id}/like`); // ✅ 경로 백엔드와 맞게 확인
-      const { hearted } = res.data;
+      await axiosInstance.post(`/mypage/${id}/like`);
+    } catch (err) {
+      // 실패 시 롤백
       setRecipes(prev =>
         prev.map(r =>
           r.id === id
-            ? { ...r, isHearted: hearted, heart: hearted ? r.heart + 1 : Math.max(0, r.heart - 1) }
+            ? { ...r, isHearted: prev_isHearted, heart: prev_isHearted ? r.heart + 1 : Math.max(0, r.heart - 1) }
             : r,
-        ),
+        )
       );
-    } catch (err) {
       console.error('좋아요 처리 실패:', err);
     }
   };
 
   const toggleScrap = async (id: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
+    // 낙관적 업데이트
+    let prev_isScrapped = false;
+    setRecipes(prev =>
+      prev.map(r => {
+        if (r.id !== id) return r;
+        prev_isScrapped = r.isScrapped ?? false;
+        const next = !r.isScrapped;
+        return { ...r, isScrapped: next, scrap: next ? r.scrap + 1 : Math.max(0, r.scrap - 1) };
+      })
+    );
     try {
-      const res = await axiosInstance.post(`/recipeMain/${id}/clip`);
-      const { scrapped } = res.data;
+      await axiosInstance.post(`/recipeMain/${id}/clip`);
+    } catch (err) {
+      // 실패 시 롤백
       setRecipes(prev =>
         prev.map(r =>
           r.id === id
-            ? { ...r, isScrapped: scrapped, scrap: scrapped ? r.scrap + 1 : Math.max(0, r.scrap - 1) }
+            ? { ...r, isScrapped: prev_isScrapped, scrap: prev_isScrapped ? r.scrap + 1 : Math.max(0, r.scrap - 1) }
             : r,
-        ),
+        )
       );
-    } catch (err) {
       console.error('스크랩 처리 실패:', err);
     }
   };
@@ -342,7 +362,7 @@ const RecipeMain = () => {
                           className={`card-scrap-btn ${r.isScrapped ? 'scrapped' : ''}`}
                           onClick={e => toggleScrap(r.id, e)}
                         >
-                          {r.isScrapped ? '⭐' : ''} {r.scrap}
+                          {r.isScrapped ? '⭐' : '☆'} {r.scrap}
                         </button>
                       </div>
                     </div>

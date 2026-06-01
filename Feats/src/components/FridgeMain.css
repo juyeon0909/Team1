@@ -54,7 +54,7 @@
 .add-icon-small { font-size: 1.1rem; font-weight: 500; display: inline-block; }
 
 /* 3. 보관실 레이아웃 및 카드 공통 스타일 */
-.storage-rooms-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
+.storage-rooms-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; margin-top: 40px; }
 @media (max-width: 900px) { .storage-rooms-grid { grid-template-columns: 1fr; } }
 
 .storage-room-card {
@@ -125,3 +125,121 @@
 .expiry-danger .item-name-link { color: var(--red) !important; font-weight: bold; }
 
 .empty-item-text { text-align: center; color: var(--text-light); font-size: 13px; padding: 30px 0; margin: 0; }
+
+.expired-storage-container {
+  margin-top: 40px; /* 검색창-보관함 여백 맞춤과 통일감 조성 */
+  background-color: #fff5f5;
+  border: 1px solid #fee2e2;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.04);
+}
+
+.expired-container-title {
+  color: #ef4444;
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.expired-container-sub {
+  font-size: 13px;
+  color: #7f8c8d;
+  margin-bottom: 20px;
+}
+
+/* 🌟 높이 제한(max-height) 및 overflow-y 스크롤을 걷어내어 개수 제한 없이 무제한 노출되도록 제어 */
+.expired-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.expired-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background-color: #ffffff;
+  border: 1px solid #fca5a5;
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+.expired-item-row:hover {
+  border-color: #ef4444;
+  background-color: #fffbfa;
+}
+
+.expired-item-name {
+  text-decoration: line-through;
+  color: #94a3b8;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.expired-item-name:hover {
+  color: #ef4444;
+}
+
+.expired-item-right-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.expired-badge-text {
+  font-size: 11px;
+  color: #ef4444;
+  font-weight: 800;
+  background-color: #fee2e2;
+  padding: 3px 10px;
+  border-radius: 6px;
+  letter-spacing: -0.5px;
+}
+
+.expired-item-qty {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.expired-item-date-wrapper {
+  font-size: 13px;
+  color: #ef4444;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.expired-btn-delete {
+  background-color: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.expired-btn-delete:hover {
+  background-color: #dc2626;
+}
+
+/* 로그아웃 안내 문구 미세 보정 */
+.logout-notice {
+  color: #94a3b8;
+  font-weight: 700;
+  padding-top: 20px;
+}

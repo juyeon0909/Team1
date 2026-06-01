@@ -341,7 +341,7 @@ const FridgeMain: React.FC = () => {
           />
           {searchTerm && <button onClick={() => setSearchTerm('')} className="search-clear-btn">✕</button>}
         </div>
-        {/* 🌟 로그인 상황일 때만 재료 등록 버튼 노출 */}
+        {/*  로그인 상황일 때만 재료 등록 버튼 노출 */}
         {currentUser && (
           <button className="storage-add-btn" onClick={() => navigate('/product/register')}><span className="add-icon-small">＋</span> 재료 등록</button>
         )}
@@ -427,47 +427,30 @@ const FridgeMain: React.FC = () => {
         </div>
       </div>
 
-      {/* 🌟 로그인 되어 있고 + 유통기한 초과 재료가 있을 때만 경고 세션 노출 */}
+      {/* 로그인 되어 있고 + 유통기한 초과 재료가 있을 때만 경고 세션 노출 */}
       {currentUser && expiredItems.length > 0 && (
-        <div className="expired-storage-container" style={{
-          marginTop: "32px",
-          backgroundColor: "#fff5f5",
-          border: "1px solid #fee2e2",
-          padding: "24px",
-          borderRadius: "16px",
-          boxShadow: "0 4px 12px rgba(239, 68, 68, 0.05)"
-        }}>
-          <h3 style={{ color: "#ef4444", fontSize: "18px", fontWeight: "800", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+        <div className="expired-storage-container">
+          <h3 className="expired-container-title">
             유통기한 초과 재료 ({expiredItems.length}종)
           </h3>
-          <p style={{ fontSize: "13px", color: "#7f8c8d", marginBottom: "16px" }}>
+          <p className="expired-container-sub">
             * 유통기한이 지난 식품들입니다. 냄새와 상태를 확인하시고 사용하거나 ✕ 버튼을 눌러 폐기 처리해 주세요.
           </p>
           
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", maxHeight: "250px", overflowY: "auto" }}>
+          <div className="expired-items-list">
             {expiredItems.map((item) => {
               const finalName = item.itemname || item.name || '이름 없음';
               return (
-                <div key={item.id} className="storage-item-row" style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "10px 16px",
-                  backgroundColor: "#ffffff",
-                  border: "1px solid #fca5a5",
-                  borderRadius: "8px"
-                }}>
-                  <span style={{ textDecoration: "line-through", color: "#94a3b8", fontWeight: "700", cursor: "pointer", fontSize: "14px" }} onClick={() => navigate(`/product/edit/${item.id}`)}>
+                <div key={item.id} className="expired-item-row">
+                  <span className="expired-item-name" onClick={() => navigate(`/product/edit/${item.id}`)}>
                     {finalName}
                   </span>
-                  <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                    <span style={{ fontSize: "12px", color: "#ef4444", fontWeight: "800", backgroundColor: "#fee2e2", padding: "2px 8px", borderRadius: "4px" }}>
-                      기한 초과됨
-                    </span>
-                    <span style={{ fontSize: "13px", color: "#7f8c8d" }}>{item.quantity}g</span>
-                    <span style={{ fontSize: "13px", color: "#ef4444", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div className="expired-item-right-section">
+                    <span className="expired-badge-text">기한 초과됨</span>
+                    <span className="expired-item-qty">{item.quantity}g</span>
+                    <span className="expired-item-date-wrapper">
                       ({item.expirationdate})
-                      <button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small" style={{ backgroundColor: "#ef4444", color: "#fff", border: "none", borderRadius: "4px", width: "20px", height: "20px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px" }}>✕</button>
+                      <button onClick={(e) => handleDelete(item.id, finalName, e)} className="expired-btn-delete">✕</button>
                     </span>
                   </div>
                 </div>

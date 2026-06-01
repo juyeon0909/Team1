@@ -44,7 +44,6 @@
   margin: 20px 0;
 }
 
-/* 요소들이 절대 겹치지 않고 세로로 차곡차곡 쌓이게 만듦 */
 .fridge-form-group {
   display: flex;
   flex-direction: column;

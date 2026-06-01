@@ -19,4 +19,6 @@ public class StorageItemDto {
     private long dDay;           // 남은 일수 (음수면 이미 만료)
     private String urgency;      // "urgent" / "warning" / "normal"
     private int progressPercent; // 진행바 너비 (%)
+
+    private String category;
 }

@@ -1,40 +1,121 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import axiosInstance from '../api/axiosInstance';
+import '../components/RecipeRegister.css'; // 💡 분리된 CSS 파일 임포트
+
+interface IngredientRow {
+  name: string;
+  quantity: string;
+  showDropdown: boolean;
+  searchResults: Array<{ id?: number; itemId?: number; name?: string; itemName?: string; category?: string }>;
+}
+
+const pageContainerStyle: React.CSSProperties = {
+  minHeight: '100vh',
+  backgroundColor: '#f9fafb',
+  padding: '2rem 1rem',
+};
+
+const backLinkStyle: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '0.25rem',
+  marginBottom: '1rem',
+  color: '#6b7280',
+  cursor: 'pointer',
+  fontSize: '0.95rem',
+};
 
 const RecipeRegister = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // 상태 변수 관리
+  const [loading, setLoading] = useState<boolean>(false);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [cookingTime, setCookingTime] = useState("");
   const [intro, setIntro] = useState("");
 
-  // 필수 재료 (객체 배열)
-  const [mustIngredients, setMustIngredients] = useState([{ name: "", quantity: "" }]);
+  const [mustIngredients, setMustIngredients] = useState<IngredientRow[]>([
+    { name: "", quantity: "", showDropdown: false, searchResults: [] }
+  ]);
   const [optIngredients, setOptIngredients] = useState("");
   const [method, setMethod] = useState("");
 
-  // 필수 재료 관련 핸들러들
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+
+  const dropdownRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  // 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      dropdownRefs.current.forEach((ref, idx) => {
+        if (ref && !ref.contains(event.target as Node)) {
+          setMustIngredients(prev =>
+            prev.map((item, i) => i === idx ? { ...item, showDropdown: false } : item)
+          );
+        }
+      });
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // 식재료 검색 (Debounce)
   const handleIngredientChange = (index: number, field: 'name' | 'quantity', value: string) => {
     const newIngredients = [...mustIngredients];
     newIngredients[index][field] = value;
+
+    if (field === 'quantity') {
+      setMustIngredients(newIngredients);
+      return;
+    }
+
+    if (!value.trim()) {
+      newIngredients[index].showDropdown = false;
+      newIngredients[index].searchResults = [];
+      setMustIngredients(newIngredients);
+      return;
+    }
+
     setMustIngredients(newIngredients);
+
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+
+        const response = await axiosInstance.get(`/product/search?name=${encodeURIComponent(value)}`, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : ''
+          }
+        });
+
+        setMustIngredients(prev =>
+          prev.map((item, i) =>
+            i === index ? { ...item, searchResults: response.data, showDropdown: response.data.length > 0 } : item
+          )
+        );
+      } catch (error) {
+        console.error('식재료 검색 실패:', error);
+      }
+    }, 200);
+
+    return () => clearTimeout(delayDebounce);
   };
 
-  const addIngredientRow = () => {
-    setMustIngredients([...mustIngredients, { name: "", quantity: "" }]);
+  // 항목 선택 핸들러
+  const handleSelectItem = (index: number, prod: any) => {
+    const finalName = prod.itemName || prod.name || '';
+    setMustIngredients(prev =>
+      prev.map((item, i) =>
+        i === index ? { ...item, name: finalName, showDropdown: false, searchResults: [] } : item
+      )
+    );
   };
 
-  const removeIngredientRow = (index: number) => {
-    if (mustIngredients.length === 1) return;
-    setMustIngredients(mustIngredients.filter((_, i) => i !== index));
-  };
-
-  // 이미지 상태 관리
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const addIngredientRow = () => setMustIngredients([...mustIngredients, { name: "", quantity: "", showDropdown: false, searchResults: [] }]);
+  const removeIngredientRow = (index: number) => setMustIngredients(mustIngredients.filter((_, i) => i !== index));
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -53,318 +134,214 @@ const RecipeRegister = () => {
     setImagePreview("");
   };
 
-  // ================= [수정 및 연동 추가된 부분] =================
-  const onSave = () => {
-    // 필수 항목 유효성 검사
+  const categoryMapper: { [key: string]: string } = {
+    "한식": "KOR", "양식": "YANG", "일식": "JAN", "중식": "CHN",
+    "간식": "GAN", "야식": "YA", "다이어트": "DIET", "밀프랩": "RAP"
+  };
+
+  const onSave = async () => {
     if (!title.trim()) return alert("레시피 이름을 입력해주세요.");
     if (!category) return alert("카테고리를 선택해주세요.");
 
-    // 1. 필수 재료 데이터 필터링 (비어있는 행 제외)
-    const filteredMustIngredients = mustIngredients.filter(
-      item => item.name.trim() !== "" && item.quantity.trim() !== ""
-    );
+    const filteredMustIngredients = mustIngredients
+      .filter(item => item.name.trim() !== "" && item.quantity.trim() !== "")
+      .map(item => ({ name: item.name, quantity: item.quantity }));
+
     if (filteredMustIngredients.length === 0) {
       return alert("필수 재료를 최소 한 개 이상 입력해주세요.");
     }
 
-    // 2. 조리 시간에서 숫자만 추출 (메인 화면은 time: number 구조)
-    const numericTime = parseInt(cookingTime.replace(/[^0-9]/g, "")) || 15;
-
-    // 3. 선택 재료 가공: 쉼표 분리 문자열 ➔ 배열 변환
-    const selectIngredientsArray = optIngredients
-      ? optIngredients.split(',').map(item => item.trim()).filter(Boolean)
-      : [];
-
-    // 4. 조리 방법 가공: 엔터(\n) 단위 분리 줄글 ➔ 배열 변환
-    const stepsArray = method
-      ? method.split('\n').map(step => step.trim()).filter(Boolean)
-      : ['조리 방법이 등록되지 않았습니다.'];
-
-    // 5. 메인 규격 및 지속 저장을 위한 데이터 객체 조립 (id와 image 추가)
-    const newRecipeData = {
-      id: Date.now().toString(), // 고유 ID (상세보기 및 삭제용)
-      name: title,
-      cat: category,
-      time: numericTime,
-      desc: intro || `${title} 레시피입니다.`,
-      tags: [category, `${numericTime}분`], // 카테고리와 시간을 기본 태그로 활용
-      urgent: false,
-      mustIngredients: filteredMustIngredients,
-      selectIngredients: selectIngredientsArray,
-      missingIngredients: [], // 초기값 빈 배열
-      steps: stepsArray,
-      emoji: '🍳', // 임시 기본 이모지
-      bg: '#E1F5EE', // 임시 기본 배경색
-      image: imagePreview || null // 이미지 Base64 스트링 저장
-    };
-
     try {
-      // localStorage에서 기존 'my_recipes' 데이터를 읽어옴 (없으면 빈 배열)
-      const existingRecipes = JSON.parse(localStorage.getItem('my_recipes') || '[]');
+      setLoading(true);
 
-      // 최신 등록 순으로 앞에 누적
-      const updatedRecipes = [newRecipeData, ...existingRecipes];
+      // 1단계: 이미지가 있으면 S3에 먼저 업로드
+      let imageUrl = "default.png";
+      if (imagePreview) {
+        const uploadRes = await axiosInstance.post('/recipeMain/upload-image', {
+          image: imagePreview
+        });
+        imageUrl = uploadRes.data;
+      }
 
-      // localStorage에 다시 JSON 형태로 저장
-      localStorage.setItem('my_recipes', JSON.stringify(updatedRecipes));
+      // 2단계: 레시피 데이터 등록
+      const numericTime = parseInt(cookingTime.replace(/[^0-9]/g, "")) || 15;
+      const stepsArray = method ? method.split('\n').map(s => s.trim()).filter(Boolean) : [];
+      const finalDescription = optIngredients.trim()
+        ? `${intro || title} (선택 재료: ${optIngredients})`
+        : intro || `${title} 레시피입니다.`;
 
-      alert('레시피 등록이 완료되었습니다.');
+      const token = localStorage.getItem('accessToken');
+      const recipePayload = {
+        title,
+        dishName: title,
+        category: categoryMapper[category] || "KOR",
+        cookingTime: numericTime,
+        description: finalDescription,
+        image: imageUrl,
+        mustIngredients: filteredMustIngredients,
+        steps: stepsArray
+      };
 
-      // 등록이 끝나면 모아보기 페이지로 이동시킵니다.
-      navigate('/mypage/recipe');
-    } catch (error) {
-      console.error("Storage error:", error);
-      alert("이미지 용량이 너무 커서 저장에 실패했습니다. 다른 이미지를 사용하거나 이미지를 제외해주세요.");
+      const response = await axiosInstance.post('/recipeMain/register', recipePayload, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : ''
+        }
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        alert('레시피 등록 서버 전송 완료!');
+        navigate('/recipeMain');
+      }
+    } catch (error: any) {
+      console.error("서버 저장 실패:", error);
+      if (error.response?.status === 401) {
+        alert("로그인 세션이 만료되었거나 로그인 상태가 아닙니다.");
+      } else {
+        alert("서버 통신 장애가 발생했습니다.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
-  // =========================================================
 
-  // 인라인 스타일 가이드
-  const pageContainerStyle = {
-    padding: '28px 40px',
-    background: 'var(--color-background-tertiary, #f8f9fa)',
-    minHeight: 'calc(100vh - 56px)',
-    fontFamily: 'var(--font-sans, sans-serif)',
-  };
-
-  const backLinkStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    marginBottom: '20px',
-    cursor: 'pointer',
-    fontSize: '13px',
-    color: 'var(--color-text-secondary, #666)',
-  };
-
-  const cardStyle = {
-    maxWidth: '600px',
-    margin: '0 auto',
-    background: 'var(--color-background-primary, #fff)',
-    border: '0.5px solid var(--color-border-tertiary, #eee)',
-    borderRadius: 'var(--border-radius-lg, 8px)',
-    padding: '28px 32px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-  };
-
-  const labelStyle = {
-    display: 'block',
-    fontSize: '12px',
-    color: 'var(--color-text-secondary, #555)',
-    marginBottom: '5px',
-    fontWeight: '500',
-  };
-
-  const subLabelStyle = {
-    fontSize: '11px',
-    color: 'var(--color-text-tertiary, #999)',
-    marginLeft: '4px',
-  };
-
-  const inputStyle = {
-    width: '100%',
-    padding: '9px 12px',
-    fontSize: '13px',
-    border: '0.5px solid var(--color-border-secondary, #ccc)',
-    borderRadius: 'var(--border-radius-md, 6px)',
-    background: 'var(--color-background-secondary, #fafafa)',
-    color: 'var(--color-text-primary, #111)',
-    outline: 'none',
-    boxSizing: 'border-box' as const,
-  };
+  if (loading) return <div className="register-loading-box">레시피 정보를 저장 중입니다...</div>;
 
   return (
     <div style={pageContainerStyle}>
       <div style={backLinkStyle} onClick={() => navigate('/recipeMain')}>
-        <i className="ti ti-arrow-left" style={{ fontSize: '16px' }}></i>
-        <span>{id ? '레시피 상세로' : '레시피 목록으로'}</span>
+        <span>{id ? ' 레시피 상세로' : ' 레시피 목록으로'}</span>
       </div>
 
-      <div style={cardStyle}>
-        <div style={{ fontSize: '18px', fontWeight: '500', color: 'var(--color-text-primary, #111)', marginBottom: '22px' }}>
-          {id ? `레시피 등록 (ID: ${id})` : '레시피 등록'}
+      <div className="register-card">
+        <div className="register-card-title">
+          {id ? `레시피 수정 (ID: ${id})` : '레시피 등록'}
         </div>
 
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>요리 대표 이미지</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            style={{ marginBottom: '8px', fontSize: '12px' }}
-          />
-          {imagePreview ? (
-            <div style={{ position: 'relative', borderRadius: '6px', overflow: 'hidden', border: '0.5px solid #eee' }}>
-              <img src={imagePreview} alt="대표 이미지" style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} />
-              <button
-                type="button"
-                onClick={handleRemoveImage}
-                style={{
-                  position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', color: '#fff',
-                  border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', fontSize: '11px'
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          ) : (
-            <div style={{ padding: '20px', background: '#fafafa', border: '1px dashed #ccc', borderRadius: '6px', textAlign: 'center', color: '#999', fontSize: '12px' }}>
-              권장 비율 정방형 또는 4:3 (선택사항)
+        {/* 이미지 업로드 */}
+        <div className="form-group">
+          <label className="form-label">요리 대표 이미지</label>
+          <input type="file" accept="image/*" onChange={handleImageChange} className="file-input-text" />
+          {imagePreview && (
+            <div className="image-preview-wrapper">
+              <img src={imagePreview} alt="대표" className="preview-image" />
+              <button type="button" onClick={handleRemoveImage} className="image-delete-btn">✕</button>
             </div>
           )}
         </div>
 
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>레시피 이름 *</label>
-          <input
-            style={inputStyle}
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="예: 두부 계란찜"
-          />
+        {/* 레시피 이름 */}
+        <div className="form-group">
+          <label className="form-label">레시피 이름 *</label>
+          <input className="form-input" type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="예: 두부 계란찜" />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+        {/* 카테고리 & 조리시간 */}
+        <div className="grid-two-columns">
           <div>
-            <label style={labelStyle}>카테고리 *</label>
-            <select
-              style={inputStyle}
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
+            <label className="form-label">카테고리 *</label>
+            <select className="form-input" value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="">선택하세요</option>
-              <option>한식</option><option>양식</option><option>일식</option>
-              <option>중식</option><option>간식</option><option>야식</option>
-              <option>다이어트</option><option>밀프랩</option>
+              <option>한식</option><option>양식</option><option>일식</option><option>중식</option>
+              <option>간식</option><option>야식</option><option>다이어트</option><option>밀프랩</option>
             </select>
           </div>
           <div>
-            <label style={labelStyle}>조리 시간</label>
-            <input
-              style={inputStyle}
-              type="text"
-              value={cookingTime}
-              onChange={(e) => setCookingTime(e.target.value)}
-              placeholder="예: 15분"
-            />
+            <label className="form-label">조리 시간</label>
+            <input className="form-input" type="text" value={cookingTime} onChange={(e) => setCookingTime(e.target.value)} placeholder="예: 15분" />
           </div>
         </div>
 
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>간단 소개</label>
-          <input
-            style={inputStyle}
-            type="text"
-            value={intro}
-            onChange={(e) => setIntro(e.target.value)}
-            placeholder="레시피를 한 줄로 소개해주세요"
-          />
+        {/* 간단 소개 */}
+        <div className="form-group">
+          <label className="form-label">간단 소개</label>
+          <input className="form-input" type="text" value={intro} onChange={(e) => setIntro(e.target.value)} placeholder="레시피를 한 줄로 소개해주세요" />
         </div>
 
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>필수 재료 및 용량 *</label>
+        {/* 필수 재료 및 용량 영역 */}
+        <div className="form-group">
+          <label className="form-label">필수 재료 및 용량 *</label>
           {mustIngredients.map((item, index) => (
-            <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+            <div
+              key={index}
+              ref={el => { dropdownRefs.current[index] = el; }}
+              className="ingredient-row"
+            >
+              <div className="relative-wrapper">
+                <input
+                  className="form-input"
+                  type="text"
+                  value={item.name}
+                  onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
+                  placeholder="예: 두부"
+                  autoComplete="off"
+                />
+
+                {item.showDropdown && item.searchResults && item.searchResults.length > 0 && (
+                  <ul className="search-dropdown-list">
+                    {item.searchResults.map((prod, pIdx) => {
+                      const displayName = prod.itemName || prod.name || '이름 없음';
+                      return (
+                        <li
+                          key={prod.id || prod.itemId || pIdx}
+                          onClick={() => handleSelectItem(index, prod)}
+                          className="dropdown-item"
+                        >
+                          <strong className="dropdown-item-name">{displayName}</strong>
+                          {prod.category && (
+                            <span className="dropdown-item-category">
+                              {prod.category}
+                            </span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+
               <input
-                style={inputStyle}
-                type="text"
-                value={item.name}
-                onChange={(e) => handleIngredientChange(index, 'name', e.target.value)}
-                placeholder="예: 두부"
-              />
-              <input
-                style={inputStyle}
+                className="form-input"
                 type="text"
                 value={item.quantity}
                 onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
-                placeholder="예: 150g, 1개"
+                placeholder="예: 1모, 150g"
               />
               {mustIngredients.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeIngredientRow(index)}
-                  style={{
-                    background: '#fff', border: '0.5px solid #ccc', color: '#ff4d4f',
-                    padding: '8px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'
-                  }}
-                >
-                  ✕
-                </button>
+                <button type="button" onClick={() => removeIngredientRow(index)} className="row-remove-btn">✕</button>
               )}
             </div>
           ))}
-
-          <button
-            type="button"
-            onClick={addIngredientRow}
-            style={{
-              background: 'none', border: '1px dashed #6FBC44', color: '#6FBC44',
-              padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', width: '100%', marginTop: '4px'
-            }}
-          >
-            + 재료 추가
-          </button>
+          <button type="button" onClick={addIngredientRow} className="add-row-dashed-btn">+ 재료 추가</button>
         </div>
 
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>
-            선택 재료 <span style={subLabelStyle}>쉼표로 구분</span>
-          </label>
-          <input
-            style={inputStyle}
-            type="text"
-            value={optIngredients}
-            onChange={(e) => setOptIngredients(e.target.value)}
-            placeholder="예: 참기름, 소금"
-          />
+        {/* 선택 재료 */}
+        <div className="form-group">
+          <label className="form-label">선택 재료 <span className="form-sublabel">쉼표로 구분</span></label>
+          <input className="form-input" type="text" value={optIngredients} onChange={(e) => setOptIngredients(e.target.value)} placeholder="예: 참기름, 소금" />
         </div>
 
-        <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>조리 방법</label>
-          <textarea
-            style={{ ...inputStyle, minHeight: '100px', resize: 'vertical', fontFamily: 'inherit', lineHeight: '1.5' }}
-            value={method}
-            onChange={(e) => setMethod(e.target.value)}
-            placeholder={`조리 순서를 입력해주세요\n1. 두부를 먹기 좋은 크기로 썰어요\n2. ...`}
-          />
+        {/* 조리 방법 */}
+        <div className="form-group">
+          <label className="form-label">조리 방법</label>
+          <textarea className="form-input form-textarea" value={method} onChange={(e) => setMethod(e.target.value)} placeholder={`조리 순서를 입력해주세요\n1. 두부를 먹기 좋은 크기로 썰어요\n2. ...`} />
         </div>
 
         {!id && (
-          <div style={{
-            background: '#FAEEDA', border: '0.5px solid #FAC775', borderRadius: 'var(--border-radius-md, 6px)',
-            padding: '10px 14px', fontSize: '12px', color: '#633806', marginBottom: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start'
-          }}>
-            <i className="ti ti-info-circle" style={{ fontSize: '15px', flexShrink: 0, marginTop: '1px' }}></i>
-            등록된 레시피는 승인 후 공개 됩니다.
+          <div className="info-banner-box">
+            <span>ℹ️</span>
+            등록된 레시피는 승인 후 등록됩니다.
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            style={{
-              padding: '8px 18px', fontSize: '13px', borderRadius: 'var(--border-radius-md, 6px)', cursor: 'pointer',
-              border: '0.5px solid var(--color-border-secondary, #ccc)', background: 'var(--color-background-primary, #fff)', color: 'var(--color-text-secondary, #666)'
-            }}
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            onClick={onSave}
-            style={{
-              padding: '8px 18px', fontSize: '13px', borderRadius: 'var(--border-radius-md, 6px)', cursor: 'pointer',
-              background: '#6FBC44', color: '#fff', border: 'none', fontWeight: '500'
-            }}
-          >
-            {id ? '저장하기' : '등록 완료'}
+        <div className="action-button-group">
+          <button type="button" onClick={() => navigate(-1)} className="cancel-action-btn">취소</button>
+          <button type="button" onClick={onSave} className="submit-action-btn">
+            {id ? '저장하기' : '등록 신청'}
           </button>
         </div>
       </div>
     </div>
   );
 };
-{/*커밋 체크*/}
+
 export default RecipeRegister;

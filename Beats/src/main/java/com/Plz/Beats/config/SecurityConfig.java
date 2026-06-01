@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,7 +18,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 
 @Configuration
 @RequiredArgsConstructor
-@EnableMethodSecurity
 public class SecurityConfig {
 
     // JwtTokenProvider.java에서 @Component로 생성함
@@ -41,10 +39,6 @@ public class SecurityConfig {
                 "/fruit/**",
                 "/css/**",
                 "/js/**",
-                "/api/recipeMain",
-                "/error",
-                "/api/error",
-                "/api/recipeMain/**",
                 "/api/member/signup",
                 "/api/member/login",
                 "/product/**",
@@ -69,11 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(permitUrls).permitAll()
                         .requestMatchers("/api/member/delete").permitAll() // 인증 필요
                         .requestMatchers("/api/member/join").permitAll()
-                                .requestMatchers("/api/recipeMain").permitAll()
-                                .requestMatchers("/api/recipeMain/**").permitAll()
-                                .requestMatchers("/api/recipeMain/clip").authenticated()
-                                .requestMatchers("/api/mypage/like").authenticated()
-                                .requestMatchers("/api/ingredients/**").permitAll()
+                        .requestMatchers("/api/member/**").authenticated()
                         .requestMatchers("/api/product/**").permitAll()
                         .requestMatchers("/api/mypage/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

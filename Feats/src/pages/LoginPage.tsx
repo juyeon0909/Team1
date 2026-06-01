@@ -247,10 +247,10 @@ function LoginPage({ onLogin }: Props) {
                 style={{
                   border: "2px solid #1a9d60",
                   borderRadius: "8px",
-                  padding: "20px 16px",
+                  padding: "7px 16px",
                   backgroundColor: "#f0faf5",
                   textAlign: "center",
-                  fontSize: "2rem",
+                  fontSize: "1.5rem",
                   fontWeight: 700,
                   letterSpacing: "0.5em",
                   color: "#1a9d60",
@@ -297,7 +297,11 @@ function LoginPage({ onLogin }: Props) {
               type="button"
               className="btn-submit-green"
               style={{ backgroundColor: "#cc3333" }}
-              onClick={handleCancelPolling}
+              onClick={(event) => {
+                event.stopPropagation();
+                alert(`인증을 취소하였습니다.`)
+                handleCancelPolling();
+              }}
             >
               인증 취소
             </button>
@@ -325,10 +329,6 @@ function LoginPage({ onLogin }: Props) {
                 <span>
                   패스워드리스
                   <Link to="/member/passwordless-register" className="login-link-highlight">등록</Link>
-                </span>
-                <span>
-                  등록
-                  <Link to="/member/reset-register" className="login-link-highlight">해지</Link>
                 </span>
               </div>
             )

@@ -47,8 +47,8 @@ public class Storage_item {
 
     //식재료 수량
     @Column(nullable = false)
-    @Min(value = 1, message = "무게는 1 이상이어야 합니다.")
-    @Max(value = 20000, message = "무게는 20000 이하여야 합니다.")
+    @Min(value = 0, message = "수량은 0개 이상이어야 합니다.")
+    @Max(value = 1000, message = "수량은 1000개 이하여야 합니다.")
     private int quantity;
 
     //유통기한 입력

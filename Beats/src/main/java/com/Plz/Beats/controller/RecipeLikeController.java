@@ -23,7 +23,7 @@ public class RecipeLikeController {
         return ResponseEntity.ok(recipeLikeService.getLikedRecipes(principal.getName()));
     }
 
-    // POST /api/recipe/{id}/like
+    // POST /api/recipe/{id}/ like
     @PostMapping("/recipe/{id}/like")
     public ResponseEntity<Map<String, Object>> toggleLike(
             @PathVariable Long id, Principal principal) {

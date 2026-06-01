@@ -178,7 +178,7 @@ public class RecipeService {
 //                )).collect(Collectors.toList());
 //    }
 
-    // 승인
+    //  승인
     @Transactional
     public void approveRecipe(Long id) {
         Recipe recipe = recipeRepository.findById(id)

@@ -83,7 +83,7 @@ public class Recipe {
     @Column(name = "approval_status", nullable = false, length = 20)
     private ApprovalStatus approvalStatus;
 
-    // 조회수
+    //   조회수
     private Long viewCount = 0L;
 
     // 재료

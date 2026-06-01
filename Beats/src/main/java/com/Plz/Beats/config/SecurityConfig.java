@@ -91,7 +91,7 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    // 2. AuthenticationProvider는 별도의 Bean으로 분리하여 등록해 줍니다.
+    // 2.  AuthenticationProvider는 별도의 Bean으로 분리하여 등록해 줍니다.
     @Bean
     public DaoAuthenticationProvider authenticationProvider(
             UserDetailsService userDetailsService,

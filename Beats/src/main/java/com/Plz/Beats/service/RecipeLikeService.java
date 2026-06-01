@@ -64,7 +64,7 @@ public class RecipeLikeService {
             newLike.setMember(member);
             newLike.setRecipe(recipe);
             recipeLikeRepository.save(newLike);
-            return true; // 추가됨
+            return true; //  추가됨
         }
     }
 

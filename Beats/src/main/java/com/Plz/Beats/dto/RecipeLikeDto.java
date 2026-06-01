@@ -12,6 +12,6 @@ public class RecipeLikeDto {
     private String time;        //시간
     private String author;      //레시피 작성자
     private long likes;         //좋아요
-    private boolean liked;      //좋아요 목록
+    private boolean liked;      // 좋아요 목록
     private String scrappedAt;  //날짜
 }

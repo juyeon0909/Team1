@@ -22,7 +22,6 @@ interface Recipe {
   selectIngredients: string[];
   missingIngredients: string[];
   steps: string[];
-  image: string;
 }
 
 const CATEGORY_DECODER: { [key: string]: string } = {
@@ -332,5 +331,4 @@ const RecipeMain = () => {
     </div>
   );
 };
-
 export default RecipeMain;

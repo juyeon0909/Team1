@@ -20,6 +20,12 @@ public class RecipeDto {
     private String image;           // 💡 요리 사진 URL 또는 파일 경로 (엔티티 필수 필드 반영)
     private List<String> steps;     // 조리 단계 리스트 (엔티티의 cookingMethod와 매핑)
     private List<MustIngredientDto> mustIngredients; // 필수 재료 리스트
+    private List<SelectIngredientDto> selectIngredients; // 선택 재료 리스트
+    private long likeCount;
+    private long scrapCount;
+    private boolean hearted;
+    private boolean scrapped;
+
 
     @Getter
     @Setter
@@ -29,4 +35,11 @@ public class RecipeDto {
         private String name;
         private String quantity;
     }
+
+    public static class SelectIngredientDto{
+        private String name;
+        private String quantity;
+    }
+
+
 }

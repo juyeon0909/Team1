@@ -90,6 +90,8 @@ public class Recipe {
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RecipeIngredient> recipeIngredients = new ArrayList<>();
 
+
+
     // 업로드 일자
     // 주의: 타입이 LocalDateTime 인데 패턴이 'yyyy-MM-dd' 라 직렬화 시 시간 정보가 사라집니다.
     //       (그대로 둘지 'yyyy-MM-dd HH:mm:ss' 로 바꿀지는 결정 필요 — 값은 임의로 변경하지 않았습니다.)

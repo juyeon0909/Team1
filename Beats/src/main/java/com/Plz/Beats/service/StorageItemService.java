@@ -13,10 +13,12 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,6 +58,36 @@ public class StorageItemService {
         item.setStoragetype(Storagetype.valueOf(dto.getStoragetype()));
 
         storageItemRepository.save(item);
+    }
+
+    // 요리하기: 사용한 재료를 냉장고에서 차감 (유통기한 빠른 순으로 FIFO 차감)
+    @Transactional
+    public void deductIngredients(String email, List<Map<String, String>> ingredients) {
+        for (Map<String, String> ingredient : ingredients) {
+            String name = ingredient.get("name");
+            String quantityStr = ingredient.get("quantity");
+            int quantityToDeduct;
+            try {
+                quantityToDeduct = Integer.parseInt(quantityStr.replaceAll("[^0-9]", ""));
+            } catch (NumberFormatException e) {
+                continue;
+            }
+            if (quantityToDeduct <= 0) continue;
+
+            List<Storage_item> items = storageItemRepository.findByMemberEmailAndItemName(email, name);
+            for (Storage_item item : items) {
+                if (quantityToDeduct <= 0) break;
+                int current = item.getQuantity();
+                if (current <= quantityToDeduct) {
+                    quantityToDeduct -= current;
+                    storageItemRepository.delete(item);
+                } else {
+                    item.setQuantity(current - quantityToDeduct);
+                    storageItemRepository.save(item);
+                    quantityToDeduct = 0;
+                }
+            }
+        }
     }
 
     private List<StorageItemDto> toDto(List<Storage_item> items) {

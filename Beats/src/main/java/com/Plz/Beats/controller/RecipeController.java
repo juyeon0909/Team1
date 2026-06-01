@@ -4,6 +4,7 @@ import com.Plz.Beats.dto.RecipeDto;
 import com.Plz.Beats.service.RecipeMatchService;
 import com.Plz.Beats.service.RecipeService;
 import com.Plz.Beats.service.S3Service;
+import com.Plz.Beats.service.StorageItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/recipeMain")
@@ -22,6 +24,7 @@ public class RecipeController {
     private final RecipeService recipeService;
     private final S3Service s3Service;
     private final RecipeMatchService recipeMatchService;
+    private final StorageItemService storageItemService;
 
     // 1. 메인 목록 피드 데이터 받아오기 (비로그인/로그인 전체 허용)
     @GetMapping
@@ -86,6 +89,19 @@ public class RecipeController {
         // 💡 Service에 내 이메일로 등록된 레시피만 가져오는 메서드 호출
         List<RecipeDto> myRecipes = recipeService.getRecipes(email);
         return ResponseEntity.ok(myRecipes);
+    }
+
+    // 4. 요리하기: 사용한 재료를 냉장고에서 차감
+    @PostMapping("/{id}/cook")
+    public ResponseEntity<?> cookRecipe(
+            @PathVariable Long id,
+            @RequestBody List<Map<String, String>> ingredients,
+            Principal principal) {
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+        storageItemService.deductIngredients(principal.getName(), ingredients);
+        return ResponseEntity.ok("재료 차감 완료");
     }
 
     @GetMapping("/match")

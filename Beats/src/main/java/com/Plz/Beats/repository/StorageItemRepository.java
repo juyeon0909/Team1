@@ -21,4 +21,8 @@ public interface StorageItemRepository extends JpaRepository<Storage_item, Long>
     // 로그인 사용자(email)가 보관함에 가진 식재료 item.id 목록 (중복 제거)
     @Query("SELECT DISTINCT s.item.id FROM Storage_item s WHERE s.member.email = :email")
     List<Long> findItemIdsByMemberEmail(@Param("email") String email);
+
+    // 재료명으로 사용자 보관함 항목 조회 (유통기한 빠른 순)
+    @Query("SELECT s FROM Storage_item s JOIN FETCH s.item WHERE s.member.email = :email AND s.item.name = :itemName ORDER BY s.expirationdate ASC")
+    List<Storage_item> findByMemberEmailAndItemName(@Param("email") String email, @Param("itemName") String itemName);
 }

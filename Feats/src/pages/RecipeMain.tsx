@@ -83,7 +83,7 @@ const RecipeMain = () => {
           const token = localStorage.getItem('accessToken');
           if (token) {
             try {
-              const matchRes = await axiosInstance.get('/api/recipeMain/match', {
+              const matchRes = await axiosInstance.get('/recipeMain/match', {
                 headers: { Authorization: `Bearer ${token}` },
               });
               if (Array.isArray(matchRes.data)) {

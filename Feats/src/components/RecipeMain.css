@@ -1,0 +1,499 @@
+/* 전역 및 컨테이너 */
+.recipe-main-container {
+  font-family: sans-serif;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  color: #111;
+}
+
+/* ─── 목록 화면 (List View) ─── */
+.recipe-header {
+  background-color: #fff;
+  border-bottom: 0.5px solid #eee;
+  padding: 24px 40px 10px;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.header-title {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.recipe-register-btn {
+  border: none;
+  border-radius: 3px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-weight: 500;
+  background-color: #1D9E75;
+  color: #fff;
+}
+
+.add-icon-small {
+  margin-right: 2px;
+}
+
+.search-sort-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  outline: none;
+}
+
+.sort-select {
+  font-size: 13px;
+  color: #555;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.category-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  margin-bottom: 10px;
+}
+
+.category-tab {
+  font-size: 13px;
+  padding: 8px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #666;
+  font-weight: normal;
+  border-bottom: 2px solid transparent;
+}
+
+.category-tab.active {
+  color: #1D9E75;
+  font-weight: 500;
+  border-bottom: 2px solid #1D9E75;
+}
+
+/* 필터 영역 */
+.filter-bar {
+  background-color: #fafafa;
+  border-bottom: 0.5px solid #eee;
+  padding: 12px 40px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-label {
+  font-size: 12px;
+  color: #999;
+}
+
+.filter-chips {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-chip {
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 0.5px solid #ccc;
+  cursor: pointer;
+  background-color: #fff;
+  color: #555;
+}
+
+.filter-chip.active-match-orange {
+  background-color: #BA7517;
+  color: #fff;
+}
+
+.filter-chip.active-green {
+  background-color: #1D9E75;
+  color: #fff;
+}
+
+.filter-divider {
+  width: 0.5px;
+  height: 20px;
+  background-color: #ccc;
+}
+
+/* 피드 카드 Grid */
+.feed-content {
+  padding: 28px 40px;
+}
+
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.recipe-card {
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.card-emoji-wrapper {
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+}
+
+.card-info {
+  padding: 14px;
+}
+
+/* 기존 card-title-row 교체 */
+.card-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.card-category-tag {
+  font-size: 11px;
+  color: #1D9E75;
+  background-color: #E1F5EE;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.card-desc {
+  font-size: 12px;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 페이지네이션 */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 32px;
+}
+
+.pagination-arrow {
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.pagination-number {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  color: #555;
+}
+
+.pagination-number.active {
+  background-color: #1D9E75;
+  color: #fff;
+}
+
+
+/* ─── 상세 화면 (Detail View) ─── */
+.detail-container {
+  padding: 28px 40px;
+}
+
+.back-list-btn {
+  margin-bottom: 20px;
+  cursor: pointer;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.detail-card {
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.detail-desc {
+  color: #666;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 14px;
+}
+
+.ingredients-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.step-item {
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.start-cooking-btn {
+  margin-top: 24px;
+  width: 100%;
+  padding: 12px;
+  background-color: #0BA574;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+
+/* ─── 모달 팝업 레이어 ─── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  width: 360px;
+  max-width: 90vw;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 14px;
+}
+
+.modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.modal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-item-name {
+  font-size: 14px;
+}
+
+.modal-item-input {
+  width: 100px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: right;
+}
+
+.modal-btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-cancel-btn {
+  flex: 1;
+  padding: 10px;
+  background-color: #eee;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.modal-confirm-btn {
+  flex: 1.5;
+  padding: 10px;
+  background-color: #0BA574;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.loading-box {
+  padding: 40px;
+  text-align: center;
+}
+/* ─── 카드 이미지 영역 (배지 + 스크랩 버튼) ─── */
+.card-emoji-wrapper {
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  position: relative; /* ← 추가: 배지·버튼 absolute 기준점 */
+}
+
+/* 일치율 배지 */
+.card-match-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.badge-match-full {
+  background-color: #1D9E75;
+  color: #fff;
+}
+
+.badge-match-high {
+  background-color: #56C596;
+  color: #fff;
+}
+
+.badge-match-mid {
+  background-color: #BA7517;
+  color: #fff;
+}
+
+/* 스크랩(⭐) 버튼 */
+.card-scrap-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s;
+  line-height: 1;
+}
+
+.card-scrap-btn:hover {
+  transform: scale(1.2);
+}
+
+.card-scrap-btn.scrapped {
+  color: #BA7517;
+}
+
+/* ─── 카드 본문 추가 요소 ─── */
+
+/* 임박재료활용 태그 */
+.card-urgent-tag {
+  font-size: 11px;
+  color: #C0392B;
+  background-color: #FDECEA;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* 카드 이름 */
+.card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+/* 태그 목록 */
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.card-tag {
+  font-size: 11px;
+  color: #555;
+  background-color: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+/* ─── 카드 하단 메타 (⏱ ❤️ ⭐) ─── */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #888;
+}
+
+/* 하트 버튼 */
+.card-heart-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s;
+  line-height: 1;
+}
+
+.card-heart-btn:hover {
+  transform: scale(1.2);
+}
+
+.card-heart-btn.hearted {
+  color: #E74C3C;
+}

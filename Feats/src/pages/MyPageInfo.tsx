@@ -14,6 +14,7 @@ function App() {
     profileimage: null as string | null,
     email: ''
     });
+    /**/
 
     const [errors, setErrors] = useState({
         profileimage: '',
@@ -55,56 +56,31 @@ function App() {
     
 
     const uploadProfileImage = async (base64Image: string) => {
-        // 에러 초기화
         setErrors({ profileimage: '', general: '' });
-
         try {
-            // 백엔드 프로필 이미지 변경 엔드포인트 (실제 API 주소에 맞게 수정 가능)
-            const url = '/mypage/update-profileimage';
-
-            // base64 데이터를 담아 서버로 전송
-            const response = await customAxios.post(url, { profileimage: base64Image });
-
-            // 성공하면 화면 상태 갱신 및 알림 (서버에서 반환한 URL이 있다면 response.data... 등으로 대체 가능)
-            setUser(prev => ({ ...prev, profileimage: base64Image }));
-            alert('프로필 사진이 성공적으로 변경되었습니다! ✅');
-
+            const response = await customAxios.post('/mypage/update-profileimage', {
+                profileimage: base64Image   // JSON으로 전송
+            });
+            setUser(prev => ({ ...prev, profileimage: response.data }));
+            alert('프로필 사진이 성공적으로 변경되었습니다!');
         } catch (error) {
             console.error('프로필 이미지 업로드 실패:', error);
-
-            if (axios.isAxiosError(error) && error.response) {
-                // 백엔드에서 보낸 구체적인 에러 메시지가 있다면 세팅
-                setErrors({
-                    profileimage: error.response.data?.errors?.profileimage || '',
-                    general: error.response.data?.message || '프로필 사진 변경 중 오류가 발생했습니다.'
-                });
-            } else {
-                setErrors(prev => ({ ...prev, general: '서버와의 통신 중 오류가 발생했습니다.' }));
-            }
+            setErrors(prev => ({ ...prev, general: '프로필 사진 변경 중 오류가 발생했습니다.' }));
         }
     };
 
-    const handleProfileImageChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const { name, files } = event.target;
-
-        if (!files || files.length === 0) {
-            alert('이미지 파일을 선택해주셔야 합니다');
-            return;
-        }
-
-        const file = files[0]; // 선택한 첫 번째 파일
-        const reader = new FileReader();
-
-        reader.readAsDataURL(file);
-
-        reader.onloadend = () => {
-            const result = reader.result as string;
-
-            // 3. 파일 읽기가 끝나면 base64 결과물을 들고 서버 업로드 함수 실행
-            uploadProfileImage(result);
-        };
+const handleProfileImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { files } = event.target;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setUser(prev => ({ ...prev, profileimage: base64 })); // 미리보기
+        uploadProfileImage(base64);
     };
-
+};
     return (
         <Container className="py-4">
             {/* 1. 내 정보 페이지 ('info') 일 때만 렌더링 */}
@@ -158,7 +134,6 @@ function App() {
                     <div className="menu-grid">
                         {/* 1. 정보 수정 */}
                         <button className="menu-btn" onClick={() => navigate('/mypage/edit')}>
-                            <div className="m-icon">✏️</div>
                             <div className="m-info">
                                 <div className="m-lbl">정보 수정</div>
                                 <div className="m-sub">닉네임 및 비밀번호 변경</div>
@@ -167,7 +142,6 @@ function App() {
                     
                         {/* 2. 내 레시피 */}
                         <button className="menu-btn" onClick={() => navigate('/mypage/recipe')}>
-                            <div className="m-icon">🍳</div>
                             <div className="m-info">
                                 <div className="m-lbl">내 레시피</div>
                                 <div className="m-sub">내가 등록한 레시피 확인</div>
@@ -176,7 +150,6 @@ function App() {
 
                         {/* 3. 좋아요 내역 */}
                         <button className="menu-btn" onClick={() => navigate('/mypage/like')}>
-                            <div className="m-icon">❤️</div>
                             <div className="m-info">
                                 <div className="m-lbl">좋아요 내역</div>
                                 <div className="m-sub">좋아요 누른 레시피 보관함</div>
@@ -185,22 +158,26 @@ function App() {
 
                         {/* 4. 문의하기 */}
                         <button className="menu-btn" onClick={() => navigate('/mypage/qna')}>
-                            <div className="m-icon">💬</div>
                             <div className="m-info">
                                 <div className="m-lbl">문의하기</div>
                                 <div className="m-sub">서비스 이용 불편 및 제안 사항</div>
                             </div>
                         </button>
                     </div>
-
-                    {/* 요청하신 코드로 변경 및 부모(info) 안쪽 제자리 배치 완료 */}
-                    {/* navigate 경로 수정 */}
-                    <div className="withdraw-box">
-                        <span className="withdraw-link" onClick={() => navigate('/delete')}>회원 탈퇴를 원하시나요?</span>
-                    </div> 
+                    
+                    <div className="withdraw-box" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        {isPasswordless && (
+                            <span className="withdraw-link" onClick={() => navigate('/member/reset-register')}>
+                                패스워드리스를 해제하시겠어요?
+                            </span>
+                        )}
+                        <span className="withdraw-link" onClick={() => navigate('/delete')}>
+                            회원 탈퇴를 하시겠어요?
+                        </span>
+                    </div>
+                    
                 </div>
 
-            
         </Container>
     );
 }

@@ -47,4 +47,27 @@ public class S3Service {
         // 업로드된 파일 URL 반환
         return "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + fileName;
     }
+
+    public String uploadBase64(String base64Image) throws IOException {
+        // "data:image/png;base64,XXXX" 에서 실제 데이터 분리
+        String[] parts = base64Image.split(",");
+        String imageData = parts.length > 1 ? parts[1] : parts[0];
+        String mimeType = parts.length > 1
+                ? parts[0].split(":")[1].split(";")[0]
+                : "image/jpeg";
+
+        byte[] imageBytes = java.util.Base64.getDecoder().decode(imageData);
+        String extension = mimeType.split("/")[1];
+        String fileName = UUID.randomUUID() + "." + extension;
+
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(fileName)
+                .contentType(mimeType)
+                .build();
+
+        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(imageBytes));
+
+        return "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + fileName;
+    }
 }

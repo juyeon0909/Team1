@@ -19,6 +19,11 @@
   border: 1px solid #eef2f5;
 }
 
+/* 상단 제목 영역 마진 처리 */
+.fridge-form-header-zone {
+  margin-bottom: 25px;
+}
+
 /* 제목 세팅 */
 .fridge-form-title {
   font-size: 24px;
@@ -39,12 +44,12 @@
   margin: 20px 0;
 }
 
-/* 🌟 핵심 교정: 요소들이 절대 겹치지 않고 세로로 차곡차곡 쌓이게 만듦 */
+/* 요소들이 절대 겹치지 않고 세로로 차곡차곡 쌓이게 만듦 */
 .fridge-form-group {
   display: flex;
   flex-direction: column;
   margin-bottom: 20px;
-  position: relative; /* 자동완성 드롭다운의 기준점 역할만 수행 */
+  position: relative; 
 }
 
 /* 라벨 스타일 */
@@ -70,11 +75,69 @@
   box-sizing: border-box; /* 패딩이 크기를 벗어나지 않게 제어 */
 }
 
+/* 셀렉트 박스 전용 마우스 커서 스펙 */
+.select-pointer {
+  cursor: pointer;
+}
+
 /* 포커스 효과 */
 .fridge-form-input:focus {
   outline: none;
   border-color: #67c23a;
   box-shadow: 0 0 0 3px rgba(103, 194, 58, 0.15);
+}
+
+/* 자동완성 검색 큰 드롭다운 메인 박스 (인라인 완벽 분리) */
+.fridge-search-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 9999;
+  padding: 0;
+  margin: 4px 0 0 0;
+  list-style: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.fridge-search-dropdown-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  border-bottom: 1px solid #f5f5f5;
+  align-items: center;
+  transition: background-color 0.15s ease;
+}
+
+/* 호버 시 배경색 전환 애니메이션 유지 */
+.fridge-search-dropdown-item:hover {
+  background-color: #f0f7ff;
+}
+
+/* 자동완성 리스트 내부 텍스트 세부 조율 */
+.dropdown-item-name {
+  color: #333;
+  margin-right: 8px;
+}
+
+.dropdown-item-unit {
+  color: #888;
+  font-size: 13px;
+  flex-grow: 1;
+  text-align: left;
+}
+
+.dropdown-item-category {
+  color: #aaa;
+  font-size: 12px;
+  background: #eee;
+  padding: 2px 6px;
+  border-radius: 10px;
 }
 
 /* 하단 버튼 영역 */

@@ -15,7 +15,7 @@
   background-color: var(--white); min-height: 100vh; box-sizing: border-box;
 }
 
-/*  2. 상단 검색 섹션 (반응형 겹침방지 & 인풋 광채 일체화) */
+/*  상단 검색 섹션  */
 .storage-search-section {
   display: flex; align-items: center; justify-content: space-between;
   gap: 0.75rem; width: 100%; max-width: 1200px; margin: 0 auto 1.5rem auto; box-sizing: border-box;
@@ -42,7 +42,7 @@
 .search-icon { font-size: 1.1rem; color: var(--text-mid); }
 .search-clear-btn { background: none; border: none; font-size: 1rem; color: var(--text-light); cursor: pointer; padding: 0; }
 
-/*  재료 등록 버튼 (RecipeMain 100% 매팅형 사각 버튼) */
+/*  재료 등록 버튼*/
 .storage-add-btn {
   background-color: var(--green); color: var(--white); border: none; border-radius: 8px;
   padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600; cursor: pointer;
@@ -88,12 +88,12 @@
 .room-list-scroll::-webkit-scrollbar { width: 6px; }
 .room-list-scroll::-webkit-scrollbar-thumb { background-color: var(--green-light); border-radius: 4px; }
 
-/* 재료 가로 줄 및 텍스트 레이아웃 공통 구조 */
+
 .storage-item-row, .item-expiry-wrapper { display: flex; align-items: center; }
 .storage-item-row { justify-content: space-between; padding: 12px 14px; margin-bottom: 8px; border-radius: 8px; font-size: 14px; border: 1px solid transparent; transition: all 0.2s; }
 .storage-item-row:last-child { margin-bottom: 0; }
 
-/* 한 글자 카테고리 뱃지 (인라인 마진 오류 제거 및 변수화) */
+/* 한 글자 카테고리  */
 .item-badge-short {
   font-size: 11px; color: var(--text-mid); background-color: var(--gray);
   padding: 2px 6px; border-radius: 10px; margin-left: 6px; margin-right: auto; font-weight: bold;
@@ -109,10 +109,10 @@
 .btn-delete-small { background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 14px; padding: 0 4px; line-height: 1; transition: all 0.2s; }
 .btn-delete-small:hover { color: var(--red); transform: scale(1.15); }
 
-/* 🎨 유통기한 임박도 상태 컬러 팩 */
+/* 유통기한 임박도 상태 */
 .expiry-normal { background-color: #fafafa; border-color: #f0f0f0; }
 
-/* 🟧 유통기한 일주일 이하 (한울님이 원하시던 완벽한 주황 경고 테마) */
+/*  유통기한 일주일 이하 ) */
 .expiry-warning { 
   background-color: var(--orange-pale) !important; 
   border-color: var(--orange-light) !important; 
@@ -120,7 +120,7 @@
 }
 .expiry-warning .item-name-link { color: var(--orange) !important; font-weight: bold; }
 
-/* 🔴 유통기한 사흘 이내 (위험 테마) */
+/*  유통기한 사흘 이내 */
 .expiry-danger { background-color: var(--red-light) !important; border-color: #ffcccc !important; color: var(--red); }
 .expiry-danger .item-name-link { color: var(--red) !important; font-weight: bold; }
 

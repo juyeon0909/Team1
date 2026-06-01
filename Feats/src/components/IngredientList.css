@@ -1,6 +1,4 @@
-/* ==========================================================================
-   📦 IngredientList 기존 고유 파일 유지 및 하드코딩 색상 보정 스펙
-   ========================================================================== */
+
 
 .ing-master-header-margin {
   margin-bottom: 20px;
@@ -24,6 +22,7 @@ div.ing-master-grid-container div.ing-master-item-box {
   border-radius: 10px !important;
   width: auto !important;
   box-sizing: border-box !important;
+  min-height: 125px; /* 버튼 배치 고정을 위해 카드 내부 높이 밸런싱 */
 }
 
 div.ing-master-grid-container div.ing-master-item-box:hover {
@@ -45,7 +44,7 @@ div.ing-master-grid-container div.ing-master-item-box:hover {
   display: flex !important;
   gap: 6px !important;
   flex-wrap: wrap !important;
-  margin-top: auto !important;
+  margin-top: auto !important; 
 }
 
 .ing-master-label {
@@ -69,13 +68,11 @@ div.ing-master-grid-container div.ing-master-item-box:hover {
   color: #ea580c !important;
 }
 
-/* ==========================================================================
-   ⚡ ADMIN 관리자 등록 폼 레이아웃 스펙 (점선 테두리 제거 완 수선)
-   ========================================================================== */
+/* ADMIN 관리자 등록 폼 */
 .admin-register-box {
-  background-color: #ffffff !important; /* 투박한 노란 배경 제거, 깔끔한 화이트 */
-  border: 1px solid #e2e8f0 !important; /* 🌟 점선 제거 후 모던한 실선 테두리 적용 */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04) !important; /* 부드러운 그림자 명세 */
+  background-color: #ffffff !important; 
+  border: 1px solid #e2e8f0 !important; 
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04) !important; 
   padding: 20px !important;
   margin-bottom: 24px;
   border-radius: 16px !important;
@@ -83,7 +80,7 @@ div.ing-master-grid-container div.ing-master-item-box:hover {
 .admin-box-title {
   font-size: 16px;
   font-weight: 800;
-  color: #6fbc44; /* 관리자 타이틀도 오렌지에서 메인 그린 컬러로 깔끔하게 변경 */
+  color: #6fbc44; 
   margin-bottom: 12px;
 }
 .admin-form-layout {
@@ -111,7 +108,7 @@ div.ing-master-grid-container div.ing-master-item-box:hover {
   background-color: #ffffff;
 }
 .admin-btn-submit {
-  background-color: #6fbc44; /* 버튼 컬러도 메인 아이덴티티와 동기화 */
+  background-color: #6fbc44; 
   color: #ffffff;
   border: none;
   padding: 8px 18px;
@@ -123,4 +120,46 @@ div.ing-master-grid-container div.ing-master-item-box:hover {
 }
 .admin-btn-submit:hover {
   background-color: #5aa337;
+}
+
+/*  일반 보기 상태 하단 버튼 */
+.master-admin-action-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.master-action-btn-edit {
+  flex: 1;
+  background-color: #6fbc44; /* 저장 버튼과 동일 컬러 */
+  color: #ffffff;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
+
+.master-action-btn-edit:hover {
+  background-color: #5aa233;
+}
+
+.master-action-btn-delete {
+  flex: 1;
+  background-color: #94a3b8; /* 취소 버튼과 동일 컬러 */
+  color: #ffffff;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
+
+.master-action-btn-delete:hover {
+  background-color: #64748b;
 }

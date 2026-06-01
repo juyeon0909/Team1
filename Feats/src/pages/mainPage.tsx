@@ -36,8 +36,6 @@ const RECIPES: Recipe[] = [
 
 
 //    하위 컴포넌트 1: 오토 슬라이드 히어로 배너
-
-//    하위 컴포넌트 1: 오토 슬라이드 히어로 배너
    
 interface HeroCardProps {
     userName: string;
@@ -122,7 +120,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }
             </div>
         </div>
             
-            {/* 하단 점(Dot) 내비게이션 */}
+            {/* 하단 점 내비게이션 */}
             <div className="carousel-page-dots">
               {banners.map((_, idx) => (
                 <span 

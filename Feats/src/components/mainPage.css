@@ -130,11 +130,10 @@
 .alert-link { margin-left: auto; color: var(--green-dark); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; cursor: pointer; }
 .alert-link:hover { text-decoration: underline; }
 
-/* ── BOTTOM GRID (하단 2단 카드 레이아웃 크기 정상화) ── */
 .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
 .section-card {
   border: 2px solid var(--border); border-radius: 24px; 
-  /*  [박스 크기 조절] 기존 28px 28px 24px에서 사방 패딩 수치를 균일하게 늘려 여유 공간 확보 */
+ 
   padding: 32px 32px 28px; 
   background: var(--white); box-shadow: var(--card-shadow); animation: imfSlideUp 0.5s ease both; opacity: 0;
 }
@@ -187,9 +186,6 @@
 @keyframes imfSlideDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes imfSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ============================================================
-   반응형 미디어 쿼리 (오리지널 크기 및 비율 100% 보존)
-   ============================================================ */
 @media (max-width: 960px) {
   .imf-nav { padding: 0 24px; gap: 20px; } .nav-links { gap: 20px; }
   .imf-main { padding: 24px 24px 32px; } .hero-card { padding: 32px 28px; }

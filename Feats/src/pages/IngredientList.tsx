@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 import axiosInstance from "../api/axiosInstance";
 import "../components/IngredientList.css"; 
-import { useNavigate } from "react-router-dom";
 import type { Ingredient } from "../types/Fridge.ts";
 import type { User } from "../types/User.ts";
 
 const IngredientList: React.FC = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigate(); 
     const [items, setItems] = useState<Ingredient[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -44,7 +44,7 @@ const IngredientList: React.FC = () => {
         
         if (!stored) {
             alert("접근 권한이 없습니다. 로그인이 필요합니다.");
-            navigate("/", { replace: true }); // 메인/로그인 페이지로 강제 추방 및 뒤로가기 기록 말소
+            navigate("/", { replace: true }); 
             return;
         }
 
@@ -59,15 +59,14 @@ const IngredientList: React.FC = () => {
         loadInitialData();
     }, [navigate]);
 
-    // 등록 
-    const handleAdminRegister = (e: React.SubmitEvent) => {
+    
+    const handleAdminRegister = (e: React.FormEvent) => { 
         e.preventDefault();
         if (!newName.trim()) return alert("재료명을 입력해 주세요.");
         if (!newCategory) return alert("카테고리를 선택해 주세요.");
         
         const payload = { name: newName, category: newCategory, type: newStorage };
 
-        
         axiosInstance.post("/product/insert", payload) 
             .then(() => {
                 alert(`[${newName}] 등록 완료`);
@@ -79,7 +78,6 @@ const IngredientList: React.FC = () => {
                 alert("등록 실패");
             });
     };
-
 
     const startEdit = (item: Ingredient) => {
         setEditingId(item.id);
@@ -112,9 +110,9 @@ const IngredientList: React.FC = () => {
             })
             .catch((err) => console.error(err));
     };
-    
-if (!isAdmin) {
-        return null; // 권한 확인 전에는 아예 빈 화면으로 무반응 유지 (깜빡임 완전 소멸)
+
+    if (!isAdmin) {
+        return null; 
     }
 
     return (
@@ -157,9 +155,8 @@ if (!isAdmin) {
                                 const currentName = item.itemname || item.name || "이름 없음";
 
                                 return (
-                                    <div className="ing-master-item-box" key={item.id} style={{ position: "relative" }}>
+                                    <div className="ing-master-item-box" key={item.id}>
                                         {isEditing ? (
-                                            
                                             <div style={{ display: "flex", flexDirection: "column", gap: "6px", width: "100%" }}>
                                                 <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} style={{ width: "100%", padding: "4px", fontSize: "13px", border: "1px solid #6fbc44", borderRadius: "4px" }} />
                                                 <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)} style={{ padding: "4px", fontSize: "12px", borderRadius: "4px" }}>
@@ -176,7 +173,6 @@ if (!isAdmin) {
                                                 </div>
                                             </div>
                                         ) : (
-                                            /* 일반 보기 모드 */
                                             <>
                                                 <div className="ing-master-text-name">{currentName}</div>
                                                 <div className="ing-master-badge-row">
@@ -187,11 +183,11 @@ if (!isAdmin) {
                                                     </span>
                                                 </div>
                                                 
-                                                {/* 마우스 호버 시 자연스럽게 카드 하단에 노출되거나 클릭 가능한 조작 라인 */}
+                                               
                                                 {isAdmin && (
-                                                    <div style={{ display: "flex", gap: "8px", marginTop: "8px", borderTop: "1px dashed #e2e8f0", paddingTop: "6px", justifyContent: "flex-end" }}>
-                                                        <span onClick={() => startEdit(item)} style={{ fontSize: "11px", color: "#0284c7", cursor: "pointer", fontWeight: "700" }}>[수정]</span>
-                                                        <span onClick={() => handleDeleteClick(item.id, currentName)} style={{ fontSize: "11px", color: "#ef4444", cursor: "pointer", fontWeight: "700" }}>[삭제]</span>
+                                                    <div className="master-admin-action-row">
+                                                        <button onClick={() => startEdit(item)} className="master-action-btn-edit">수정</button>
+                                                        <button onClick={() => handleDeleteClick(item.id, currentName)} className="master-action-btn-delete">삭제</button>
                                                     </div>
                                                 )}
                                             </>

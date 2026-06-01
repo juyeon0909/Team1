@@ -83,12 +83,14 @@ public class Recipe {
     @Column(name = "approval_status", nullable = false, length = 20)
     private ApprovalStatus approvalStatus;
 
-    // 조회수
+    //   조회수
     private Long viewCount = 0L;
 
     // 재료
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RecipeIngredient> recipeIngredients = new ArrayList<>();
+
+
 
     // 업로드 일자
     // 주의: 타입이 LocalDateTime 인데 패턴이 'yyyy-MM-dd' 라 직렬화 시 시간 정보가 사라집니다.

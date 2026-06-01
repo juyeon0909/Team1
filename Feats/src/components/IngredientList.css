@@ -1,0 +1,165 @@
+
+
+.ing-master-header-margin {
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
+.ing-empty-text {
+  text-align: center;
+  color: #94a3b8;
+  padding: 3rem;
+}
+
+div.ing-master-grid-container div.ing-master-item-box {
+  display: flex !important;
+  flex-direction: column !important; 
+  gap: 8px !important;
+  padding: 12px 14px !important;
+  background-color: #f4fbf0 !important; 
+  border: 1px solid #d2ecc4 !important; 
+  border-radius: 10px !important;
+  width: auto !important;
+  box-sizing: border-box !important;
+  min-height: 125px; /* 버튼 배치 고정을 위해 카드 내부 높이 밸런싱 */
+}
+
+div.ing-master-grid-container div.ing-master-item-box:hover {
+  background-color: #ffffff !important;
+  border-color: #6fbc44 !important;
+  box-shadow: 0 4px 12px rgba(111, 188, 68, 0.2) !important;
+  transform: translateY(-2px);
+  cursor: pointer;
+}
+
+.ing-master-text-name {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  word-break: keep-all;
+}
+
+.ing-master-badge-row {
+  display: flex !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+  margin-top: auto !important; 
+}
+
+.ing-master-label {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 3px 7px !important;
+  border-radius: 6px !important;
+  white-space: nowrap !important;
+  display: inline-block !important;
+}
+
+.ing-master-label.cat {
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+.ing-master-label.store {
+  background-color: #fff7ed !important;
+  border: 1px solid #ffedd5 !important;
+  color: #ea580c !important;
+}
+
+/* ADMIN 관리자 등록 폼 */
+.admin-register-box {
+  background-color: #ffffff !important; 
+  border: 1px solid #e2e8f0 !important; 
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04) !important; 
+  padding: 20px !important;
+  margin-bottom: 24px;
+  border-radius: 16px !important;
+}
+.admin-box-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #6fbc44; 
+  margin-bottom: 12px;
+}
+.admin-form-layout {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.admin-input-text {
+  flex: 2;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13.5px;
+  outline: none;
+}
+.admin-input-text:focus { border-color: #6fbc44; }
+.admin-select {
+  flex: 1;
+  min-width: 100px;
+  padding: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13.5px;
+  background-color: #ffffff;
+}
+.admin-btn-submit {
+  background-color: #6fbc44; 
+  color: #ffffff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.admin-btn-submit:hover {
+  background-color: #5aa337;
+}
+
+/*  일반 보기 상태 하단 버튼 */
+.master-admin-action-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.master-action-btn-edit {
+  flex: 1;
+  background-color: #6fbc44; /* 저장 버튼과 동일 컬러 */
+  color: #ffffff;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
+
+.master-action-btn-edit:hover {
+  background-color: #5aa233;
+}
+
+.master-action-btn-delete {
+  flex: 1;
+  background-color: #94a3b8; /* 취소 버튼과 동일 컬러 */
+  color: #ffffff;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
+
+.master-action-btn-delete:hover {
+  background-color: #64748b;
+}

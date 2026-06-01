@@ -1,14 +1,12 @@
 import React, { useState } from "react";
-import { Alert } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axiosInstance.tsx";
-import "../components/LoginPage.css";
 
 function PasswordlessWithdrawalPage() {
   const [errors, setErrors] = useState("");
   const navigate = useNavigate();
 
-  // 로그인된 유저의 이메일 꺼내오기
   const userString = localStorage.getItem("user");
   const email = userString ? JSON.parse(userString).email : "";
 
@@ -18,19 +16,17 @@ function PasswordlessWithdrawalPage() {
       return;
     }
 
-    // 진짜 해지할 건지 한 번 더 물어보는 안전장치
     const isConfirm = window.confirm("정말로 패스워드리스 생체 인증을 해지하시겠습니까?");
     if (!isConfirm) return;
 
     try {
-      // 우리가 스프링에서 만든 7단계(withdrawal) API 호출!
       const response = await axios.post("/passwordless/withdrawal", null, {
         params: { email }
       });
 
       if (response.data === true) {
         alert("성공적으로 패스워드리스 연동이 해지되었습니다.");
-        navigate("/"); // 성공 시 메인 페이지로 이동
+        navigate("/mypage/info");
       } else {
         setErrors("해지 처리에 실패했습니다. 인증 서버의 상태를 확인하세요.");
       }
@@ -40,37 +36,106 @@ function PasswordlessWithdrawalPage() {
   };
 
   return (
-    <div className="login-page-container" style={{ justifyContent: "center" }}>
-      <div className="login-form-section" style={{ maxWidth: "500px", width: "100%" }}>
-        <div className="login-form-header">
-          <h2>패스워드리스 연동 해지</h2>
-          <p>등록된 기기와의 인증 연동을 영구적으로 해제합니다 </p>
-        </div>
+    <Container style={{ paddingTop: '50px', paddingBottom: '50px' }}>
 
-        {errors && <Alert variant="danger">{errors}</Alert>}
-
-        <div style={{ margin: "30px 0", textAlign: "center", color: "#666" }}>
-          <p>해지 시 더 이상 스마트폰을 통한 간편 로그인을 사용할 수 없으며,</p>
-          <p>다시 사용하시려면 <strong>새로운 QR 코드 발급을 통해 재등록</strong>해야 합니다.</p>
-        </div>
-
-        <button
-          className="btn-submit-green"
-          style={{ backgroundColor: "#dc3545" }} // 위험한 행동(해지)이므로 빨간색 버튼으로 경고 느낌 부여
-          onClick={handleWithdrawal}
-        >
-          연동 해지하기
-        </button>
-
-        <button
-          className="btn-submit-green"
-          style={{ backgroundColor: "#6c757d", marginTop: "10px" }}
-          onClick={() => navigate("/")}
-        >
-          취소 / 돌아가기
-        </button>
+      {/* 브레드크럼 */}
+      <div style={{ display: 'flex', gap: '6px', fontSize: '13px', marginBottom: '20px' }}>
+        <span style={{ cursor: 'pointer', color: '#888' }} onClick={() => navigate('/mypage/info')}>내 정보</span>
+        <span style={{ color: '#ccc' }}>›</span>
+        <span style={{ color: '#6abf69', fontWeight: 'bold' }}>패스워드리스 해제</span>
       </div>
-    </div>
+
+      <h2 style={{ color: '#6abf69', fontWeight: 'bold', marginBottom: '24px' }}>패스워드리스 해제</h2>
+
+      {/* 카드 */}
+      <div style={{
+        maxWidth: '500px',
+        margin: '0 auto',
+        border: '1px solid #e2e8f0',
+        borderRadius: '10px',
+        padding: '32px',
+        background: '#fff'
+      }}>
+        <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '20px' }}>
+          등록된 기기와의 인증 연동을 영구적으로 해제합니다.
+        </p>
+
+        {/* 이메일 표시 */}
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ fontSize: '12px', color: '#555', fontWeight: '500', marginBottom: '5px' }}>
+            해제할 계정 이메일
+          </div>
+          <input
+            type="text"
+            value={email || '이메일 정보 없음'}
+            readOnly
+            style={{
+              width: '100%',
+              padding: '9px 12px',
+              fontSize: '13px',
+              border: '0.5px solid #ccc',
+              borderRadius: '6px',
+              background: '#fafafa',
+              color: '#888',
+              outline: 'none',
+              boxSizing: 'border-box',
+              cursor: 'not-allowed',
+            }}
+          />
+        </div>
+
+        {/* 안내 문구 */}
+        <div style={{
+          background: '#fffbeb',
+          border: '1px solid #fde68a',
+          borderRadius: '8px',
+          padding: '14px 16px',
+          fontSize: '13px',
+          color: '#92400e',
+          marginBottom: '24px',
+          lineHeight: '1.7'
+        }}>
+          • 해제 시 스마트폰을 통한 간편 로그인을 사용할 수 없습니다.<br />
+          • 다시 사용하려면 <strong>새로운 QR 코드 발급을 통해 재등록</strong>해야 합니다.
+        </div>
+
+        {/* 에러 메시지 */}
+        {errors && (
+          <div style={{ fontSize: '13px', color: '#dc3545', marginBottom: '16px' }}>
+            {errors}
+          </div>
+        )}
+
+        {/* 버튼 */}
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            type="button"
+            onClick={() => navigate('/mypage/info')}
+            style={{
+              flex: 1, padding: '10px', fontSize: '13px',
+              borderRadius: '6px', cursor: 'pointer',
+              background: '#6c757d', color: '#fff',
+              border: 'none', fontWeight: '500'
+            }}
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={handleWithdrawal}
+            style={{
+              flex: 1, padding: '10px', fontSize: '13px',
+              borderRadius: '6px', cursor: 'pointer',
+              background: '#dc3545', color: '#fff',
+              border: 'none', fontWeight: '500'
+            }}
+          >
+            연동 해지하기
+          </button>
+        </div>
+      </div>
+
+    </Container>
   );
 }
 

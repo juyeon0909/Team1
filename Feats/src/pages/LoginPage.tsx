@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Alert } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "../api/axiosInstance.tsx";
 import type { LoginResponse, User } from "../types/User";
 import "../components/LoginPage.css";
@@ -27,13 +27,25 @@ function LoginPage({ onLogin }: Props) {
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cancelledRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isCancellingRef = useRef(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const state = location.state as { mode?: string } | null;
+    if (state?.mode === "passwordless") {
+      setLoginMode("passwordless");
+    }
+  }, []);
 
   // 모든 타이머 정지 및 초기화 함수
   const stopAll = () => {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    if (abortControllerRef.current) { abortControllerRef.current.abort(); abortControllerRef.current = null; }
     setServicePassword("");
   };
 
@@ -44,6 +56,7 @@ function LoginPage({ onLogin }: Props) {
 
   const startPolling = (currentEmail: string, currentRandomValue: string) => {
     setTimeLeft(POLL_DURATION);
+    abortControllerRef.current = new AbortController();
 
     // 1초 카운트다운 타이머
     timerRef.current = setInterval(() => {
@@ -60,12 +73,16 @@ function LoginPage({ onLogin }: Props) {
 
     // 1초마다 승인 여부 확인
     pollRef.current = setInterval(async () => {
+      if (abortControllerRef.current?.signal.aborted) return;
       try {
         const { data: isApproved } = await axios.get<boolean>(
           "/passwordless/check-result",
-          { params: { email: currentEmail, randomValue: currentRandomValue } }
+          {
+            params: { email: currentEmail, randomValue: currentRandomValue },
+            signal: abortControllerRef.current?.signal,
+          }
         );
-        if (isApproved) {
+        if (isApproved && !cancelledRef.current) {
           stopAll();
           console.log("[패스워드리스] 승인 확인됨, 로그인 요청 시작");
           try {
@@ -86,27 +103,37 @@ function LoginPage({ onLogin }: Props) {
             setIsPolling(false);
           }
         }
-      } catch {
+      } catch (err: any) {
+        if (err.code === "ERR_CANCELED") return;
         // 폴링 에러 무시
       }
     }, 1000);
   };
 
-  const handleCancelPolling = async () => {
+  const handleCancelPolling = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (isCancellingRef.current) return;
+    isCancellingRef.current = true;
+    cancelledRef.current = true;
+    const currentRandomValue = randomValue;
     stopAll();
     setIsPolling(false);
     setRandomValue("");
     try {
       await axios.post("/passwordless/cancel", null, {
-        params: { email, randomValue },
+        params: { email, randomValue: currentRandomValue },
       });
     } catch {
       // 취소 에러 무시
+    } finally {
+      isCancellingRef.current = false;
     }
   };
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
+    event.stopPropagation();
     setErrors("");
 
     if (loginMode === "passwordless") {
@@ -117,6 +144,7 @@ function LoginPage({ onLogin }: Props) {
           "/passwordless/getSp", null, { params: { email } }
         );
 
+        cancelledRef.current = false;
         setRandomValue(data.randomValue);
         setServicePassword(data.servicePassword);
         setIsPolling(true);
@@ -247,10 +275,10 @@ function LoginPage({ onLogin }: Props) {
                 style={{
                   border: "2px solid #1a9d60",
                   borderRadius: "8px",
-                  padding: "20px 16px",
+                  padding: "7px 16px",
                   backgroundColor: "#f0faf5",
                   textAlign: "center",
-                  fontSize: "2rem",
+                  fontSize: "1.5rem",
                   fontWeight: 700,
                   letterSpacing: "0.5em",
                   color: "#1a9d60",

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../api/axiosInstance";
 import "../components/IngredientList.css"; 
+import { useNavigate } from "react-router-dom";
 import type { Ingredient } from "../types/Fridge.ts";
 import type { User } from "../types/User.ts";
 
 const IngredientList: React.FC = () => {
+    const navigate = useNavigate();
     const [items, setItems] = useState<Ingredient[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -38,16 +40,27 @@ const IngredientList: React.FC = () => {
     };
 
     useEffect(() => {
-        loadInitialData();
         const stored = localStorage.getItem("user");
-        if (stored) {
-            const user: User = JSON.parse(stored);
-            if (user.role === "ADMIN") setIsAdmin(true);
+        
+        if (!stored) {
+            alert("접근 권한이 없습니다. 로그인이 필요합니다.");
+            navigate("/", { replace: true }); // 메인/로그인 페이지로 강제 추방 및 뒤로가기 기록 말소
+            return;
         }
-    }, []);
 
-    // 1. 등록 로직
-    const handleAdminRegister = (e: React.FormEvent) => {
+        const user: User = JSON.parse(stored);
+        if (user.role !== "ADMIN") {
+            alert("관리자 전용 페이지입니다. 일반 사용자는 진입할 수 없습니다.");
+            navigate(-1); 
+            return;
+        }
+
+        setIsAdmin(true);
+        loadInitialData();
+    }, [navigate]);
+
+    // 등록 
+    const handleAdminRegister = (e: React.SubmitEvent) => {
         e.preventDefault();
         if (!newName.trim()) return alert("재료명을 입력해 주세요.");
         if (!newCategory) return alert("카테고리를 선택해 주세요.");
@@ -66,6 +79,7 @@ const IngredientList: React.FC = () => {
                 alert("등록 실패");
             });
     };
+
 
     const startEdit = (item: Ingredient) => {
         setEditingId(item.id);
@@ -98,9 +112,9 @@ const IngredientList: React.FC = () => {
             })
             .catch((err) => console.error(err));
     };
-
-    if (loading) {
-        return <div style={{ padding: "48px", textAlign: "center", color: "#6fbc44", fontWeight: "700" }}>DB 재료 명세를 불러오는 중...</div>;
+    
+if (!isAdmin) {
+        return null; // 권한 확인 전에는 아예 빈 화면으로 무반응 유지 (깜빡임 완전 소멸)
     }
 
     return (
@@ -130,7 +144,7 @@ const IngredientList: React.FC = () => {
                 <div className="section-card" style={{ padding: "24px", backgroundColor: "#ffffff", borderRadius: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
                     <div className="ing-master-header-margin">
                         <span style={{ fontSize: "22px", fontWeight: "800", color: "#1e293b" }}>
-                            📋 전체 식재료 사전 ({items.length}종)
+                            전체 식재료 사전 ({items.length}종)
                         </span>
                     </div>
 

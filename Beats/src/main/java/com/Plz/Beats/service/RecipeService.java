@@ -2,7 +2,7 @@ package com.Plz.Beats.service;
 
 import com.Plz.Beats.constant.ApprovalStatus;
 import com.Plz.Beats.constant.Category;
-//import com.Plz.Beats.dto.AdminRecipeDto;
+import com.Plz.Beats.dto.AdminRecipeDto;
 import com.Plz.Beats.dto.RecipeDto;
 import com.Plz.Beats.entity.Member;
 import com.Plz.Beats.entity.Recipe;
@@ -54,6 +54,7 @@ public class RecipeService {
         recipe.setCategory(Category.valueOf(dto.getCategory()));
         recipe.setCookingTime(dto.getCookingTime());
         recipe.setDescription(dto.getDescription());
+        // 등록 시 항상 PENDING으로 저장 — 관리자 승인 전까지 목록에 노출되지 않음
         recipe.setApprovalStatus(ApprovalStatus.PENDING);
         recipe.setUpdatedAt(LocalDateTime.now());
 
@@ -94,10 +95,13 @@ public class RecipeService {
     }
 
     /**
-     * 전체 레시피 목록 조회 (username이 "GUEST"여도 정상 전체 조회)
+     * 전체 레시피 목록 조회
+     * - APPROVED 상태인 레시피만 반환 (PENDING, REJECTED 제외)
      */
     public List<RecipeDto> getRecipes(String username) {
-        List<Recipe> recipes = recipeRepository.findAll();
+        // ✅ 수정: findAll() → findByApprovalStatus(APPROVED)
+        // 기존 findAll()은 PENDING 레시피도 노출시키는 문제가 있었음
+        List<Recipe> recipes = recipeRepository.findByApprovalStatus(ApprovalStatus.APPROVED);
 
         Member member = null;
         if (!"GUEST".equals(username)) {
@@ -180,25 +184,30 @@ public class RecipeService {
         }).collect(Collectors.toList());
     }
 
-    // 관리자용 PENDING 레시피 목록
-//    public List<AdminRecipeDto> getPendingRecipes() {
-//        return recipeRepository.findByApprovalStatus(ApprovalStatus.PENDING)
-//                .stream().map(r -> new AdminRecipeDto(
-//                        r.getId(),
-//                        r.getTitle(),
-//                        r.getCategory().getDescription(),
-//                        r.getCookingTime(),
-//                        r.getDescription(),
-//                        r.getMember().getName(),
-//                        r.getMember().getEmail(),
-//                        r.getRecipeIngredients().stream()
-//                                .map(ing -> ing.getItem() != null ? ing.getItem().getName() : "")
-//                                .collect(Collectors.toList()),
-//                        r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : ""
-//                )).collect(Collectors.toList());
-//    }
+    /**
+     * 관리자용 PENDING 레시피 목록 조회
+     */
+    public List<AdminRecipeDto> getPendingRecipes() {
+        return recipeRepository.findByApprovalStatus(ApprovalStatus.PENDING)
+                .stream().map(r -> new AdminRecipeDto(
+                        r.getId(),
+                        r.getTitle(),
+                        r.getCategory().getDescription(),
+                        r.getCookingTime(),
+                        r.getDescription(),
+                        r.getMember().getName(),
+                        r.getMember().getEmail(),
+                        r.getRecipeIngredients().stream()
+                                .map(ing -> ing.getItem() != null ? ing.getItem().getName() : "")
+                                .collect(Collectors.toList()),
+                        r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : ""
+                )).collect(Collectors.toList());
+    }
 
-    //  승인
+
+    /**
+     * 레시피 승인
+     */
     @Transactional
     public void approveRecipe(Long id) {
         Recipe recipe = recipeRepository.findById(id)
@@ -206,7 +215,9 @@ public class RecipeService {
         recipe.setApprovalStatus(ApprovalStatus.APPROVED);
     }
 
-    // 거절
+    /**
+     * 레시피 거절
+     */
     @Transactional
     public void rejectRecipe(Long id) {
         Recipe recipe = recipeRepository.findById(id)
@@ -214,6 +225,9 @@ public class RecipeService {
         recipe.setApprovalStatus(ApprovalStatus.REJECTED);
     }
 
+    /**
+     * 레시피 삭제 (본인만 가능)
+     */
     @Transactional
     public void deleteRecipe(Long id, String email) {
         System.out.println("=== deleteRecipe 호출됨 id=" + id + " email=" + email);

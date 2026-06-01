@@ -36,8 +36,6 @@ const RECIPES: Recipe[] = [
 
 
 //    하위 컴포넌트 1: 오토 슬라이드 히어로 배너
-
-//    하위 컴포넌트 1: 오토 슬라이드 히어로 배너
    
 interface HeroCardProps {
     userName: string;
@@ -49,8 +47,8 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }
     
     const banners: BannerItem[] = [
         { id: 0, greeting: `안녕하세요, ${userName}님`, title: <>냉장고 속 재료로<br />무엇을 만들어볼까요?</>, sub: "냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요." },
-        { id: 1, greeting: "요리 팁", title: <>맛있는 <br />요리</>, sub: "냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요1." },
-        { id: 2, greeting: "요리고수", title: <>재밌는<br />요리</>, sub: "냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요2." }
+        { id: 1, greeting: "요리 팁", title: <>맛있는 <br />요리</>, sub: "냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요." },
+        { id: 2, greeting: "요리고수", title: <>재밌는<br />요리</>, sub: "냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요." }
     ];
 
     const slideCount = banners.length;
@@ -122,7 +120,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }
             </div>
         </div>
             
-            {/* 하단 점(Dot) 내비게이션 */}
+            {/* 하단 점 내비게이션 */}
             <div className="carousel-page-dots">
               {banners.map((_, idx) => (
                 <span 
@@ -156,7 +154,9 @@ interface AlertBarProps {
 
 const AlertBar: React.FC<AlertBarProps> = ({ ingredients, isLoggedIn }) => {
     const navigate = useNavigate();
-    const urgentItems = isLoggedIn ? ingredients.filter((i) => i.urgency === "urgent" || i.urgency === "warning") : [];
+    const urgentItems = isLoggedIn ? ingredients.filter((i) => 
+        (i.urgency === "urgent" || i.urgency === "warning") &&
+        i.dDay !== undefined && i.dDay >= 0) : [];
     
     return (
         <div className="alert-bar">
@@ -266,7 +266,7 @@ const RecommendedRecipes: React.FC = () => {
 };
 
 
-//    메인 컴포넌트 (전역 타입 완벽 연동본)
+//    메인 컴포넌트 
 
 const MainPage: React.FC = () => {
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
@@ -301,8 +301,10 @@ const MainPage: React.FC = () => {
                         const expDate = new Date(targetDateStr);
                         expDate.setHours(0, 0, 0, 0);
                         dDayResult = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
-                        if (dDayResult <= 3) urgencyResult = "urgent";
+                        
+                        
+                        if (dDayResult < 0) urgencyResult = "normal"; // 혹은 기한초과
+                        else if (dDayResult <= 3) urgencyResult = "urgent";
                         else if (dDayResult <= 7) urgencyResult = "warning";
                     }
 
@@ -319,7 +321,7 @@ const MainPage: React.FC = () => {
                 const finalMainList = processed
                     .filter(i => i.urgency === "urgent" || i.urgency === "warning")
                     .sort((a, b) => (a.dDay ?? 0) - (b.dDay ?? 0))
-                    .slice(0, 5);
+                    .slice(0, 5);  // 띠지 몇개까지 보이게 하고 싶은가
 
                 setIngredients(finalMainList);
             })

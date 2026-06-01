@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 import axiosInstance from "../api/axiosInstance";
 import "../components/IngredientList.css"; 
 import type { Ingredient } from "../types/Fridge.ts";
 import type { User } from "../types/User.ts";
 
 const IngredientList: React.FC = () => {
+    const navigate = useNavigate(); 
     const [items, setItems] = useState<Ingredient[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -38,23 +40,33 @@ const IngredientList: React.FC = () => {
     };
 
     useEffect(() => {
-        loadInitialData();
         const stored = localStorage.getItem("user");
-        if (stored) {
-            const user: User = JSON.parse(stored);
-            if (user.role === "ADMIN") setIsAdmin(true);
+        
+        if (!stored) {
+            alert("접근 권한이 없습니다. 로그인이 필요합니다.");
+            navigate("/", { replace: true }); 
+            return;
         }
-    }, []);
 
-    // 1. 등록 로직
-    const handleAdminRegister = (e: React.FormEvent) => {
+        const user: User = JSON.parse(stored);
+        if (user.role !== "ADMIN") {
+            alert("관리자 전용 페이지입니다. 일반 사용자는 진입할 수 없습니다.");
+            navigate(-1); 
+            return;
+        }
+
+        setIsAdmin(true);
+        loadInitialData();
+    }, [navigate]);
+
+    
+    const handleAdminRegister = (e: React.FormEvent) => { 
         e.preventDefault();
         if (!newName.trim()) return alert("재료명을 입력해 주세요.");
         if (!newCategory) return alert("카테고리를 선택해 주세요.");
         
         const payload = { name: newName, category: newCategory, type: newStorage };
 
-        
         axiosInstance.post("/product/insert", payload) 
             .then(() => {
                 alert(`[${newName}] 등록 완료`);
@@ -99,8 +111,8 @@ const IngredientList: React.FC = () => {
             .catch((err) => console.error(err));
     };
 
-    if (loading) {
-        return <div style={{ padding: "48px", textAlign: "center", color: "#6fbc44", fontWeight: "700" }}>DB 재료 명세를 불러오는 중...</div>;
+    if (!isAdmin) {
+        return null; 
     }
 
     return (
@@ -130,7 +142,7 @@ const IngredientList: React.FC = () => {
                 <div className="section-card" style={{ padding: "24px", backgroundColor: "#ffffff", borderRadius: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
                     <div className="ing-master-header-margin">
                         <span style={{ fontSize: "22px", fontWeight: "800", color: "#1e293b" }}>
-                            📋 전체 식재료 사전 ({items.length}종)
+                            전체 식재료 사전 ({items.length}종)
                         </span>
                     </div>
 
@@ -143,9 +155,8 @@ const IngredientList: React.FC = () => {
                                 const currentName = item.itemname || item.name || "이름 없음";
 
                                 return (
-                                    <div className="ing-master-item-box" key={item.id} style={{ position: "relative" }}>
+                                    <div className="ing-master-item-box" key={item.id}>
                                         {isEditing ? (
-                                            
                                             <div style={{ display: "flex", flexDirection: "column", gap: "6px", width: "100%" }}>
                                                 <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} style={{ width: "100%", padding: "4px", fontSize: "13px", border: "1px solid #6fbc44", borderRadius: "4px" }} />
                                                 <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)} style={{ padding: "4px", fontSize: "12px", borderRadius: "4px" }}>
@@ -162,7 +173,6 @@ const IngredientList: React.FC = () => {
                                                 </div>
                                             </div>
                                         ) : (
-                                            /* 일반 보기 모드 */
                                             <>
                                                 <div className="ing-master-text-name">{currentName}</div>
                                                 <div className="ing-master-badge-row">
@@ -173,11 +183,11 @@ const IngredientList: React.FC = () => {
                                                     </span>
                                                 </div>
                                                 
-                                                {/* 마우스 호버 시 자연스럽게 카드 하단에 노출되거나 클릭 가능한 조작 라인 */}
+                                               
                                                 {isAdmin && (
-                                                    <div style={{ display: "flex", gap: "8px", marginTop: "8px", borderTop: "1px dashed #e2e8f0", paddingTop: "6px", justifyContent: "flex-end" }}>
-                                                        <span onClick={() => startEdit(item)} style={{ fontSize: "11px", color: "#0284c7", cursor: "pointer", fontWeight: "700" }}>[수정]</span>
-                                                        <span onClick={() => handleDeleteClick(item.id, currentName)} style={{ fontSize: "11px", color: "#ef4444", cursor: "pointer", fontWeight: "700" }}>[삭제]</span>
+                                                    <div className="master-admin-action-row">
+                                                        <button onClick={() => startEdit(item)} className="master-action-btn-edit">수정</button>
+                                                        <button onClick={() => handleDeleteClick(item.id, currentName)} className="master-action-btn-delete">삭제</button>
                                                     </div>
                                                 )}
                                             </>

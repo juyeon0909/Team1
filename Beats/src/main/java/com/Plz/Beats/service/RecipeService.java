@@ -50,7 +50,7 @@ public class RecipeService {
         recipe.setMember(member);
         recipe.setTitle(dto.getTitle());
         recipe.setDishName(dto.getDishName() != null ? dto.getDishName() : dto.getTitle());
-        recipe.setImage(dto.getImage() != null ? dto.getImage() : "default_recipe.png");
+        recipe.setImage(dto.getImage() != null ? dto.getImage() : "");
         recipe.setCategory(Category.valueOf(dto.getCategory()));
         recipe.setCookingTime(dto.getCookingTime());
         recipe.setDescription(dto.getDescription());

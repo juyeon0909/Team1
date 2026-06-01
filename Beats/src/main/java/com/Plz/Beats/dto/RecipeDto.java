@@ -21,6 +21,8 @@ public class RecipeDto {
     private List<String> steps;     // 조리 단계 리스트 (엔티티의 cookingMethod와 매핑)
     private List<MustIngredientDto> mustIngredients; // 필수 재료 리스트
     private List<SelectIngredientDto> selectIngredients; // 선택 재료 리스트
+    private List<MissingIngredientDto> missingIngredients; // 없는 재료 리스트
+
     private long likeCount;
     private long scrapCount;
     private boolean hearted;
@@ -40,6 +42,12 @@ public class RecipeDto {
         private String name;
         private String quantity;
     }
+
+    public static class MissingIngredientDto{
+        private String name;
+        private String quantity;
+    }
+
 
 
 }

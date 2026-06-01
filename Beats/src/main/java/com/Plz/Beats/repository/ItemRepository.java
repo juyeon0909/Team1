@@ -20,4 +20,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
      * findByItemName(String itemName) 으로 이름을 변경해야 합니다.
      */
     Optional<Item> findByName(String name);
+
+    @Query(value = "SELECT DISTINCT category FROM items WHERE category IS NOT NULL", nativeQuery = true)
+    List<String> findAllDistinctCategories();
 }

@@ -10,7 +10,7 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.Plz.Beats.entity.Item;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,15 +50,16 @@ public class ProductService {
         // 영속성 컨텍스트에서 기존 데이터를 조회해 옵니다.
         Storage_item item = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 보관 재료가 존재하지 않습니다. ID: " + id));
-
-        com.Plz.Beats.entity.Item realItem = itemRepository.findById(dto.getId())
+        Item realItem = itemRepository.findById(dto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식재료 항목입니다. ID: " + dto.getId()));
-        // 💡
+//        com.Plz.Beats.entity.Item realItem = itemRepository.findById(dto.getId())
+//                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 식재료 항목입니다. ID: " + dto.getId()));
+        //
         item.setItem(realItem);
         item.setQuantity(dto.getQuantity()); // 리액트에서 정수로 파싱되어 온 수량 적용
         item.setExpirationdate(dto.getExpiry());
 
-        // 💡 [Enum 치환 필터] 리액트의 'room' 문자열을 백엔드의 'ROOM_TEMP' 상수로 조율합니다.
+        // 리액트의 'room' 문자열을 백엔드의 'ROOM_TEMP' 상수로 조율합니다.
         if (dto.getType() != null) {
             String typeUpper = dto.getType().toUpperCase();
 
@@ -73,7 +74,7 @@ public class ProductService {
             }
         }
     }
-    @Transactional // 👈 찐중요: DB 데이터를 '삭제'하는 쓰기 작업이므로 읽기 전용을 깨고 트랜잭션을 걸어줍니다!
+    @Transactional //  찐중요: DB 데이터를 '삭제'하는 쓰기 작업이므로 읽기 전용을 깨고 트랜잭션을 걸어줍니다!
     public void deleteStorageItem(Long id) {
         // 1. 혹시 이미 지워졌거나 없는 ID인지 먼저 확인하는 방어 코드
         Storage_item item = repository.findById(id)
@@ -84,21 +85,78 @@ public class ProductService {
     }
 
     public List<ProductDto> searchItemsByName(String name) {
-        // itemRepository를 통해 이름에 검색어가 포함된 식재료들을 디비에서 찾습니다.
         return itemRepository.findByNameContaining(name).stream()
                 .map(item -> {
                     ProductDto dto = new ProductDto();
                     dto.setId(item.getId());
                     dto.setName(item.getName());
                     dto.setCategory(item.getCategory());
-                    // 필요 시 단우(itemUnit)도 DTO에 필드가 있다면 세팅해 줍니다.
+
                     if (item.getFridgeStatus() != null) {
-                        dto.setType(item.getFridgeStatus().toLowerCase()); // 예: "frozen", "refrigerated"
+                        String status = item.getFridgeStatus();
+                        // 💡 [방어선 추가] 데이터가 한글('냉장','냉동','실온')이면 소문자 변환을 패스하고 그대로 꽂아줍니다!
+                        if (status.contains("냉장") || status.contains("냉동") || status.contains("실온")) {
+                            dto.setType(status);
+                        } else {
+                            dto.setType(status.toLowerCase()); // 기존 영문 데이터 유저 방어
+                        }
                     } else {
-                        dto.setType("refrigerated"); // 기본값 방어
+                        dto.setType("냉장"); // 기본값도 깔끔하게 한글로 통일
                     }
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+
+    @Transactional
+    public void updateMasterItem(Long id, ProductDto dto) {
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 마스터 식재료입니다. ID: " + id));
+
+        item.setName(dto.getName());
+        item.setCategory(dto.getCategory());
+
+        //  영어 입력을 데이터베이스 일관성에 맞춰 '냉장/냉동/실온' 한글 마스터 상수로 교정하여 꽂아줍니다.
+        if (dto.getType() != null) {
+            String typeUpper = dto.getType().toUpperCase();
+            if (typeUpper.contains("FROZEN") || typeUpper.contains("냉동")) {
+                item.setFridgeStatus("냉동");
+            } else if (typeUpper.contains("ROOM") || typeUpper.contains("실온")) {
+                item.setFridgeStatus("실온");
+            } else {
+                item.setFridgeStatus("냉장");
+            }
+        }
+    }
+
+    @Transactional
+    public void deleteMasterItem(Long id) {
+        Item item = itemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 마스터 식재료입니다. ID: " + id));
+        itemRepository.delete(item);
+    }
+    @Transactional
+    public void saveMasterItem(ProductDto dto) {
+        Item item = new Item();
+        item.setName(dto.getName());
+        item.setCategory(dto.getCategory());
+
+        //  새 글 입력 처리 시에도 '냉장/냉동/실온' 한글 상수로 완벽하게 락인(Lock-in) 처리
+        if (dto.getType() != null) {
+            String typeUpper = dto.getType().toUpperCase();
+            if (typeUpper.contains("FROZEN") || typeUpper.contains("냉동")) {
+                item.setFridgeStatus("냉동");
+            } else if (typeUpper.contains("ROOM") || typeUpper.contains("실온")) {
+                item.setFridgeStatus("실온");
+            } else {
+                item.setFridgeStatus("냉장");
+            }
+        } else {
+            item.setFridgeStatus("냉장");
+        }
+
+        item.setCreatedAt(java.time.LocalDateTime.now());
+        itemRepository.save(item);
     }
 }

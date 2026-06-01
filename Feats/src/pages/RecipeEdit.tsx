@@ -53,19 +53,22 @@ const RecipeEdit = () => {
         setLoading(true);
         const token = localStorage.getItem('accessToken');
 
-        const response = await axiosInstance.get(`/recipeMain/${id}`, {
+        const response = await axiosInstance.get(`/recipeMain`, {
           headers: {
             Authorization: token ? `Bearer ${token}` : ''
           }
         });
 
-        if (response.data) {
-          const data = response.data;
+        const allRecipes = Array.isArray(response.data) ? response.data : [];
+        const found = allRecipes.find((r: any) => (r.recipeId ?? r.id) === parseInt(id!, 10));
+
+        if (found) {
+          const data = found;
           setTitle(data.title || "");
 
           const reverseCategoryMapper: { [key: string]: string } = {
-            "HANSICK": "한식", "WESTERN": "양식", "JAPANESE": "일식", "CHINESE": "중식",
-            "SNACK": "간식", "NIGHT_SNACK": "야식", "DIET": "다이어트", "MEAL_PREP": "밀프랩"
+            "KOR": "한식", "YANG": "양식", "JAN": "일식", "CHN": "중식",
+            "GAN": "간식", "YA": "야식", "DIET": "다이어트", "RAP": "밀프랩"
           };
           setCategory(reverseCategoryMapper[data.category] || "한식");
           setCookingTime(data.cookingTime ? `${data.cookingTime}분` : "");
@@ -188,7 +191,7 @@ const RecipeEdit = () => {
 
     try {
       setLoading(true);
-      const response = await axiosInstance.put(`/recipeMain/edit/${id}`, recipePayload, {
+      const response = await axiosInstance.post(`/recipeMain/edit`, recipePayload, {
         headers: {
           Authorization: token ? `Bearer ${token}` : ''
         }

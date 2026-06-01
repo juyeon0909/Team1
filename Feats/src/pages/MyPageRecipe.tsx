@@ -39,6 +39,11 @@ const MyPageRecipe = () => {
       });
   }, []);
 
+  const handleEdit = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/recipeMain/edit/${id}`);
+  };
+
   const handleDelete = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!window.confirm("정말 이 레시피를 삭제하시겠습니까?")) return;
@@ -114,20 +119,16 @@ const MyPageRecipe = () => {
                 )}
               </div>
 
-              <div style={{ padding: '14px' }}>
-                <span style={{ fontSize: '11px', color: '#6FBC44', fontWeight: 'bold' }}>{recipe.category}</span>
-                <h3 style={{ fontSize: '14px', margin: '4px 0 6px 0', color: '#111', fontWeight: '500' }}>{recipe.dishName}</h3>
-                <p style={{ fontSize: '12px', color: '#666', margin: '0 0 12px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {recipe.description}
-                </p>
+              <div className="recipe-card-content">
+                <span className="recipe-card-category">{recipe.category}</span>
+                <h3 className="recipe-card-title-text">{recipe.dishName}</h3>
+                <p className="recipe-card-desc-text">{recipe.description}</p>
               </div>
 
-              <button
-                onClick={(e) => handleDelete(recipe.id, e)}
-                className="recipe-delete-absolute-btn"
-              >
-                ✕
-              </button>
+              <div className="recipe-card-footer">
+                <button className="recipe-edit-btn" onClick={e => handleEdit(recipe.id, e)}>수정</button>
+                <button className="recipe-delete-btn" onClick={e => handleDelete(recipe.id, e)}>삭제</button>
+              </div>
             </div>
           ))}
         </div>

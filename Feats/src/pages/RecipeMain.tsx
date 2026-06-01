@@ -22,6 +22,7 @@ interface Recipe {
   selectIngredients: string[];
   missingIngredients: string[];
   steps: string[];
+  image: string;
 }
 
 const CATEGORY_DECODER: { [key: string]: string } = {
@@ -31,22 +32,22 @@ const CATEGORY_DECODER: { [key: string]: string } = {
 
 const getMatchBadgeClass = (match: number) => {
   if (match >= 100) return 'badge-match-full';
-  if (match >= 80)  return 'badge-match-high';
+  if (match >= 80) return 'badge-match-high';
   return 'badge-match-mid';
 };
 
 const RecipeMain = () => {
   const navigate = useNavigate();
 
-  const [recipes,        setRecipes]        = useState<Recipe[]>([]);
-  const [loading,        setLoading]        = useState(true);
-  const [searchQuery,    setSearchQuery]    = useState('');
-  const [sortBy,         setSortBy]         = useState('추천순');
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('추천순');
   const [activeCategory, setActiveCategory] = useState('전체');
-  const [activeMatch,    setActiveMatch]    = useState('전체');
-  const [activeTime,     setActiveTime]     = useState('전체');
-  const [urgentOnly,     setUrgentOnly]     = useState(false);
-  const [currentPage,    setCurrentPage]    = useState(1);
+  const [activeMatch, setActiveMatch] = useState('전체');
+  const [activeTime, setActiveTime] = useState('전체');
+  const [urgentOnly, setUrgentOnly] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const perPage = 6;
 
   useEffect(() => {
@@ -58,25 +59,25 @@ const RecipeMain = () => {
         const response = await axiosInstance.get('/recipeMain');
         if (response.data && Array.isArray(response.data) && response.data.length > 0) {
           const mapped: Recipe[] = response.data.map((item: any) => ({
-            id:                 item.recipeId    ?? item.id,
-            name:               item.title,
-            cat:                CATEGORY_DECODER[item.category] ?? item.category ?? '한식',
-            time:               item.cookingTime,
-            desc:               item.description,
-            steps:              Array.isArray(item.steps) ? item.steps : [],
-            mustIngredients:    item.mustIngredients   ?? [],
-            selectIngredients:  item.selectIngredients ?? [],
+            id: item.recipeId ?? item.id,
+            name: item.title,
+            cat: CATEGORY_DECODER[item.category] ?? item.category ?? '한식',
+            time: item.cookingTime,
+            desc: item.description,
+            steps: Array.isArray(item.steps) ? item.steps : [],
+            mustIngredients: item.mustIngredients ?? [],
+            selectIngredients: item.selectIngredients ?? [],
             missingIngredients: item.missingIngredients ?? [],
-            match:              item.match      ?? 0,
-            emoji:              item.emoji      ?? '🍳',
-            bg:                 item.bg         ?? '#E1F5EE',
-            tags:               [CATEGORY_DECODER[item.category] ?? item.category ?? '한식', `${item.cookingTime}분`],
-            heart:              item.likeCount  ?? 0,
-            scrap:              item.scrapCount ?? 0,
-            urgent:             item.urgent     ?? false,
-            isHearted:          item.hearted    ?? false,
-            isScrapped:         item.scrapped   ?? false,
-            image:              item.image,
+            match: item.match ?? 0,
+            emoji: item.emoji ?? '🍳',
+            bg: item.bg ?? '#E1F5EE',
+            tags: [CATEGORY_DECODER[item.category] ?? item.category ?? '한식', `${item.cookingTime}분`],
+            heart: item.likeCount ?? 0,
+            scrap: item.scrapCount ?? 0,
+            urgent: item.urgent ?? false,
+            isHearted: item.hearted ?? false,
+            isScrapped: item.scrapped ?? false,
+            image: item.image,
           }));
 
           // 2. 로그인 상태면 보관함 기반 매칭률을 받아 id별로 덮어쓰기
@@ -168,11 +169,11 @@ const RecipeMain = () => {
       if (urgentOnly && !r.urgent) return false;
       if (activeCategory !== '전체' && r.cat !== activeCategory) return false;
       if (activeMatch === '100' && r.match < 100) return false;
-      if (activeMatch === '70'  && r.match < 70)  return false;
-      if (activeMatch === '50'  && r.match < 50)  return false;
-      if (activeTime  === '15'  && r.time  > 15)  return false;
-      if (activeTime  === '30'  && r.time  > 30)  return false;
-      if (activeTime  === '60'  && r.time  > 60)  return false;
+      if (activeMatch === '70' && r.match < 70) return false;
+      if (activeMatch === '50' && r.match < 50) return false;
+      if (activeTime === '15' && r.time > 15) return false;
+      if (activeTime === '30' && r.time > 30) return false;
+      if (activeTime === '60' && r.time > 60) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return r.name.toLowerCase().includes(q) || r.tags.some(t => t.toLowerCase().includes(q));
@@ -182,12 +183,12 @@ const RecipeMain = () => {
 
     if (sortBy === '추천순') result = [...result].sort((a, b) => b.match - a.match);
     if (sortBy === '인기순') result = [...result].sort((a, b) => b.heart - a.heart);
-    if (sortBy === '최신순') result = [...result].sort((a, b) => b.id   - a.id);
+    if (sortBy === '최신순') result = [...result].sort((a, b) => b.id - a.id);
 
     return result;
   }, [recipes, searchQuery, activeCategory, activeMatch, activeTime, urgentOnly, sortBy]);
 
-  const totalPages   = Math.max(1, Math.ceil(filteredRecipes.length / perPage));
+  const totalPages = Math.max(1, Math.ceil(filteredRecipes.length / perPage));
   const pagedRecipes = useMemo(() => {
     const start = (currentPage - 1) * perPage;
     return filteredRecipes.slice(start, start + perPage);
@@ -242,7 +243,7 @@ const RecipeMain = () => {
           <span className="filter-label">재료 일치율</span>
           <div className="filter-chips">
             {[{ label: '전체', val: '전체' }, { label: '50% 이상', val: '50' },
-              { label: '70% 이상', val: '70' }, { label: '100% 일치', val: '100' }].map(item => {
+            { label: '70% 이상', val: '70' }, { label: '100% 일치', val: '100' }].map(item => {
               const activeClass = activeMatch === item.val
                 ? (item.val === '50' || item.val === '70') ? 'active-match-orange' : 'active-green'
                 : '';
@@ -258,7 +259,7 @@ const RecipeMain = () => {
           <span className="filter-label">조리 시간</span>
           <div className="filter-chips">
             {[{ label: '전체', val: '전체' }, { label: '15분 이하', val: '15' },
-              { label: '30분 이하', val: '30' }, { label: '60분 이하', val: '60' }].map(item => (
+            { label: '30분 이하', val: '30' }, { label: '60분 이하', val: '60' }].map(item => (
               <div key={item.val} onClick={() => { setActiveTime(item.val); setCurrentPage(1); }}
                 className={`filter-chip ${activeTime === item.val ? 'active-green' : ''}`}>{item.label}</div>
             ))}

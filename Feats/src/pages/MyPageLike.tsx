@@ -14,7 +14,7 @@ interface Recipe {
   author: string;
   likes: number;
   liked: boolean;
-  star?: number;       // 확장성을 위해 추가 (선택사항)
+  //star?: number;       // 확장성을 위해 추가 (선택사항)
   urgent?: boolean;    // 임박재료 활용 여부 (선택사항)
   scrappedAt?: string; // 정렬용 날짜 데이터 (선택사항)
 }
@@ -83,7 +83,7 @@ export default function LikedRecipes() {
 
     setTimeout(async () => {
       try {
-        await customAxios.post(`/recipe/${id}/like`);
+        await customAxios.post(`/mypage/${id}/like`);
 
         // 실제 리스트에서 제거 및 상태 초기화
         setRecipes((prev) => prev.filter((r) => r.id !== id));

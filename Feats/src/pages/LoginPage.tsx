@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Alert } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "../api/axiosInstance.tsx";
 import type { LoginResponse, User } from "../types/User";
 import "../components/LoginPage.css";
@@ -27,8 +27,17 @@ function LoginPage({ onLogin }: Props) {
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cancelledRef = useRef(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const state = location.state as { mode?: string } | null;
+    if (state?.mode === "passwordless") {
+      setLoginMode("passwordless");
+    }
+  }, []);
 
   // 모든 타이머 정지 및 초기화 함수
   const stopAll = () => {
@@ -65,7 +74,7 @@ function LoginPage({ onLogin }: Props) {
           "/passwordless/check-result",
           { params: { email: currentEmail, randomValue: currentRandomValue } }
         );
-        if (isApproved) {
+        if (isApproved && !cancelledRef.current) {
           stopAll();
           console.log("[패스워드리스] 승인 확인됨, 로그인 요청 시작");
           try {
@@ -93,6 +102,7 @@ function LoginPage({ onLogin }: Props) {
   };
 
   const handleCancelPolling = async () => {
+    cancelledRef.current = true;
     stopAll();
     setIsPolling(false);
     setRandomValue("");
@@ -117,6 +127,7 @@ function LoginPage({ onLogin }: Props) {
           "/passwordless/getSp", null, { params: { email } }
         );
 
+        cancelledRef.current = false;
         setRandomValue(data.randomValue);
         setServicePassword(data.servicePassword);
         setIsPolling(true);

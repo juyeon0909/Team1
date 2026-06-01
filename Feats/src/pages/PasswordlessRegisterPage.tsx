@@ -85,9 +85,9 @@ function PasswordlessRegisterPage() {
         {qrCode && (
           <button
             className="btn-submit-green"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/member/login", { state: { mode: "passwordless" } })}
           >
-            등록 완료 / 홈으로 돌아가기
+            등록 완료 / 로그인하기
           </button>
         )}
 

@@ -246,8 +246,8 @@ const RecipeRegister = () => {
             </select>
           </div>
           <div>
-            <label className="form-label">조리 시간</label>
-            <input className="form-input" type="text" value={cookingTime} onChange={(e) => setCookingTime(e.target.value)} placeholder="예: 15분" />
+            <label className="form-label">조리 시간 (단위 : 분)</label>
+            <input className="form-input" type="text" value={cookingTime} onChange={(e) => setCookingTime(e.target.value)} placeholder="숫자만 입력해주세요" />
           </div>
         </div>
 
@@ -259,7 +259,7 @@ const RecipeRegister = () => {
 
         {/* 필수 재료 및 용량 영역 */}
         <div className="form-group">
-          <label className="form-label">필수 재료 및 용량 *</label>
+          <label className="form-label">필수 재료 및 용량 (g) *</label>
           {mustIngredients.map((item, index) => (
             <div
               key={index}
@@ -304,7 +304,7 @@ const RecipeRegister = () => {
                 type="text"
                 value={item.quantity}
                 onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
-                placeholder="예: 1모, 150g"
+                placeholder="숫자만 입력해주세요."
               />
               {mustIngredients.length > 1 && (
                 <button type="button" onClick={() => removeIngredientRow(index)} className="row-remove-btn">✕</button>
@@ -328,7 +328,7 @@ const RecipeRegister = () => {
 
         {!id && (
           <div className="info-banner-box">
-            <span>ℹ️</span>
+            <span>i</span>
             등록된 레시피는 승인 후 등록됩니다.
           </div>
         )}

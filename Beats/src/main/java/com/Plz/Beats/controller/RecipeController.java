@@ -1,6 +1,7 @@
 package com.Plz.Beats.controller;
 
 import com.Plz.Beats.dto.RecipeDto;
+import com.Plz.Beats.service.RecipeMatchService;
 import com.Plz.Beats.service.RecipeService;
 import com.Plz.Beats.service.S3Service;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class RecipeController {
 
     private final RecipeService recipeService;
     private final S3Service s3Service;
+    private final RecipeMatchService recipeMatchService;
 
     // 1. 메인 목록 피드 데이터 받아오기 (비로그인/로그인 전체 허용)
     @GetMapping
@@ -85,5 +87,16 @@ public class RecipeController {
         // 💡 Service에 내 이메일로 등록된 레시피만 가져오는 메서드 호출
         List<RecipeDto> myRecipes = recipeService.getRecipes(email);
         return ResponseEntity.ok(myRecipes);
+    }
+
+    @GetMapping("/match")
+    public ResponseEntity<?> getRecipesWithMatch(Principal principal) {
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("로그인이 필요한 서비스입니다.");
+        }
+
+        String email = principal.getName();
+        return ResponseEntity.ok(recipeMatchService.getRecipesWithMatchRate(email));
     }
 }

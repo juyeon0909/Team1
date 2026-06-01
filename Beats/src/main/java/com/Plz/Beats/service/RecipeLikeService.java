@@ -40,7 +40,8 @@ public class RecipeLikeService {
                             r.getMember().getName(),
                             recipeLikeRepository.countByRecipe(r),
                             true,
-                            like.getCreatedAt().toLocalDate().toString()
+                            like.getCreatedAt().toLocalDate().toString(),
+                            r.getImage()
                     );
                 })
                 .collect(Collectors.toList());

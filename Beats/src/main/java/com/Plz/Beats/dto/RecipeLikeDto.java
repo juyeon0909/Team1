@@ -14,4 +14,5 @@ public class RecipeLikeDto {
     private long likes;         //좋아요
     private boolean liked;      // 좋아요 목록
     private String scrappedAt;  //날짜
+    private String image; // 이미지
 }

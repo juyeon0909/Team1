@@ -14,6 +14,7 @@ function App() {
     profileimage: null as string | null,
     email: ''
     });
+    /**/
 
     const [errors, setErrors] = useState({
         profileimage: '',

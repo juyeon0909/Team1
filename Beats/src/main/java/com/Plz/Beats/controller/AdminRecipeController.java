@@ -15,19 +15,19 @@ public class AdminRecipeController {
 
     private final RecipeService recipeService;
 
-//    @GetMapping("/pending")
-//    public ResponseEntity<List<AdminRecipeDto>> getPending() {
-//        return ResponseEntity.ok(recipeService.getPendingRecipes());
-//    }
+    @GetMapping("/pending")
+    public ResponseEntity<List<AdminRecipeDto>> getPending() {
+        return ResponseEntity.ok(recipeService.getPendingRecipes());
+    }
 
     @PostMapping("/{id}/approve")
-    public ResponseEntity<?> approve(@PathVariable Long id) {
+    public ResponseEntity<String> approve(@PathVariable Long id) {
         recipeService.approveRecipe(id);
         return ResponseEntity.ok("승인 완료");
     }
 
     @PostMapping("/{id}/reject")
-    public ResponseEntity<?> reject(@PathVariable Long id) {
+    public ResponseEntity<String> reject(@PathVariable Long id) {
         recipeService.rejectRecipe(id);
         return ResponseEntity.ok("거절 완료");
     }

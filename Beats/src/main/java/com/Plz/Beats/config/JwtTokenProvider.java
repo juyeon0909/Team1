@@ -69,10 +69,10 @@ public class JwtTokenProvider { // JWT 생성, 검증 기능 담당자 클래스
             System.out.println("토큰 만료됨");
 
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            System.out.println("토큰 서명/형식 오류");
+            System.out.println(">>> 토큰 서명/형식 오류");
 
         } catch (Exception e) {
-            System.out.println("기타 토큰 오류");
+            System.out.println(">>> 기타 토큰 오류");
         }
         return false ;
     }

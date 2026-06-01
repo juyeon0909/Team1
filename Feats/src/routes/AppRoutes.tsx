@@ -22,6 +22,7 @@ import PasswordlessWithdrawalPage from '../pages/PasswordlessWithdrawalPage'
 import PasswordlessRegisterPage from '../pages/PasswordlessRegisterPage'
 import AdminRecipe from '../pages/AdminRecipe';
 import IngredientList from "../pages/IngredientList.tsx";
+import RecipeDetail from "../pages/RecipeDetail";
 
 
 
@@ -45,7 +46,7 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
       <Route path='/recipeMain/edit' element={<RecipeEdit />} />
       <Route path='/product/register' element={<FridgeRegister />} />
-      <Route path="/recipeMain/:id" element={<RecipeMain />} />
+      <Route path="/recipeMain/:id" element={<RecipeDetail />} />
       <Route path='/recipeMain' element={<RecipeMain />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
       <Route path="/mypage/edit" element={<MyPageEdit name={user?.name || "이름 없음"} setName={(newName) => setUser(prev => prev ? { ...prev, name: newName } : null)} triggerToast={(msg) => console.log(msg)} />} />

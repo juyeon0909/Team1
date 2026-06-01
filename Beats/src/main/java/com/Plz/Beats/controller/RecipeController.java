@@ -26,7 +26,6 @@ public class RecipeController {
     // 1. 메인 목록 피드 데이터 받아오기 (비로그인/로그인 전체 허용)
     @GetMapping
     public ResponseEntity<?> getAllRecipes(Principal principal) {
-        // 💡 시큐리티 익명 사용자 관례("anonymousUser")까지 완벽하게 파악하여 "GUEST"로 통합 처리
         String email = "GUEST";
         if (principal != null && !"anonymousUser".equals(principal.getName())) {
             email = principal.getName();
@@ -76,7 +75,7 @@ public class RecipeController {
     }
 
     // 🟢 내가 등록한 마이페이지 레시피 목록 조회 API 추가
-    @GetMapping("/mypage/recipe") // ⚠️ 기본 설정을 무시하고 절대 경로로 매핑
+    @GetMapping("/mypage/recipe")
     public ResponseEntity<?> getMyPageRecipes(Principal principal) {
         // 비로그인 유저 예외 처리
         if (principal == null || "anonymousUser".equals(principal.getName())) {

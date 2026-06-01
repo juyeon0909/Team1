@@ -33,6 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 요청 헤더에서 Authorization 값을 가져온다
         String bearer = request.getHeader("Authorization");
 
+
         // 값이 존재하고 "Bearer "로 시작하는지 확인한다
         if(bearer != null && bearer.startsWith("Bearer ")){
             // Bearer "를 제거하여 JWT 토큰만 추출한다

@@ -148,13 +148,10 @@ const FridgeMain: React.FC = () => {
             <button onClick={() => setSearchTerm('')} className="search-clear-btn">✕</button>
           )}
         </div>
-      
-        <button 
-          className="storage-add-btn"
-          onClick={() => navigate('/product/register')}
-        >
-          <span className="add-icon-small">＋</span> 재료 등록
-        </button>
+        {/*  로그인 상황일 때만 재료 등록 버튼 노출 */}
+        {currentUser && (
+          <button className="storage-add-btn" onClick={() => navigate('/product/register')}><span className="add-icon-small">＋</span> 재료 등록</button>
+        )}
       </div>
       
       <div className="storage-rooms-grid">
@@ -237,24 +234,50 @@ const FridgeMain: React.FC = () => {
             {renderSortSelect(roomSort, setRoomSort)}
           </div>
           <div className="room-list-scroll">
-            {roomItems.length === 0 ? <p className="empty-item-text">재료가 없습니다.</p> : (
-              roomItems.map((item) => {
-                const finalName = item.itemname || item.name || '이름 없음';
-                return (
-                  <div key={item.id} className={`storage-item-row ${getExpiryClass(item.expirationdate)}`}>
-                    <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>
-                      {finalName}
-                    </span>
-                    <span className="item-quantity">{item.quantity}개</span>
-                    
-                    <span className="item-expiry item-expiry-wrapper">
-                      {item.expirationdate}
-                      <button 
-                        onClick={(e) => handleDelete(item.id, finalName, e)}
-                        className="btn-delete-small"
-                      >
-                        ✕
-                      </button>
+            {/* 로그아웃 핸들러 적용 */}
+            {!currentUser ? (
+              <p className="empty-item-text" style={{ color: "#94a3b8", fontWeight: "700" }}>로그인 후 이용 가능합니다.</p>
+            ) : roomItems.length === 0 ? (
+              <p className="empty-item-text">재료가 없습니다.</p>
+            ) : roomItems.map((item) => {
+              const finalName = item.itemname || item.name || '이름 없음';
+              return (
+                <div key={item.id} className={`storage-item-row ${getExpiryClass(item.expirationdate)}`}>
+                  <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>{finalName}</span>
+                  <span className="item-badge-short">{getShortCategory(item.category)}</span>
+                  <span className="item-quantity">{item.quantity}g</span>
+                  <span className="item-expiry item-expiry-wrapper">{item.expirationdate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* 로그인 되어 있고 + 유통기한 초과 재료가 있을 때만 경고 세션 노출 */}
+      {currentUser && expiredItems.length > 0 && (
+        <div className="expired-storage-container">
+          <h3 className="expired-container-title">
+            유통기한 초과 재료 ({expiredItems.length}종)
+          </h3>
+          <p className="expired-container-sub">
+            * 유통기한이 지난 식품들입니다. 냄새와 상태를 확인하시고 사용하거나 ✕ 버튼을 눌러 폐기 처리해 주세요.
+          </p>
+          
+          <div className="expired-items-list">
+            {expiredItems.map((item) => {
+              const finalName = item.itemname || item.name || '이름 없음';
+              return (
+                <div key={item.id} className="expired-item-row">
+                  <span className="expired-item-name" onClick={() => navigate(`/product/edit/${item.id}`)}>
+                    {finalName}
+                  </span>
+                  <div className="expired-item-right-section">
+                    <span className="expired-badge-text">기한 초과됨</span>
+                    <span className="expired-item-qty">{item.quantity}g</span>
+                    <span className="expired-item-date-wrapper">
+                      ({item.expirationdate})
+                      <button onClick={(e) => handleDelete(item.id, finalName, e)} className="expired-btn-delete">✕</button>
                     </span>
                   </div>
                 );

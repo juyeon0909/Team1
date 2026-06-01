@@ -84,16 +84,82 @@ const RECIPES: Recipe[] = [
 interface HeroCardProps {
     userName: string;
 }
-const HeroCard: React.FC<HeroCardProps> = ({ userName }) => (
-    <div className="hero-card">
-        <div className="hero-text">
-            <p className="hero-greeting">안녕하세요, {userName}님</p>
-            <h1 className="hero-title">
-                냉장고 속 재료로
-                <br />
-                무엇을 만들어볼까요?
-            </h1>
-            <p className="hero-sub">냉장고 속 재료를 최대한 활용한 레시피를 추천해드려요.</p>
+
+const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }) => {
+    
+    const banners: BannerItem[] = [
+        { id: 0, greeting: `안녕하세요, ${userName}님`, title: <>냉장고 속 재료로<br />무엇을 만들어볼까요?</>, sub: "냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요." },
+        { id: 1, greeting: "요리 팁", title: <>맛있는 <br />요리</>, sub: "냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요." },
+        { id: 2, greeting: "요리고수", title: <>재밌는<br />요리</>, sub: "냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요." }
+    ];
+
+    const slideCount = banners.length;
+
+    // 무한 루프: [마지막 카피] - [1] - [2] - [3] - [첫번째 카피] 구조로 기차 연결
+    const extendedBanners = [
+        banners[slideCount - 1], // 인덱스 0: 3번 배너의 가짜 카피
+        ...banners,              // 인덱스 1, 2, 3: 진짜 배너들
+        banners[0]               // 인덱스 4: 1번 배너의 가짜 카피
+    ];
+
+    // 시작 위치 1번 배너 
+    const [currentIndex, setCurrentIndex] = useState(1);
+    const [isTransition, setIsTransition] = useState(true);
+
+    // 공통 이동 제어 함수
+    const moveSlide = (targetIndex: number) => {
+        setIsTransition(true);
+        setCurrentIndex(targetIndex);
+    };
+
+    // 오토 슬라이드 타이머 (5초마다 오른쪽 칸으로 전진)
+    useEffect(() => {
+        const timer = setInterval(() => {
+            moveSlide(currentIndex + 1);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [currentIndex]);
+
+    // 애니메이션이 끝난 직후 순간이동 처리
+    const handleTransitionEnd = () => {
+        if (currentIndex === slideCount + 1) {
+            setIsTransition(false);
+            setCurrentIndex(1); // 가짜 1번에서 진짜 1번으로 워프
+        }
+        else if (currentIndex === 0) {
+            setIsTransition(false);
+            setCurrentIndex(slideCount); // 가짜 3번에서 진짜 3번으로 워프
+        }
+    };
+
+    const getDotActiveIndex = () => {
+        if (currentIndex === 0) return slideCount - 1;
+        if (currentIndex === slideCount + 1) return 0;
+        return currentIndex - 1;
+    };
+
+    return (
+        <div className="hero-card">
+          <div className="hero-carousel-container">
+            
+            <div 
+              className="hero-carousel-track" 
+              style={{ 
+                transform: `translateX(-${currentIndex * 100}%)`,
+                transition: isTransition ? "transform 0.6s ease-in-out" : "none" 
+              }}
+              onTransitionEnd={handleTransitionEnd}
+            >
+              {extendedBanners.map((banner, index) => (
+                <div className="hero-carousel-slide" key={`${banner.id}-${index}`}>
+                  <div className="hero-text">
+                    <p className="hero-greeting">{banner.greeting}</p>
+                    <h1 className="hero-title">{banner.title}</h1>
+                    <p className="hero-sub">{banner.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
         </div>
         <div className="hero-stats">
             {HERO_STATS.map((stat) => (
@@ -111,16 +177,10 @@ interface AlertBarProps {
 }
 const AlertBar: React.FC<AlertBarProps> = ({ ingredients }) => {
     const navigate = useNavigate();
-
-    const urgentItems = ingredients.filter((i) => i.urgency === "urgent" || i.urgency === "warning");
-
-    const levelOf = (dDay: number): string => {
-        if (dDay <= 1) return "d1";
-        if (dDay <= 2) return "d2";
-        if (dDay <= 5) return "d5";
-        return "d6";
-    };
-
+    const urgentItems = isLoggedIn ? ingredients.filter((i) => 
+        (i.urgency === "urgent" || i.urgency === "warning") &&
+        i.dDay !== undefined && i.dDay >= 0) : [];
+    
     return (
         <div className="alert-bar">
             <span className="label">오늘 소비가 권장되는 재료:</span>
@@ -254,9 +314,8 @@ const RecommendedRecipes: React.FC = () => {
     );
 };
 
-/* ============================================================
-   메인 컴포넌트
-   ============================================================ */
+
+//    메인 컴포넌트 
 
 const MainPage: React.FC = () => {
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
@@ -272,12 +331,50 @@ const MainPage: React.FC = () => {
 
         const user = JSON.parse(stored);
         if (user.name) setUserName(user.name);
+        setIsLoggedIn(true);
+        
+        axiosInstance.get<any[]>(`/product/list/${user.id}`)
+            .then((res) => {
+                const rawData = res.data || [];
+                setTotalCount(rawData.length);
 
-        const memberId: number = user.id;
-        axiosInstance
-            .get<Ingredient[]>(`/product/expiring/${memberId}`)
-            .then((res) => setIngredients(res.data))
-            .catch(() => setIngredients([]))
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const processed = rawData.map((item) => {
+                    const targetDateStr = item.expirationdate || item.expiry;
+                    let dDayResult = 999;
+                    let urgencyResult: Urgency = "normal";
+
+                    if (targetDateStr) {
+                        const expDate = new Date(targetDateStr);
+                        expDate.setHours(0, 0, 0, 0);
+                        dDayResult = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                        
+                        
+                        if (dDayResult < 0) urgencyResult = "normal"; // 혹은 기한초과
+                        else if (dDayResult <= 3) urgencyResult = "urgent";
+                        else if (dDayResult <= 7) urgencyResult = "warning";
+                    }
+
+                    return {
+                        ...item,
+                        itemname: item.itemname || item.name || "이름 없음",
+                        dDay: dDayResult,
+                        urgency: urgencyResult
+                    };
+                });
+
+                setUrgentCount(processed.filter(i => i.urgency === "urgent" || i.urgency === "warning").length);
+
+                const finalMainList = processed
+                    .filter(i => i.urgency === "urgent" || i.urgency === "warning")
+                    .sort((a, b) => (a.dDay ?? 0) - (b.dDay ?? 0))
+                    .slice(0, 5);  // 띠지 몇개까지 보이게 하고 싶은가
+
+                setIngredients(finalMainList);
+            })
+            .catch((err) => console.error("데이터 연동 실패:", err))
             .finally(() => setLoading(false));
     }, []);
 

@@ -492,5 +492,5 @@ const RecipeMain = () => {
     </div>
   );
 };
-
+/*커밋체크*/
 export default RecipeMain;

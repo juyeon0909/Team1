@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import '../components/RecipeMain.css';
 
@@ -19,11 +19,10 @@ interface Recipe {
   isHearted?: boolean;
   isScrapped?: boolean;
   mustIngredients: { name: string; quantity: string }[];
-  selectIngredients: string[];        // ✅ 문자열 배열로 통일
+  selectIngredients: string[];
   missingIngredients: string[];
   steps: string[];
 }
-
 
 const CATEGORY_DECODER: { [key: string]: string } = {
   KOR: '한식', YANG: '양식', JAN: '일식', CHN: '중식',
@@ -37,36 +36,25 @@ const getMatchBadgeClass = (match: number) => {
 };
 
 const RecipeMain = () => {
-  const navigate      = useNavigate();
+  const navigate = useNavigate();
 
-  const { id: urlId } = useParams();
-
-  const [recipes,  setRecipes]  = useState<Recipe[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [view,     setView]     = useState<'list' | 'detail'>('list');
-
-  const selectedRecipeId = urlId ? parseInt(urlId, 10) : null;
-
-  useEffect(() => {
-    setView(urlId ? 'detail' : 'list');
-  }, [urlId]);
-
-  const [isModalOpen,     setIsModalOpen]     = useState(false);
-  const [mustIngredients, setMustIngredients] = useState<{ name: string; quantity: string }[]>([]);
-  const [searchQuery,     setSearchQuery]     = useState('');
-  const [sortBy,          setSortBy]          = useState('추천순');
-  const [activeCategory,  setActiveCategory]  = useState('전체');
-  const [activeMatch,     setActiveMatch]     = useState('전체');
-  const [activeTime,      setActiveTime]      = useState('전체');
-  const [urgentOnly,      setUrgentOnly]      = useState(false);
-  const [currentPage,     setCurrentPage]     = useState(1);
+  const [recipes,        setRecipes]        = useState<Recipe[]>([]);
+  const [loading,        setLoading]        = useState(true);
+  const [searchQuery,    setSearchQuery]    = useState('');
+  const [sortBy,         setSortBy]         = useState('추천순');
+  const [activeCategory, setActiveCategory] = useState('전체');
+  const [activeMatch,    setActiveMatch]    = useState('전체');
+  const [activeTime,     setActiveTime]     = useState('전체');
+  const [urgentOnly,     setUrgentOnly]     = useState(false);
+  const [currentPage,    setCurrentPage]    = useState(1);
   const perPage = 6;
 
-  // ── API 호출 ──────────────────────────────────────────
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
         setLoading(true);
+
+        // 1. 레시피 목록 (비로그인 포함 누구나)
         const response = await axiosInstance.get('/recipeMain');
         if (response.data && Array.isArray(response.data) && response.data.length > 0) {
           const mapped: Recipe[] = response.data.map((item: any) => ({
@@ -77,18 +65,40 @@ const RecipeMain = () => {
             desc:               item.description,
             steps:              Array.isArray(item.steps) ? item.steps : [],
             mustIngredients:    item.mustIngredients   ?? [],
-            selectIngredients:  item.selectIngredients ?? [],  // 문자열 배열로 받음
+            selectIngredients:  item.selectIngredients ?? [],
             missingIngredients: item.missingIngredients ?? [],
-            match:              item.match      ?? 100,
+            match:              item.match      ?? 0,
             emoji:              item.emoji      ?? '🍳',
             bg:                 item.bg         ?? '#E1F5EE',
             tags:               [CATEGORY_DECODER[item.category] ?? item.category ?? '한식', `${item.cookingTime}분`],
-            heart:              item.likeCount  ?? 0,   // ✅ viewCount → likeCount
+            heart:              item.likeCount  ?? 0,
             scrap:              item.scrapCount ?? 0,
             urgent:             item.urgent     ?? false,
             isHearted:          item.hearted    ?? false,
             isScrapped:         item.scrapped   ?? false,
+            image:              item.image,
           }));
+
+          // 2. 로그인 상태면 보관함 기반 매칭률을 받아 id별로 덮어쓰기
+          const token = localStorage.getItem('accessToken');
+          if (token) {
+            try {
+              const matchRes = await axiosInstance.get('/recipeMain/match', {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              if (Array.isArray(matchRes.data)) {
+                const rateMap = new Map<number, number>(
+                  matchRes.data.map((m: any) => [m.id, m.matchRate ?? 0]),
+                );
+                mapped.forEach(r => {
+                  if (rateMap.has(r.id)) r.match = rateMap.get(r.id)!;
+                });
+              }
+            } catch (matchErr) {
+              console.error('매칭률 불러오기 실패:', matchErr);
+            }
+          }
+
           setRecipes(mapped);
         } else {
           setRecipes([]);
@@ -103,22 +113,8 @@ const RecipeMain = () => {
     fetchRecipes();
   }, []);
 
-  // ── 파생 데이터 ───────────────────────────────────────
-  const currentRecipe = useMemo(
-    () => recipes.find(r => r.id === selectedRecipeId) ?? null,
-    [recipes, selectedRecipeId],
-  );
-
-  useEffect(() => {
-    if (currentRecipe) {
-      setMustIngredients(currentRecipe.mustIngredients.map(i => ({ ...i })));
-    }
-  }, [currentRecipe]);
-
-  // ── 인터랙션 핸들러 ───────────────────────────────────
   const toggleHeart = async (id: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    // 낙관적 업데이트
     let prev_isHearted = false;
     setRecipes(prev =>
       prev.map(r => {
@@ -131,7 +127,6 @@ const RecipeMain = () => {
     try {
       await axiosInstance.post(`/mypage/${id}/like`);
     } catch (err) {
-      // 실패 시 롤백
       setRecipes(prev =>
         prev.map(r =>
           r.id === id
@@ -145,7 +140,6 @@ const RecipeMain = () => {
 
   const toggleScrap = async (id: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    // 낙관적 업데이트
     let prev_isScrapped = false;
     setRecipes(prev =>
       prev.map(r => {
@@ -158,7 +152,6 @@ const RecipeMain = () => {
     try {
       await axiosInstance.post(`/recipeMain/${id}/clip`);
     } catch (err) {
-      // 실패 시 롤백
       setRecipes(prev =>
         prev.map(r =>
           r.id === id
@@ -170,20 +163,6 @@ const RecipeMain = () => {
     }
   };
 
-  const handleQuantityChange = (index: number, value: string) => {
-    const updated = [...mustIngredients];
-    updated[index] = { ...updated[index], quantity: value };
-    setMustIngredients(updated);
-  };
-
-  const handleCookStart = () => {
-    console.log('최종 재료 데이터:', mustIngredients);
-    alert('요리를 시작합니다! 메인 목록으로 돌아갑니다.');
-    setIsModalOpen(false);
-    navigate('/recipeMain');
-  };
-
-  // ── 필터 & 정렬 ───────────────────────────────────────
   const filteredRecipes = useMemo(() => {
     let result = recipes.filter(r => {
       if (urgentOnly && !r.urgent) return false;
@@ -218,279 +197,138 @@ const RecipeMain = () => {
 
   return (
     <div className="recipe-main-container">
-
-      {/* ─── VIEW 1: 목록 ─── */}
-      {view === 'list' && (
-        <div>
-          <div className="recipe-header">
-            <div className="header-top">
-              <div className="header-title">레시피</div>
-              <button className="recipe-register-btn" onClick={() => navigate('/recipeMain/register')}>
-                <span className="add-icon-small">＋</span> 레시피 등록
-              </button>
-            </div>
-
-            <div className="search-sort-bar">
-              <input
-                type="text"
-                placeholder="레시피 이름 또는 태그로 검색..."
-                value={searchQuery}
-                onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                className="search-input"
-              />
-              <select
-                className="sort-select"
-                value={sortBy}
-                onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
-              >
-                <option>추천순</option>
-                <option>최신순</option>
-                <option>인기순</option>
-              </select>
-            </div>
-
-            <div className="category-tabs">
-              {['전체', '한식', '양식', '일식', '중식', '간식', '야식', '다이어트', '밀프랩'].map(cat => (
-                <div
-                  key={cat}
-                  onClick={() => { setActiveCategory(cat); setCurrentPage(1); }}
-                  className={`category-tab ${activeCategory === cat ? 'active' : ''}`}
-                >
-                  {cat}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="filter-bar">
-            <div className="filter-group">
-              <span className="filter-label">재료 일치율</span>
-              <div className="filter-chips">
-                {[{ label: '전체', val: '전체' }, { label: '50% 이상', val: '50' },
-                  { label: '70% 이상', val: '70' }, { label: '100% 일치', val: '100' }].map(item => {
-                  const activeClass = activeMatch === item.val
-                    ? (item.val === '50' || item.val === '70') ? 'active-match-orange' : 'active-green'
-                    : '';
-                  return (
-                    <div key={item.val} onClick={() => { setActiveMatch(item.val); setCurrentPage(1); }}
-                      className={`filter-chip ${activeClass}`}>{item.label}</div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="filter-divider" />
-            <div className="filter-group">
-              <span className="filter-label">조리 시간</span>
-              <div className="filter-chips">
-                {[{ label: '전체', val: '전체' }, { label: '15분 이하', val: '15' },
-                  { label: '30분 이하', val: '30' }, { label: '60분 이하', val: '60' }].map(item => (
-                  <div key={item.val} onClick={() => { setActiveTime(item.val); setCurrentPage(1); }}
-                    className={`filter-chip ${activeTime === item.val ? 'active-green' : ''}`}>{item.label}</div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="feed-content">
-            <div className="recipe-grid">
-              {pagedRecipes.map(r => (
-                <div key={r.id} className="recipe-card" onClick={() => navigate(`/recipeMain/${r.id}`)}>
-                  <div className="card-emoji-wrapper" style={{ backgroundColor: r.bg }}>
-                    <span className="card-emoji">{r.emoji}</span>
-                    <span className={`card-match-badge ${getMatchBadgeClass(r.match)}`}>
-                      {r.match === 100 ? '100% 일치' : `${r.match}% 일치`}
-                    </span>
-                  </div>
-
-                  <div className="card-info">
-                    <div className="card-title-row">
-                      <span className="card-category-tag">{r.cat}</span>
-                      {r.urgent && <span className="card-urgent-tag">임박재료활용</span>}
-                      <span className="card-name">{r.name}</span>
-                    </div>
-                    <div className="card-desc">{r.desc}</div>
-
-                    <div className="card-tags">
-                      {r.tags.map(t => <span key={t} className="card-tag">{t}</span>)}
-                    </div>
-
-                    <div className="card-footer">
-                      <div className="card-meta">
-                        <span>⏱️ {r.time}분</span>
-                        <button
-                          className={`card-heart-btn ${r.isHearted ? 'hearted' : ''}`}
-                          onClick={e => toggleHeart(r.id, e)}
-                        >
-                          {r.isHearted ? '❤️' : '🤍'} {r.heart}
-                        </button>
-                        <button
-                          className={`card-scrap-btn ${r.isScrapped ? 'scrapped' : ''}`}
-                          onClick={e => toggleScrap(r.id, e)}
-                        >
-                          {r.isScrapped ? '⭐' : '☆'} {r.scrap}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {totalPages > 1 && (
-              <div className="pagination-container">
-                <button className="pagination-arrow" disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>◀</button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <div key={page} onClick={() => setCurrentPage(page)}
-                    className={`pagination-number ${currentPage === page ? 'active' : ''}`}>{page}</div>
-                ))}
-                <button className="pagination-arrow" disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>▶</button>
-              </div>
-            )}
-          </div>
+      <div className="recipe-header">
+        <div className="header-top">
+          <div className="header-title">레시피</div>
+          <button className="recipe-register-btn" onClick={() => navigate('/recipeMain/register')}>
+            <span className="add-icon-small">＋</span> 레시피 등록
+          </button>
         </div>
-      )}
 
-      {/* ─── VIEW 2: 상세 ─── */}
-      {view === 'detail' && currentRecipe && (
-        <div className="detail-container">
-          <div
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', cursor: 'pointer' }}
-            onClick={() => navigate('/recipeMain')}
+        <div className="search-sort-bar">
+          <input
+            type="text"
+            placeholder="레시피 이름 또는 태그로 검색..."
+            value={searchQuery}
+            onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+            className="search-input"
+          />
+          <select
+            className="sort-select"
+            value={sortBy}
+            onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
           >
-            <span>⬅️</span>
-            <span style={{ fontSize: '13px', color: '#666' }}>레시피 목록으로</span>
-          </div>
+            <option>추천순</option>
+            <option>최신순</option>
+            <option>인기순</option>
+          </select>
+        </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', maxWidth: '960px', margin: '0 auto' }}>
-            <div>
-              <div style={{
-                height: '220px', background: currentRecipe.bg, borderRadius: '8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '72px', marginBottom: '20px'
-              }}>
-                {currentRecipe.emoji}
-              </div>
-
-              <div style={{ background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', padding: '20px 24px', marginBottom: '16px' }}>
-                <div style={{ fontSize: '20px', fontWeight: 500, marginBottom: '8px' }}>{currentRecipe.name}</div>
-                <div style={{ fontSize: '13px', color: '#666', marginBottom: '14px' }}>{currentRecipe.desc}</div>
-                <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: '#666' }}>
-                  <span>⏱️ {currentRecipe.time}분</span>
-                  <span
-                    onClick={e => toggleHeart(currentRecipe.id, e)}
-                    style={{ cursor: 'pointer', color: currentRecipe.isHearted ? '#E05D5D' : '#666' }}
-                  >
-                    {currentRecipe.isHearted ? '❤️' : '🤍'} {currentRecipe.heart} 좋아요
-                  </span>
-                  <span
-                    onClick={e => toggleScrap(currentRecipe.id, e)}
-                    style={{ cursor: 'pointer', color: currentRecipe.isScrapped ? '#BA7517' : '#666' }}
-                  >
-                    {currentRecipe.isScrapped ? '⭐' : '☆'} {currentRecipe.scrap} 스크랩
-                  </span>
-                </div>
-              </div>
-
-              <div style={{ background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', padding: '20px 24px' }}>
-                <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '14px' }}>조리 방법</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px', color: '#666' }}>
-                  {currentRecipe.steps.map((step, idx) => (
-                    <div key={idx} style={{ display: 'flex', gap: '12px' }}>
-                      <span style={{
-                        width: '22px', height: '22px', borderRadius: '50%',
-                        background: '#E1F5EE', color: '#085041',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                      }}>
-                        {idx + 1}
-                      </span>
-                      <span>{step}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+        <div className="category-tabs">
+          {['전체', '한식', '양식', '일식', '중식', '간식', '야식', '다이어트', '밀프랩'].map(cat => (
+            <div
+              key={cat}
+              onClick={() => { setActiveCategory(cat); setCurrentPage(1); }}
+              className={`category-tab ${activeCategory === cat ? 'active' : ''}`}
+            >
+              {cat}
             </div>
+          ))}
+        </div>
+      </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', padding: '18px 20px' }}>
-                <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '14px' }}>재료</div>
+      <div className="filter-bar">
+        <div className="filter-group">
+          <span className="filter-label">재료 일치율</span>
+          <div className="filter-chips">
+            {[{ label: '전체', val: '전체' }, { label: '50% 이상', val: '50' },
+              { label: '70% 이상', val: '70' }, { label: '100% 일치', val: '100' }].map(item => {
+              const activeClass = activeMatch === item.val
+                ? (item.val === '50' || item.val === '70') ? 'active-match-orange' : 'active-green'
+                : '';
+              return (
+                <div key={item.val} onClick={() => { setActiveMatch(item.val); setCurrentPage(1); }}
+                  className={`filter-chip ${activeClass}`}>{item.label}</div>
+              );
+            })}
+          </div>
+        </div>
+        <div className="filter-divider" />
+        <div className="filter-group">
+          <span className="filter-label">조리 시간</span>
+          <div className="filter-chips">
+            {[{ label: '전체', val: '전체' }, { label: '15분 이하', val: '15' },
+              { label: '30분 이하', val: '30' }, { label: '60분 이하', val: '60' }].map(item => (
+              <div key={item.val} onClick={() => { setActiveTime(item.val); setCurrentPage(1); }}
+                className={`filter-chip ${activeTime === item.val ? 'active-green' : ''}`}>{item.label}</div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-                <div style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>필수 재료</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', marginBottom: '14px', fontSize: '13px' }}>
-                  {currentRecipe.mustIngredients.map((ing, idx) => (
-                    <div key={idx}>• {ing.name} {ing.quantity}</div>
-                  ))}
-                </div>
-
-                <div style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>선택 재료</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', fontSize: '13px' }}>
-                  {currentRecipe.selectIngredients.map((ing) => (
-                    <div key={idx}>• {ing}</div>
-                  ))}
-                </div>
+      <div className="feed-content">
+        <div className="recipe-grid">
+          {pagedRecipes.map(r => (
+            <div key={r.id} className="recipe-card" onClick={() => navigate(`/recipeMain/${r.id}`)}>
+              <div className="card-emoji-wrapper" style={{ backgroundColor: r.bg, overflow: 'hidden' }}>
+                {r.image ? (
+                  <img src={r.image} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span className="card-emoji">{r.emoji}</span>
+                )}
+                <span className={`card-match-badge ${getMatchBadgeClass(r.match)}`}>
+                  {r.match === 100 ? '100% 일치' : `${r.match}% 일치`}
+                </span>
               </div>
 
-              {currentRecipe.missingIngredients && currentRecipe.missingIngredients.length > 0 && (
-                <div style={{ background: '#FCEBEB', border: '0.5px solid #F09595', borderRadius: '8px', padding: '14px 16px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 500, color: '#791F1F', marginBottom: '8px' }}>🛒 없는 재료</div>
-                  <div style={{ fontSize: '12px', color: '#A32D2D' }}>
-                    {currentRecipe.missingIngredients.join(', ')}
+              <div className="card-info">
+                <div className="card-title-row">
+                  <span className="card-category-tag">{r.cat}</span>
+                  {r.urgent && <span className="card-urgent-tag">임박재료활용</span>}
+                  <span className="card-name">{r.name}</span>
+                </div>
+                <div className="card-desc">{r.desc}</div>
+
+                <div className="card-tags">
+                  {r.tags.map(t => <span key={t} className="card-tag">{t}</span>)}
+                </div>
+
+                <div className="card-footer">
+                  <div className="card-meta">
+                    <span>⏱️ {r.time}분</span>
+                    <button
+                      className={`card-heart-btn ${r.isHearted ? 'hearted' : ''}`}
+                      onClick={e => toggleHeart(r.id, e)}
+                    >
+                      {r.isHearted ? '❤️' : '🤍'} {r.heart}
+                    </button>
+                    <button
+                      className={`card-scrap-btn ${r.isScrapped ? 'scrapped' : ''}`}
+                      onClick={e => toggleScrap(r.id, e)}
+                    >
+                      {r.isScrapped ? '⭐' : '☆'} {r.scrap}
+                    </button>
                   </div>
                 </div>
-              )}
-
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={e => toggleScrap(currentRecipe.id, e)}
-                  style={{
-                    flex: 1, padding: '10px',
-                    background: currentRecipe.isScrapped ? '#BA7517' : '#1D9E75',
-                    color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer'
-                  }}
-                >
-                  {currentRecipe.isScrapped ? '★ 스크랩 취소' : '⭐ 스크랩'}
-                </button>
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  style={{ flex: 1, padding: '10px', background: '#0BA574', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
-                >
-                  요리하기
-                </button>
               </div>
             </div>
-          </div>
+          ))}
         </div>
-      )}
 
-      {/* ─── 모달 ─── */}
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div style={{ backgroundColor: '#fff', width: '360px', maxWidth: '90vw', borderRadius: '12px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-            <div className="modal-title">🍳 사용할 재료 및 수량 확인</div>
-            <div className="modal-list">
-              {mustIngredients.map((item, index) => (
-                <div key={index} className="modal-item">
-                  <span className="modal-item-name">• {item.name}</span>
-                  <input
-                    type="text"
-                    value={item.quantity ?? ''}
-                    onChange={e => handleQuantityChange(index, e.target.value)}
-                    className="modal-item-input"
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="modal-btn-group">
-              <button onClick={() => setIsModalOpen(false)} className="modal-cancel-btn">취소</button>
-              <button onClick={handleCookStart} className="modal-confirm-btn">확인 및 요리시작</button>
-            </div>
+        {totalPages > 1 && (
+          <div className="pagination-container">
+            <button className="pagination-arrow" disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>◀</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <div key={page} onClick={() => setCurrentPage(page)}
+                className={`pagination-number ${currentPage === page ? 'active' : ''}`}>{page}</div>
+            ))}
+            <button className="pagination-arrow" disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>▶</button>
           </div>
-        </div>
-      )}
-
+        )}
+      </div>
     </div>
   );
 };
-
 export default RecipeMain;

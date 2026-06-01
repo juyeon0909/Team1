@@ -1,8 +1,10 @@
 package com.Plz.Beats.controller;
 
 import com.Plz.Beats.dto.RecipeDto;
+import com.Plz.Beats.service.RecipeMatchService;
 import com.Plz.Beats.service.RecipeService;
 import com.Plz.Beats.service.S3Service;
+import com.Plz.Beats.service.StorageItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/recipeMain")
@@ -20,11 +23,12 @@ public class RecipeController {
 
     private final RecipeService recipeService;
     private final S3Service s3Service;
+    private final RecipeMatchService recipeMatchService;
+    private final StorageItemService storageItemService;
 
     // 1. 메인 목록 피드 데이터 받아오기 (비로그인/로그인 전체 허용)
     @GetMapping
     public ResponseEntity<?> getAllRecipes(Principal principal) {
-        // 💡 시큐리티 익명 사용자 관례("anonymousUser")까지 완벽하게 파악하여 "GUEST"로 통합 처리
         String email = "GUEST";
         if (principal != null && !"anonymousUser".equals(principal.getName())) {
             email = principal.getName();
@@ -74,7 +78,7 @@ public class RecipeController {
     }
 
     // 🟢 내가 등록한 마이페이지 레시피 목록 조회 API 추가
-    @GetMapping("/mypage/recipe") // ⚠️ 기본 설정을 무시하고 절대 경로로 매핑
+    @GetMapping("/mypage/recipe")
     public ResponseEntity<?> getMyPageRecipes(Principal principal) {
         // 비로그인 유저 예외 처리
         if (principal == null || "anonymousUser".equals(principal.getName())) {
@@ -85,5 +89,29 @@ public class RecipeController {
         // 💡 Service에 내 이메일로 등록된 레시피만 가져오는 메서드 호출
         List<RecipeDto> myRecipes = recipeService.getRecipes(email);
         return ResponseEntity.ok(myRecipes);
+    }
+
+    // 4. 요리하기: 사용한 재료를 냉장고에서 차감
+    @PostMapping("/{id}/cook")
+    public ResponseEntity<?> cookRecipe(
+            @PathVariable Long id,
+            @RequestBody List<Map<String, String>> ingredients,
+            Principal principal) {
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+        storageItemService.deductIngredients(principal.getName(), ingredients);
+        return ResponseEntity.ok("재료 차감 완료");
+    }
+
+    @GetMapping("/match")
+    public ResponseEntity<?> getRecipesWithMatch(Principal principal) {
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("로그인이 필요한 서비스입니다.");
+        }
+
+        String email = principal.getName();
+        return ResponseEntity.ok(recipeMatchService.getRecipesWithMatchRate(email));
     }
 }

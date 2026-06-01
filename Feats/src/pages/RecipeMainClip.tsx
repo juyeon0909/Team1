@@ -12,16 +12,16 @@ interface ScrapedRecipe {
   likes: number;
   scrapped: boolean;
   scrappedAt: string;
+  image?: string;
   match?: number;
   emoji?: string;
   bg?: string;
   desc?: string;
   tags?: string[];
   urgent?: boolean;
-  // star 제거
 }
 
-const SORT_OPTIONS = ['최신 스크랩순', '좋아요순']; // 별점순 제거
+const SORT_OPTIONS = ['최신 스크랩순', '좋아요순'];
 const CATEGORIES = ['전체', '한식', '일식', '중식', '양식', '간식', '야식', '다이어트식', '밀프랩'];
 
 const getMatchBadgeClass = (match?: number) => {
@@ -85,7 +85,7 @@ const RecipeMainClip = () => {
     })
     .sort((a, b) => {
       if (sortBy === '좋아요순') return b.likes - a.likes;
-      return b.scrappedAt.localeCompare(a.scrappedAt); // 기본: 최신 스크랩순
+      return b.scrappedAt.localeCompare(a.scrappedAt);
     });
 
   if (loading) return <div className="scrap-page"><p style={{ padding: 32 }}>불러오는 중...</p></div>;
@@ -159,7 +159,11 @@ const RecipeMainClip = () => {
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="scrap-card-img" style={{ background: r.bg ?? '#F0F0F0' }}>
-                    <span className="scrap-card-emoji">{r.emoji ?? '🍽️'}</span>
+             {r.image ? (
+               <img src={r.image} alt={r.title} className="scrap-card-img-file" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+             ) : (
+               <span className="scrap-card-emoji">{r.emoji ?? '🍽️'}</span>
+             )}
                     {r.match !== undefined && (
                       <span className={`scrap-match-badge ${getMatchBadgeClass(r.match)}`}>
                         {r.match === 100 ? '100% 일치' : `${r.match}% 일치`}
@@ -186,7 +190,6 @@ const RecipeMainClip = () => {
                       <div className="scrap-card-meta">
                         <span>⏱️ {r.time}</span>
                         <span>❤️ {r.likes}</span>
-                        {/* star 표시 제거 */}
                       </div>
                       <span className="scrap-card-date">📌 {r.scrappedAt}</span>
                     </div>

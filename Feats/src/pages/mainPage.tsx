@@ -344,4 +344,5 @@ const MainPage: React.FC = () => {
     );
 };
 
+/*커밋 체크*/
 export default MainPage;

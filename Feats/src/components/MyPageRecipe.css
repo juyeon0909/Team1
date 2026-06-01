@@ -163,6 +163,45 @@
   background-color: #fff3f3;
 }
 
+/* 수정/삭제 버튼 영역 */
+.recipe-card-footer {
+  display: flex;
+  gap: 8px;
+  padding: 0 14px 14px;
+}
+
+.recipe-edit-btn,
+.recipe-delete-btn {
+  flex: 1;
+  padding: 7px 0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.15s ease;
+}
+
+.recipe-edit-btn {
+  background-color: #f0faf5;
+  color: #1D9E75;
+  border: 0.5px solid #1D9E75;
+}
+
+.recipe-edit-btn:hover {
+  background-color: #d8f5ea;
+}
+
+.recipe-delete-btn {
+  background-color: #fff5f5;
+  color: #e03131;
+  border: 0.5px solid #e03131;
+}
+
+.recipe-delete-btn:hover {
+  background-color: #ffe3e3;
+}
+
 /* 로딩 전용 컨테이너 박스 */
 .mypage-loading-box {
   text-align: center;

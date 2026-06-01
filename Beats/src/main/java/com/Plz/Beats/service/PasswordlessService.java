@@ -312,7 +312,9 @@ public class PasswordlessService {
 
             log.info("cancel API 응답: {}", responseBody);
 
-            if (responseBody != null && "Y".equals(responseBody.get("result"))) {
+            Object resultObj = responseBody != null ? responseBody.get("result") : null;
+            if (resultObj != null && (resultObj.equals(true) || "true".equals(String.valueOf(resultObj)))) {
+                approvalCache.remove(email + ":" + randomValue);
                 log.info("인증 취소 완료 (email: {})", email);
                 return true;
             }
@@ -344,7 +346,8 @@ public class PasswordlessService {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             Map<String, Object> responseBody = response.getBody();
 
-            if (responseBody != null && "Y".equals(responseBody.get("result"))) {
+            Object resultObj = responseBody != null ? responseBody.get("result") : null;
+            if (resultObj != null && (resultObj.equals(true) || "true".equals(String.valueOf(resultObj)))) {
                 log.info("패스워드리스 서비스 해지 완료 (email: {})", email);
                 return true;
             }

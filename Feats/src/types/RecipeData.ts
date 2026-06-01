@@ -16,6 +16,7 @@ export type Recipe = {
   urgent: boolean;
   isScrapped?: boolean;
   isHearted?: boolean;
+  image: string;
 }
 
 // 2. [임시 데이터] 나중에 DB 연동 완료되면 이 배열은 통째로 지울 겁니다.

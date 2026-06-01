@@ -38,6 +38,7 @@ public class RecipeService {
      */
     @Transactional
     public RecipeDto createRecipe(RecipeDto dto, String username) {
+        // 비로그인 상태 가로채기 방어
         if ("GUEST".equals(username) || username == null) {
             throw new IllegalArgumentException("레시피 등록 및 수정은 로그인 후 이용 가능합니다.");
         }
@@ -49,7 +50,7 @@ public class RecipeService {
         recipe.setMember(member);
         recipe.setTitle(dto.getTitle());
         recipe.setDishName(dto.getDishName() != null ? dto.getDishName() : dto.getTitle());
-        recipe.setImage(dto.getImage() != null ? dto.getImage() : "default_recipe.png");
+        recipe.setImage(dto.getImage() != null ? dto.getImage() : "");
         recipe.setCategory(Category.valueOf(dto.getCategory()));
         recipe.setCookingTime(dto.getCookingTime());
         recipe.setDescription(dto.getDescription());
@@ -63,10 +64,12 @@ public class RecipeService {
             recipe.setCookingMethod("1. 맛있게 요리합니다.");
         }
 
+        // 자식 테이블(RecipeIngredient) 연동 매핑
         if (dto.getMustIngredients() != null) {
             for (RecipeDto.MustIngredientDto ingDto : dto.getMustIngredients()) {
                 RecipeIngredient ingredient = new RecipeIngredient();
 
+                // 💡 [핵심 변경 포인트]: DB에 유저가 입력한 재료가 없을 경우의 유연한 처리
                 Item item = itemRepository.findByName(ingDto.getName().trim())
                         .orElseGet(() -> {
                             Item newItem = new Item();
@@ -77,7 +80,10 @@ public class RecipeService {
                 ingredient.setItem(item);
                 ingredient.setQuantity(ingDto.getQuantity());
                 ingredient.setUnit("");
+
+                // 엔티티의 boolean isRequired 필드에 대응하는 롬복 관례 세터
                 ingredient.setRequired(true);
+
                 ingredient.setRecipe(recipe);
                 recipe.getRecipeIngredients().add(ingredient);
             }
@@ -143,11 +149,14 @@ public class RecipeService {
      * 내가 등록한 레시피 목록 조회 (마이페이지용)
      */
     public List<RecipeDto> getMyRecipes(String email) {
+        // 1. 이메일로 회원 정보 조회
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
+        // 2. 해당 회원이 작성한 레시피만 조회 (RecipeRepository의 findByMember 활용)
         List<Recipe> myRecipes = recipeRepository.findByMember(member);
 
+        // 3. Entity -> DTO 변환 로직 진행
         return myRecipes.stream().map(recipe -> {
             RecipeDto dto = new RecipeDto();
             dto.setId(recipe.getId());
@@ -161,6 +170,7 @@ public class RecipeService {
             if (recipe.getCookingMethod() != null) {
                 dto.setSteps(Arrays.asList(recipe.getCookingMethod().split("\n")));
             }
+
 
             List<RecipeDto.MustIngredientDto> ingDtos = recipe.getRecipeIngredients().stream()
                     .map(ing -> new RecipeDto.MustIngredientDto(
@@ -193,6 +203,7 @@ public class RecipeService {
                         r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : ""
                 )).collect(Collectors.toList());
     }
+
 
     /**
      * 레시피 승인

@@ -14,6 +14,7 @@ interface Recipe {
 }
 
 const TOKEN_KEY = 'accessToken';
+const CATEGORIES = ['전체', '한식', '일식', '중식', '양식', '간식', '야식', '다이어트식', '밀프랩'];
 
 const MyPageRecipe = () => {
   const navigate = useNavigate();

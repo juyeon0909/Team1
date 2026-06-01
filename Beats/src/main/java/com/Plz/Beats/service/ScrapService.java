@@ -40,7 +40,8 @@ public class ScrapService {
                             r.getMember().getName(),
                             scrapRepository.countByRecipe(r),
                             true,
-                            scrap.getCreatedAt().toLocalDate().toString()
+                            scrap.getCreatedAt().toLocalDate().toString(),
+                            r.getImage()
                     );
                 })
                 .collect(Collectors.toList());
@@ -68,4 +69,7 @@ public class ScrapService {
             return true; // 스크랩 추가
         }
     }
+
+
+
 }

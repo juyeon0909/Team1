@@ -44,7 +44,7 @@ public class Scrap {
     @JoinColumn(name = "recipe_id", nullable = false)
     private Recipe recipe;
 
-    // 스크랩한 시각
+    //  스크랩한 시각
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

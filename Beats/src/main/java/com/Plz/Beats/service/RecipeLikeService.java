@@ -40,7 +40,8 @@ public class RecipeLikeService {
                             r.getMember().getName(),
                             recipeLikeRepository.countByRecipe(r),
                             true,
-                            like.getCreatedAt().toLocalDate().toString()
+                            like.getCreatedAt().toLocalDate().toString(),
+                            r.getImage()
                     );
                 })
                 .collect(Collectors.toList());
@@ -64,7 +65,7 @@ public class RecipeLikeService {
             newLike.setMember(member);
             newLike.setRecipe(recipe);
             recipeLikeRepository.save(newLike);
-            return true; // 추가됨
+            return true; //  추가됨
         }
     }
 

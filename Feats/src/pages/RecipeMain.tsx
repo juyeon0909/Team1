@@ -19,9 +19,10 @@ interface Recipe {
   isHearted?: boolean;
   isScrapped?: boolean;
   mustIngredients: { name: string; quantity: string }[];
-  selectIngredients: string[];        // ✅ 문자열 배열로 통일
+  selectIngredients: string[];
   missingIngredients: string[];
   steps: string[];
+  image: string;
 }
 
 
@@ -63,45 +64,135 @@ const RecipeMain = () => {
   const perPage = 6;
 
   // ── API 호출 ──────────────────────────────────────────
-  useEffect(() => {
-    const fetchRecipes = async () => {
-      try {
-        setLoading(true);
-        const response = await axiosInstance.get('/recipeMain');
-        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-          const mapped: Recipe[] = response.data.map((item: any) => ({
-            id:                 item.recipeId    ?? item.id,
-            name:               item.title,
-            cat:                CATEGORY_DECODER[item.category] ?? item.category ?? '한식',
-            time:               item.cookingTime,
-            desc:               item.description,
-            steps:              Array.isArray(item.steps) ? item.steps : [],
-            mustIngredients:    item.mustIngredients   ?? [],
-            selectIngredients:  item.selectIngredients ?? [],  // 문자열 배열로 받음
-            missingIngredients: item.missingIngredients ?? [],
-            match:              item.match      ?? 100,
-            emoji:              item.emoji      ?? '🍳',
-            bg:                 item.bg         ?? '#E1F5EE',
-            tags:               [CATEGORY_DECODER[item.category] ?? item.category ?? '한식', `${item.cookingTime}분`],
-            heart:              item.likeCount  ?? 0,   // ✅ viewCount → likeCount
-            scrap:              item.scrapCount ?? 0,
-            urgent:             item.urgent     ?? false,
-            isHearted:          item.hearted    ?? false,
-            isScrapped:         item.scrapped   ?? false,
-          }));
-          setRecipes(mapped);
-        } else {
+  // ── API 호출 ──────────────────────────────────────────
+    useEffect(() => {
+      const fetchRecipes = async () => {
+        try {
+          setLoading(true);
+
+          // 1. 레시피 목록 (비로그인 포함 누구나)
+          const response = await axiosInstance.get('/recipeMain');
+          if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+            const mapped: Recipe[] = response.data.map((item: any) => ({
+              id:                 item.recipeId    ?? item.id,
+              name:               item.title,
+              cat:                CATEGORY_DECODER[item.category] ?? item.category ?? '한식',
+              time:               item.cookingTime,
+              desc:               item.description,
+              steps:              Array.isArray(item.steps) ? item.steps : [],
+              mustIngredients:    item.mustIngredients   ?? [],
+              selectIngredients:  item.selectIngredients ?? [],  // 문자열 배열로 받음
+              missingIngredients: item.missingIngredients ?? [],
+              match:              item.match      ?? 0,   // 💡 로그인 시 아래에서 실제 매칭률로 덮어씀
+              emoji:              item.emoji      ?? '🍳',
+              bg:                 item.bg         ?? '#E1F5EE',
+              tags:               [CATEGORY_DECODER[item.category] ?? item.category ?? '한식', `${item.cookingTime}분`],
+              heart:              item.likeCount  ?? 0,
+              scrap:              item.scrapCount ?? 0,
+              urgent:             item.urgent     ?? false,
+              isHearted:          item.hearted    ?? false,
+              isScrapped:         item.scrapped   ?? false,
+              image: item.image,
+            }));
+
+            // 2. 로그인 상태면 보관함 기반 매칭률을 받아 id별로 덮어쓰기
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+              try {
+                const matchRes = await axiosInstance.get('/api/recipeMain/match', {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                if (Array.isArray(matchRes.data)) {
+                  const rateMap = new Map<number, number>(
+                    matchRes.data.map((m: any) => [m.id, m.matchRate ?? 0]),
+                  );
+                  mapped.forEach(r => {
+                    if (rateMap.has(r.id)) r.match = rateMap.get(r.id)!;
+                  });
+                }
+              } catch (matchErr) {
+                // 매칭률 실패해도 목록은 그대로 노출 (비로그인과 동일하게 동작)
+                console.error('매칭률 불러오기 실패:', matchErr);
+              }
+            }
+
+            setRecipes(mapped);
+          } else {
+            setRecipes([]);
+          }
+        } catch (error) {// ── API 호출 ──────────────────────────────────────────
+           useEffect(() => {
+             const fetchRecipes = async () => {
+               try {
+                 setLoading(true);
+
+                 // 1. 레시피 목록 (비로그인 포함 누구나)
+                 const response = await axiosInstance.get('/recipeMain');
+                 if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+                   const mapped: Recipe[] = response.data.map((item: any) => ({
+                     id:                 item.recipeId    ?? item.id,
+                     name:               item.title,
+                     cat:                CATEGORY_DECODER[item.category] ?? item.category ?? '한식',
+                     time:               item.cookingTime,
+                     desc:               item.description,
+                     steps:              Array.isArray(item.steps) ? item.steps : [],
+                     mustIngredients:    item.mustIngredients   ?? [],
+                     selectIngredients:  item.selectIngredients ?? [],  // 문자열 배열로 받음
+                     missingIngredients: item.missingIngredients ?? [],
+                     match:              item.match      ?? 0,   // 💡 로그인 시 아래에서 실제 매칭률로 덮어씀
+                     emoji:              item.emoji      ?? '🍳',
+                     bg:                 item.bg         ?? '#E1F5EE',
+                     tags:               [CATEGORY_DECODER[item.category] ?? item.category ?? '한식', `${item.cookingTime}분`],
+                     heart:              item.likeCount  ?? 0,
+                     scrap:              item.scrapCount ?? 0,
+                     urgent:             item.urgent     ?? false,
+                     isHearted:          item.hearted    ?? false,
+                     isScrapped:         item.scrapped   ?? false,
+                     image: item.image,
+                   }));
+
+                   // 2. 로그인 상태면 보관함 기반 매칭률을 받아 id별로 덮어쓰기
+                   const token = localStorage.getItem('accessToken');
+                   if (token) {
+                     try {
+                       const matchRes = await axiosInstance.get('/api/recipeMain/match', {
+                         headers: { Authorization: `Bearer ${token}` },
+                       });
+                       if (Array.isArray(matchRes.data)) {
+                         const rateMap = new Map<number, number>(
+                           matchRes.data.map((m: any) => [m.id, m.matchRate ?? 0]),
+                         );
+                         mapped.forEach(r => {
+                           if (rateMap.has(r.id)) r.match = rateMap.get(r.id)!;
+                         });
+                       }
+                     } catch (matchErr) {
+                       // 매칭률 실패해도 목록은 그대로 노출 (비로그인과 동일하게 동작)
+                       console.error('매칭률 불러오기 실패:', matchErr);
+                     }
+                   }
+
+                   setRecipes(mapped);
+                 } else {
+                   setRecipes([]);
+                 }
+               } catch (error) {
+                 console.error('서버 데이터 로딩 실패:', error);
+                 setRecipes([]);
+               } finally {
+                 setLoading(false);
+               }
+             };
+             fetchRecipes();
+           }, []);
+          console.error('서버 데이터 로딩 실패:', error);
           setRecipes([]);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('서버 데이터 로딩 실패:', error);
-        setRecipes([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchRecipes();
-  }, []);
+      };
+      fetchRecipes();
+    }, []);
 
   // ── 파생 데이터 ───────────────────────────────────────
   const currentRecipe = useMemo(
@@ -295,8 +386,12 @@ const RecipeMain = () => {
             <div className="recipe-grid">
               {pagedRecipes.map(r => (
                 <div key={r.id} className="recipe-card" onClick={() => navigate(`/recipeMain/${r.id}`)}>
-                  <div className="card-emoji-wrapper" style={{ backgroundColor: r.bg }}>
-                    <span className="card-emoji">{r.emoji}</span>
+                  <div className="card-emoji-wrapper" style={{ backgroundColor: r.bg, overflow: 'hidden' }}>
+                    {r.image ? (
+                      <img src={r.image} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <span className="card-emoji">{r.emoji}</span>
+                    )}
                     <span className={`card-match-badge ${getMatchBadgeClass(r.match)}`}>
                       {r.match === 100 ? '100% 일치' : `${r.match}% 일치`}
                     </span>
@@ -370,7 +465,11 @@ const RecipeMain = () => {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '72px', marginBottom: '20px'
               }}>
-                {currentRecipe.emoji}
+               {currentRecipe.image ? (
+                 <img src={currentRecipe.image} alt={currentRecipe.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+               ) : (
+                 currentRecipe.emoji
+               )}
               </div>
 
               <div style={{ background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', padding: '20px 24px', marginBottom: '16px' }}>
@@ -425,7 +524,7 @@ const RecipeMain = () => {
 
                 <div style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>선택 재료</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', fontSize: '13px' }}>
-                  {currentRecipe.selectIngredients.map((ing) => (
+                  {currentRecipe.selectIngredients.map((ing, idx) => (
                     <div key={idx}>• {ing}</div>
                   ))}
                 </div>

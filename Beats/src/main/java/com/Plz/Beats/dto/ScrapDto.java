@@ -14,5 +14,6 @@ public class ScrapDto {
     private long   likes;       // 스크랩 수
     private boolean scrapped;
     private String scrappedAt;
+    private String image;
     // star 제거
 }

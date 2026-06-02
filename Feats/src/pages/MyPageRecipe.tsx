@@ -1,25 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
-import { CATEGORY_DECODER } from '../types/Recipe';
+import type { RecipeView, RecipeDto } from '../types/Recipe';
+import { toRecipeView } from '../types/recipeMapper';
+import RecipeCard from '../pages/RecipeCard';
 import '../components/MyPageRecipe.css';
 
-interface Recipe {
-  id: number;
-  title: string;
-  dishName: string;
-  category: string;
-  cookingTime: number;
-  description: string;
-  image?: string;
-}
-
 const TOKEN_KEY = 'accessToken';
-const CATEGORIES = ['전체', '한식', '일식', '중식', '양식', '간식', '야식', '다이어트', '밀프랩'];
 
 const MyPageRecipe = () => {
   const navigate = useNavigate();
-  const [myRecipes, setMyRecipes] = useState<Recipe[]>([]);
+  const [myRecipes, setMyRecipes] = useState<RecipeView[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 6;
@@ -27,16 +18,13 @@ const MyPageRecipe = () => {
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
 
-    axiosInstance.get('/mypage/recipe', {
+    axiosInstance.get<RecipeDto[]>('/mypage/recipe', {
       headers: {
         Authorization: token ? `Bearer ${token}` : ''
       }
     })
       .then((res) => {
-        const mapped: Recipe[] = (res.data ?? []).map((r: Recipe) => ({
-          ...r,
-          category: CATEGORY_DECODER[r.category] ?? r.category,
-        }));
+        const mapped = (res.data ?? []).map(toRecipeView);
         setMyRecipes(mapped);
         setLoading(false);
       })
@@ -76,7 +64,7 @@ const MyPageRecipe = () => {
     })
       .then(() => {
         alert("레시피가 성공적으로 삭제되었습니다.");
-        setMyRecipes(myRecipes.filter(recipe => recipe.id !== id));
+        setMyRecipes(prev => prev.filter(recipe => recipe.id !== id));
       })
       .catch((err) => {
         console.error("레시피 삭제 실패:", err);
@@ -123,31 +111,18 @@ const MyPageRecipe = () => {
       ) : (
         <>
           <div className="recipe-card-grid">
-            {pagedRecipes.map((recipe) => (
-              <div
-                key={recipe.id}
-                onClick={() => navigate(`/recipeMain/${recipe.id}`)}
-                className="recipe-item-card"
-              >
-                <div className="recipe-card-image-box">
-                  {recipe.image ? (
-                    <img src={recipe.image} alt={recipe.title} className="recipe-card-img" />
-                  ) : (
-                    <div className="recipe-card-no-img">🍳</div>
-                  )}
-                </div>
-
-                <div className="recipe-card-content">
-                  <span className="recipe-card-category">{recipe.category}</span>
-                  <h3 className="recipe-card-title-text">{recipe.dishName}</h3>
-                  <p className="recipe-card-desc-text">{recipe.description}</p>
-                </div>
-
-                <div className="recipe-card-footer">
-                  <button className="recipe-edit-btn" onClick={e => handleEdit(recipe.id, e)}>수정</button>
-                  <button className="recipe-delete-btn" onClick={e => handleDelete(recipe.id, e)}>삭제</button>
-                </div>
-              </div>
+            {pagedRecipes.map((r) => (
+              <RecipeCard
+                key={r.id}
+                recipe={r}
+                onClick={(id) => navigate(`/recipeMain/${id}`)}
+                footer={
+                  <>
+                    <button className="recipe-edit-btn" onClick={e => handleEdit(r.id, e)}>수정</button>
+                    <button className="recipe-delete-btn" onClick={e => handleDelete(r.id, e)}>삭제</button>
+                  </>
+                }
+              />
             ))}
           </div>
 

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import customAxios from './../api/axiosInstance';
 import type { RecipeView, RecipeDto } from '../types/Recipe';
 import { toRecipeView } from '../types/recipeMapper';
+import RecipeCard from '../pages/RecipeCard';
 import '../components/MyPage.css';
 
 const SORT_OPTIONS = ['최신 등록순', '인기순', '요리시간 짧은순'];
@@ -12,24 +13,22 @@ const FILTER_CATEGORIES = ['all', '한식', '일식', '중식', '양식', '간�
 export default function LikedRecipes() {
   const navigate = useNavigate();
 
-  const [recipes, setRecipes] = useState<RecipeView[]>([]);
-  const [curFilter, setCurFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('최신 등록순');
-  const [curSearch, setCurSearch] = useState('');
-  const [removingId, setRemovingId] = useState<number | null>(null);
-  const [error, setError] = useState('');
+  const [recipes,      setRecipes]      = useState<RecipeView[]>([]);
+  const [curFilter,    setCurFilter]    = useState('all');
+  const [sortBy,       setSortBy]       = useState('최신 등록순');
+  const [curSearch,    setCurSearch]    = useState('');
+  const [removingId,   setRemovingId]   = useState<number | null>(null);
+  const [error,        setError]        = useState('');
   const [toastMessage, setToastMessage] = useState('');
-  const [showToast, setShowToast] = useState(false);
+  const [showToast,    setShowToast]    = useState(false);
 
   useEffect(() => {
     const fetchLikedRecipes = async () => {
       try {
-        const res = await customAxios.get<(RecipeDto & { author?: string; scrappedAt?: string })[]>('/mypage/like');
+        const res = await customAxios.get<(RecipeDto & { scrappedAt?: string })[]>('/mypage/like');
         const mapped = (res.data ?? []).map(dto => ({
           ...toRecipeView(dto),
-          author: dto.author ?? '',
           scrappedAt: dto.scrappedAt ?? '',
-          isHearted: true, // 좋아요 목록이므로 항상 true
         }));
         setRecipes(mapped);
       } catch (error) {
@@ -52,6 +51,7 @@ export default function LikedRecipes() {
     setShowToast(true);
   };
 
+  // 좋아요 취소 → 목록에서 제거
   const handleToggleLike = async (id: number, title: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setRemovingId(id);
@@ -147,74 +147,40 @@ export default function LikedRecipes() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
-              {filteredRecipes.length === 0 ? (
-                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 0', color: '#999' }}>
-                  <div style={{ fontSize: '40px', marginBottom: '12px' }}>💔</div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#475569' }}>해당하는 레시피가 없습니다</div>
-                  <div style={{ fontSize: '13px', marginTop: '6px', color: '#94a3b8' }}>마음에 드는 음식을 리스트에서 찜해보세요!</div>
-                  <button
-                    onClick={() => navigate('/recipeMain')}
-                    style={{ marginTop: '16px', padding: '8px 16px', background: '#6abf69', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}
-                  >
-                    레시피 둘러보기
-                  </button>
-                </div>
-              ) : (
-                filteredRecipes.map((r) => (
-                  <div
+            {filteredRecipes.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 0', color: '#999' }}>
+                <div style={{ fontSize: '40px', marginBottom: '12px' }}>💔</div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#475569' }}>해당하는 레시피가 없습니다</div>
+                <div style={{ fontSize: '13px', marginTop: '6px', color: '#94a3b8' }}>마음에 드는 음식을 리스트에서 찜해보세요!</div>
+                <button
+                  onClick={() => navigate('/recipeMain')}
+                  style={{ marginTop: '16px', padding: '8px 16px', background: '#6abf69', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}
+                >
+                  레시피 둘러보기
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
+                {filteredRecipes.map((r) => (
+                  <RecipeCard
                     key={r.id}
-                    onClick={() => navigate(`/recipeMain/${r.id}`)}
-                    style={{
-                      border: '1px solid #f1f5f9', borderRadius: '10px', overflow: 'hidden',
-                      cursor: 'pointer', background: '#fff', position: 'relative',
-                      boxShadow: '0 2px 6px rgba(0,0,0,0.01)',
-                      transition: 'transform 0.2s, opacity 0.3s',
-                      opacity: removingId === r.id ? 0 : 1,
-                      transform: removingId === r.id ? 'scale(0.95)' : 'none'
-                    }}
-                  >
-                    
-                    <div style={{
-                      backgroundColor:'#f5f5f5',
-                      height: '140px', position: 'relative', overflow: 'hidden',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '52px'
-                    }}>
-                      {r.image ? (
-                        <img src={r.image} alt={r.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        <span>🍽️</span>
-                      )}
-
-                      {r.urgent && (
-                        <span style={{ position: 'absolute', bottom: '10px', left: '10px', background: '#ef4444', color: '#fff', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
-                          임박재료
-                        </span>
-                      )}
+                    recipe={r}
+                    className={removingId === r.id ? 'removing' : ''}
+                    onClick={(id) => navigate(`/recipeMain/${id}`)}
+                    imageAction={
                       <button
                         onClick={(e) => handleToggleLike(r.id, r.title, e)}
-                        style={{ position: 'absolute', top: '10px', right: '10px', background: '#fff', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}
+                        style={{ background: '#fff', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}
                         title="좋아요 취소"
                       >
                         ❤️
                       </button>
-                    </div>
-
-                    {/* 카드 본문 */}
-                    <div style={{ padding: '14px' }}>
-                      <span style={{ fontSize: '11px', color: '#6abf69', fontWeight: 'bold' }}>[{r.category}]</span>
-                      <h4 style={{ margin: '4px 0 8px 0', fontSize: '14px', fontWeight: 'bold', color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {r.title}
-                      </h4>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b' }}>
-                        <span>⏱️ {r.time}</span>
-                        <span>👤 {r.author}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+                    }
+                    metaExtra={<span>❤️ {r.heart}</span>}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

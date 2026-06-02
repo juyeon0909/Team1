@@ -14,7 +14,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class ResetPasswordService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // 1. 이름 + 이메일 일치 확인
     public void verifyIdentity(String name, String email) {

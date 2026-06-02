@@ -51,5 +51,5 @@ public class Member {
     private String profileimage;
 
     public void updatePassword(String encode) /* 비밀번호 초기화시 사용 */ {
-    }
+        this.password = encodedPassword;}
 }

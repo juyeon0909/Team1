@@ -27,17 +27,17 @@ public class StorageItemService {
     private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
 
-    // 유통기한 임박 순 상위 4개 조회 (메인 페이지용)
+    // 유통기한 임박 순 상위 4개 조회
     public List<StorageItemDto> getTop4ExpiringItems(Long memberId) {
         List<Storage_item> items = storageItemRepository.findExpiringByMemberId(
                 memberId, PageRequest.of(0, 4));
         return toDto(items);
     }
 
-    // 사용자 전체 재료 목록 조회 (보관함 페이지용)
+    // 사용자 전체 재료 목록 조회
     public List<StorageItemDto> getAllItems(Long memberId) {
         List<Storage_item> items = storageItemRepository.findAllByMemberId(memberId);
-        return toDto(items);
+        return toDto(items); // 내부 가공 툴 호출
     }
 
     // 재료 등록
@@ -64,17 +64,14 @@ public class StorageItemService {
         return items.stream().map(item -> {
             StorageItemDto dto = new StorageItemDto();
             dto.setId(item.getId());
-            dto.setItemname(item.getItem().getName());
+
+            dto.setItemName(item.getItem().getName());
             dto.setQuantity(item.getQuantity());
-            dto.setExpirationdate(item.getExpirationdate());
+
+            dto.setExpirationDate(item.getExpirationdate());
             dto.setCategory(item.getItem().getCategory());
 
-            String label = switch (item.getStoragetype()) {
-                case REFRIGERATED -> "냉장";
-                case FROZEN -> "냉동";
-                case ROOM_TEMP -> "실온";
-            };
-            dto.setStoragetype(label);
+            dto.setStorageType(item.getStoragetype().name());
 
             long dDay = ChronoUnit.DAYS.between(today, item.getExpirationdate());
             dto.setDDay(dDay);

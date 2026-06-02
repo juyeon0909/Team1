@@ -63,9 +63,13 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }
     // 시작 위치 1번 배너 
     const [currentIndex, setCurrentIndex] = useState(1);
     const [isTransition, setIsTransition] = useState(true);
-
+    const [isSliding, setIsSliding] = useState(false);  
     // 공통 이동 제어 함수
+
     const moveSlide = (targetIndex: number) => {
+        if (isSliding) return; // 🌟 이동 중일 때는 화살표 클릭 입력을 칼같이 씹어버림!
+        
+        setIsSliding(true); // 이동 시작 마킹
         setIsTransition(true);
         setCurrentIndex(targetIndex);
     };
@@ -73,13 +77,18 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }
     // 오토 슬라이드 타이머 (5초마다 오른쪽 칸으로 전진)
     useEffect(() => {
         const timer = setInterval(() => {
-            moveSlide(currentIndex + 1);
+            // 오토 슬라이드 작동 시에도 sliding 상태가 아닐 때만 전진
+            if (!isSliding) {
+                moveSlide(currentIndex + 1);
+            }
         }, 5000);
         return () => clearInterval(timer);
-    }, [currentIndex]);
+    }, [currentIndex, isSliding]);
 
     // 애니메이션이 끝난 직후 순간이동 처리
     const handleTransitionEnd = () => {
+        setIsSliding(false); // 🌟 애니메이션이 무사히 끝났으므로 락(Lock) 해제
+        
         if (currentIndex === slideCount + 1) {
             setIsTransition(false);
             setCurrentIndex(1); // 가짜 1번에서 진짜 1번으로 워프
@@ -104,7 +113,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }
               className="hero-carousel-track" 
               style={{ 
                 transform: `translateX(-${currentIndex * 100}%)`,
-                transition: isTransition ? "transform 0.6s ease-in-out" : "none" 
+                transition: isTransition ? "transform 0.35s ease-in-out" : "none"   // 메인 배너 슬라이드 속도 
               }}
               onTransitionEnd={handleTransitionEnd}
             >
@@ -155,8 +164,8 @@ interface AlertBarProps {
 const AlertBar: React.FC<AlertBarProps> = ({ ingredients, isLoggedIn }) => {
     const navigate = useNavigate();
     const urgentItems = isLoggedIn ? ingredients.filter((i) => 
-        (i.urgency === "urgent" || i.urgency === "warning") &&
-        i.dDay !== undefined && i.dDay >= 0) : [];
+        (i.urgency === "urgent" || i.urgency === "warning") && i.dDay !== undefined && i.dDay >= 0
+    ) : [];
     
     return (
         <div className="alert-bar">
@@ -167,7 +176,7 @@ const AlertBar: React.FC<AlertBarProps> = ({ ingredients, isLoggedIn }) => {
                 ) : urgentItems.length > 0 ? (
                     urgentItems.map((item) => (
                         <span className={`tag ${item.urgency === "urgent" ? "d1" : "d5"}`} key={item.id}>
-                            {(item.itemname || item.name)} D-{item.dDay}
+                           {item.itemName} D-{item.dDay}
                         </span>
                     ))
                 ) : (
@@ -180,7 +189,6 @@ const AlertBar: React.FC<AlertBarProps> = ({ ingredients, isLoggedIn }) => {
         </div>
     );
 };
-
 
 //    하위 컴포넌트 3: 유통기한 임박 재료 리스트
    
@@ -213,12 +221,12 @@ const ExpiringIngredients: React.FC<ExpiringIngredientsProps> = ({ ingredients, 
                                 {Number(item.dDay) >= 0 ? `D-${item.dDay}` : `D+${Math.abs(Number(item.dDay))}`}
                             </span>
                             <div className="ingredient-info">
-                                <div className="ingredient-name">{item.itemname || item.name}</div>
+                                <div className="ingredient-name">{item.itemName || item.name}</div>
                                 <div className="ingredient-qty">{item.quantity}g</div>
                             </div>
                             <span className="ingredient-where">
-                                {item.storagetype === "ROOM_TEMP" || item.storagetype === "실온" ? "실온" : 
-                                 item.storagetype === "FROZEN" || item.storagetype === "냉동" ? "냉동" : "냉장"}
+                                {item.storageType === "ROOM_TEMP" || item.storageType === "실온" ? "실온" : 
+                                 item.storageType === "FROZEN" || item.storageType === "냉동" ? "냉동" : "냉장"}
                             </span>
                         </div>
                     ))
@@ -284,50 +292,87 @@ const MainPage: React.FC = () => {
         if (user.name) setUserName(user.name);
         setIsLoggedIn(true);
         
-        axiosInstance.get<any[]>(`/product/list/${user.id}`)
+    //     axiosInstance.get<any[]>(`/product/list/${user.id}`)
+    //         .then((res) => {
+    //             const rawData = res.data || [];
+    //             setTotalCount(rawData.length);
+
+    //             const today = new Date();
+    //             today.setHours(0, 0, 0, 0);
+
+    //             const processed = rawData.map((item) => {
+    //                 const targetDateStr = item.expirationdate || item.expiry;
+    //                 let dDayResult = 999;
+    //                 let urgencyResult: Urgency = "normal";
+
+    //                 if (targetDateStr) {
+    //                     const expDate = new Date(targetDateStr);
+    //                     expDate.setHours(0, 0, 0, 0);
+    //                     dDayResult = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                        
+                        
+    //                     if (dDayResult < 0) urgencyResult = "normal"; // 혹은 기한초과
+    //                     else if (dDayResult <= 3) urgencyResult = "urgent";
+    //                     else if (dDayResult <= 7) urgencyResult = "warning";
+    //                 }
+
+    //                 return {
+    //                     ...item,
+    //                     itemname: item.itemname || item.name || "이름 없음",
+    //                     dDay: dDayResult,
+    //                     urgency: urgencyResult
+    //                 };
+    //             });
+
+    //             setUrgentCount(processed.filter(i => i.urgency === "urgent" || i.urgency === "warning").length);
+
+    //             const finalMainList = processed
+    //                 .filter(i => i.urgency === "urgent" || i.urgency === "warning")
+    //                 .sort((a, b) => (a.dDay ?? 0) - (b.dDay ?? 0))
+    //                 .slice(0, 5);  // 띠지 몇개까지 보이게 하고 싶은가
+
+    //             setIngredients(finalMainList);
+    //         })
+    //         .catch((err) => console.error("데이터 연동 실패:", err))
+    //         .finally(() => setLoading(false));
+    // }, []);
+axiosInstance.get<any[]>(`/product/list/${user.id}`)
             .then((res) => {
                 const rawData = res.data || [];
                 setTotalCount(rawData.length);
 
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
+                // 🟢 백엔드에서 전송해주는 정제 필드(itemName, expirationDate, storageType, dDay, urgency)를 다이렉트로 매핑
                 const processed = rawData.map((item) => {
-                    const targetDateStr = item.expirationdate || item.expiry;
-                    let dDayResult = 999;
-                    let urgencyResult: Urgency = "normal";
-
-                    if (targetDateStr) {
-                        const expDate = new Date(targetDateStr);
-                        expDate.setHours(0, 0, 0, 0);
-                        dDayResult = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                        
-                        
-                        if (dDayResult < 0) urgencyResult = "normal"; // 혹은 기한초과
-                        else if (dDayResult <= 3) urgencyResult = "urgent";
-                        else if (dDayResult <= 7) urgencyResult = "warning";
-                    }
-
+                    const serverDday = item.dDay !== undefined ? item.dDay : item.dday;
                     return {
                         ...item,
-                        itemname: item.itemname || item.name || "이름 없음",
-                        dDay: dDayResult,
-                        urgency: urgencyResult
+                        // 만약 구형 백엔드 필드가 섞여들어와도 완벽 방어하는 2중 안전선 가동
+                        // itemName: item.itemName || item.itemname || item.name || "이름 없음",
+                        // storageType: item.storageType || item.storagetype || "REFRIGERATED",
+                        // expirationDate: item.expirationDate || item.expirationdate || item.expiry,
+                        // dDay: item.dDay !== undefined ? item.dDay : 999,
+                        // urgency: item.urgency || "normal"
+                        dDay: serverDday !== undefined ? serverDday : 999,
+                        urgency: item.urgency || "normal"
                     };
                 });
 
+                // 🟢 정형화된 필드로 즉시 카운트 연산 돌입
                 setUrgentCount(processed.filter(i => i.urgency === "urgent" || i.urgency === "warning").length);
 
                 const finalMainList = processed
                     .filter(i => i.urgency === "urgent" || i.urgency === "warning")
                     .sort((a, b) => (a.dDay ?? 0) - (b.dDay ?? 0))
-                    .slice(0, 5);  // 띠지 몇개까지 보이게 하고 싶은가
+                    .slice(0, 5);  
 
                 setIngredients(finalMainList);
             })
             .catch((err) => console.error("데이터 연동 실패:", err))
             .finally(() => setLoading(false));
     }, []);
+
+
+
 
     return (
         <div className="imf-root">

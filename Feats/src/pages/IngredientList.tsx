@@ -81,11 +81,16 @@ const IngredientList: React.FC = () => {
 
     const startEdit = (item: Ingredient) => {
         setEditingId(item.id);
-        setEditName(item.itemname || item.name || "");
+        setEditName(item.itemName || item.name || "");
         setEditCategory(item.category || dbCategories[0] || "기타");
-        setEditStorage(item.storagetype === "ROOM_TEMP" || item.storagetype === "실온" ? "room" : 
-                        item.storagetype === "FROZEN" || item.storagetype === "냉동" ? "frozen" : "refrigerated");
-    };
+    //     setEditStorage(item.storageType === "ROOM_TEMP" || item.storageType === "실온" ? "room" : 
+    //                     item.storageType === "FROZEN" || item.storageType === "냉동" ? "frozen" : "refrigerated");
+    // };
+    const sType = (item.storageType || (item as any).type || "").toUpperCase();
+    if (sType === "ROOM_TEMP" || sType === "ROOM" || sType === "실온") setEditStorage("room");
+    else if (sType === "FROZEN" || sType === "냉동") setEditStorage("frozen");
+    else setEditStorage("refrigerated");
+  };
 
     const handleUpdateSubmit = (id: number) => {
         if (!editName.trim()) return alert("재료명을 입력하세요.");
@@ -152,8 +157,9 @@ const IngredientList: React.FC = () => {
                         <div className="ing-master-grid-container" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "12px", width: "100%" }}>
                             {items.map((item) => {
                                 const isEditing = editingId === item.id;
-                                const currentName = item.itemname || item.name || "이름 없음";
-
+                                const currentName = item.itemName || item.name || "이름 없음";
+                                const sType = (item.storageType || (item as any).type || "").toUpperCase();
+                                
                                 return (
                                     <div className="ing-master-item-box" key={item.id}>
                                         {isEditing ? (
@@ -175,13 +181,14 @@ const IngredientList: React.FC = () => {
                                         ) : (
                                             <>
                                                 <div className="ing-master-text-name">{currentName}</div>
-                                                <div className="ing-master-badge-row">
-                                                    <span className="ing-master-label cat">{item.category || "미분류"}</span>
-                                                    <span className="ing-master-label store">
-                                                        {item.storagetype === "ROOM_TEMP" || item.storagetype === "실온" ? "실온" : 
-                                                         item.storagetype === "FROZEN" || item.storagetype === "냉동" ? "냉동" : "냉장"}
-                                                    </span>
-                                                </div>
+                    <div className="ing-master-badge-row">
+                        <span className="ing-master-label cat">{item.category || "미분류"}</span>
+                        <span className="ing-master-label store">
+                            {/* 🟢 불필요한 한글/영어 혼용 조건문을 싹 밀어버리고 깔끔하게 매핑 */}
+                            {sType === "ROOM_TEMP" || sType === "실온" ? "실온" : 
+                             sType === "FROZEN" || sType === "냉동" ? "냉동" : "냉장"}
+                        </span>
+                    </div>
                                                 
                                                
                                                 {isAdmin && (

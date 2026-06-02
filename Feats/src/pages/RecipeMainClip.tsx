@@ -1,25 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { RecipeView, RecipeDto } from '../types/Recipe';
+import { toRecipeView } from '../types/recipeMapper';
 import axiosInstance from '../api/axiosInstance';
 import '../components/RecipeMainClip.css';
 
-interface ScrapedRecipe {
-  id: number;
-  title: string;
-  category: string;
-  time: string;
-  author: string;
-  likes: number;
-  scrapped: boolean;
-  scrappedAt: string;
-  image?: string;
-  match?: number;
-  emoji?: string;
-  bg?: string;
-  desc?: string;
-  tags?: string[];
-  urgent?: boolean;
-}
 
 const SORT_OPTIONS = ['최신 스크랩순', '좋아요순'];
 const CATEGORIES = ['전체', '한식', '일식', '중식', '양식', '간식', '야식', '다이어트식', '밀프랩'];
@@ -33,7 +18,7 @@ const getMatchBadgeClass = (match?: number) => {
 
 const RecipeMainClip = () => {
   const navigate = useNavigate();
-  const [recipes,        setRecipes]        = useState<ScrapedRecipe[]>([]);
+  const [recipes,        setRecipes]        = useState<RecipeView[]>([]);
   const [loading,        setLoading]        = useState(true);
   const [error,          setError]          = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('전체');

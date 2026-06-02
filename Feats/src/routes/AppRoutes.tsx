@@ -24,6 +24,7 @@ import PasswordlessRegisterPage from '../pages/PasswordlessRegisterPage'
 import AdminRecipe from '../pages/AdminRecipe';
 import IngredientList from "../pages/IngredientList.tsx";
 import RecipeDetail from "../pages/RecipeDetail";
+import AdminRecipeDetail from '../pages/AdminRecipeDetail';
 
 
 
@@ -61,6 +62,7 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path="/member/passwordless-register" element={<PasswordlessRegisterPage />} />
       <Route path="/member/reset-register" element={<PasswordlessWithdrawalPage />} />
       <Route path='/admin/recipe' element={<AdminRecipe />} />
+      <Route path="/admin/recipes/:id" element={<AdminRecipeDetail />} />
 
 
     </Routes>

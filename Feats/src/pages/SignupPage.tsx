@@ -89,7 +89,6 @@ function SignupPage() {
     } catch (error) {
       if (axiosLib.isAxiosError(error)) {
         if (error.response?.data) {
-          // 원본과 동일: 서버에서 받은 필드별 오류 객체로 저장
           setErrors(error.response.data);
         }
       } else {

@@ -50,3 +50,4 @@ public class Member {
     @Column(columnDefinition = "LONGTEXT")
     private String profileimage;
 }
+/* 커밋 체크 */

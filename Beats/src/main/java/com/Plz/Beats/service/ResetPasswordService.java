@@ -36,3 +36,4 @@ public class ResetPasswordService {
         memberRepository.updatePasswordByNameAndEmail(name, email, passwordEncoder.encode(newPassword));
     }
 }
+/* 커 밋 체크 */

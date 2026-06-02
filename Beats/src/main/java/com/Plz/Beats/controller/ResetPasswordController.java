@@ -30,3 +30,4 @@ public class ResetPasswordController {
         return ResponseEntity.ok(ApiResponse.of("비밀번호가 변경되었습니다."));
     }
 }
+/* 커밋 체크 */

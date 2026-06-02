@@ -128,11 +128,12 @@ function AdminRecipeDetail() {
 
                 {/* 필수 재료 */}
                 <div className="form-group">
-                    <label className="form-label">필수 재료</label>
+                    <label className="form-label">필수 재료 및 용량</label>
                     {recipe.ingredients.length > 0 ? (
                         recipe.ingredients.map((ing, i) => (
                             <div key={i} className="ingredient-row" style={{ marginBottom: '8px' }}>
                                 <input className="form-input" type="text" value={ing} readOnly style={{ background: '#f8f8f8', cursor: 'default' }} />
+                                <input className="form-input" type="text" placeholder="용량 (g)" readOnly style={{ background: '#f8f8f8', cursor: 'default' }} />
                             </div>
                         ))
                     ) : (

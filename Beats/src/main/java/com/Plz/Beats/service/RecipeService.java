@@ -99,7 +99,7 @@ public class RecipeService {
      * - APPROVED 상태인 레시피만 반환 (PENDING, REJECTED 제외)
      */
     public List<RecipeDto> getRecipes(String username) {
-        // ✅ 수정: findAll() → findByApprovalStatus(APPROVED)
+        // findAll() → findByApprovalStatus(APPROVED)
         // 기존 findAll()은 PENDING 레시피도 노출시키는 문제가 있었음
         List<Recipe> recipes = recipeRepository.findByApprovalStatus(ApprovalStatus.APPROVED);
 

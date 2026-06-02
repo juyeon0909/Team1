@@ -28,7 +28,7 @@ public class RecipeIngredient {
 
     private String unit;
 
-    private String quantity;
+    private Integer quantity;
 
     @Column(name = "is_required", nullable = false)
     private boolean isRequired; // 💡 서비스 단의 관례적 setter와 자동 매핑됨

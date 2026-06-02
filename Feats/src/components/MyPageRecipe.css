@@ -32,7 +32,7 @@
 /* 새 레시피 등록 버튼 */
 .add-recipe-btn {
   padding: 8px 16px;
-  background-color: #1D9E75;
+  background-color: #6FBC44;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -43,7 +43,7 @@
 }
 
 .add-recipe-btn:hover {
-  background-color: #167d5c;
+  background-color: #6FBC44;
 }
 
 /* 페이지 메인 타이틀 */
@@ -142,7 +142,7 @@
 
 .recipe-card-category {
   font-size: 11px;
-  color: #1D9E75;
+  color: #6FBC44;
   font-weight: bold;
 }
 
@@ -207,8 +207,8 @@
 
 .recipe-edit-btn {
   background-color: #f0faf5;
-  color: #1D9E75;
-  border: 0.5px solid #1D9E75;
+  color: #6FBC44;
+  border: 0.5px solid #6FBC44;
 }
 
 .recipe-edit-btn:hover {

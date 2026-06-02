@@ -20,6 +20,11 @@ public class AdminRecipeController {
         return ResponseEntity.ok(recipeService.getPendingRecipes());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<AdminRecipeDto> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(recipeService.getRecipeById(id));
+    }
+
     @PostMapping("/{id}/approve")
     public ResponseEntity<String> approve(@PathVariable Long id) {
         recipeService.approveRecipe(id);

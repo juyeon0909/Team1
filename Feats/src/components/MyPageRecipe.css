@@ -61,11 +61,34 @@
   color: #999;
   font-size: 13px;
 }
+.card-ingredients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 0;
+}
+.card-ingredient-chip {
+  font-size: 11px;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.card-ingredient-more {
+  font-size: 11px;
+  color: #94a3b8;
+  padding: 2px 4px;
+}
+.card-author {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
 
 /* 레시피 카드 그리드 레이아웃 */
 .recipe-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   margin-top: 20px;
 }

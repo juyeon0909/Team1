@@ -47,7 +47,7 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/recipeMain/edit/:id' element={<RecipeEdit />} />
       <Route path='/product/register' element={<FridgeRegister />} />
       <Route path="/recipeMain/:id" element={<RecipeDetail />} />
-      <Route path='/recipeMain' element={<RecipeMain />} />
+      <Route path='/recipeMain' element={<RecipeMain user={user} />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
       <Route path="/mypage/edit" element={<MyPageEdit name={user?.name || "이름 없음"} setName={(newName) => setUser(prev => prev ? { ...prev, name: newName } : null)} triggerToast={(msg) => console.log(msg)} />} />
       <Route path='/mypage/recipe' element={<MyPageRecipe />} />
@@ -63,7 +63,7 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
     </Routes>
   );
 }
-{/* 커밋 체  크  */}
+{/* 커밋 체  크  */ }
 {/* 커밋 체쿠 나나난  */ }
 /*커밋체크*/
 export default App;

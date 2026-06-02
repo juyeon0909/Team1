@@ -2,50 +2,36 @@ import React, { useState, useMemo, useEffect, type ChangeEvent } from 'react';
 import { Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import customAxios from './../api/axiosInstance';
+import type { RecipeView, RecipeDto } from '../types/Recipe';
+import { toRecipeView } from '../types/recipeMapper';
 import '../components/MyPage.css';
 
-interface Recipe {
-  id: number;
-  title: string;
-  category: string;
-  time: string;
-  diff: string;
-  author: string;
-  image?: string;
-  likes: number;
-  liked: boolean;
-  urgent?: boolean;
-  scrappedAt?: string;
-}
-
-const THUMB_BG: Record<string, string> = {
-  한식: '#e8f5e9',
-  양식: '#fce4ec',
-  일식: '#e3f2fd',
-  중식: '#fff8e1',
-  다이어트: '#f3e5f5',
-};
-
 const SORT_OPTIONS = ['최신 등록순', '인기순', '요리시간 짧은순'];
-const FILTER_CATEGORIES = ['all', '한식', '일식', '중식', '양식', '간식', '야식', '다이어트식', '밀프랩'];
+const FILTER_CATEGORIES = ['all', '한식', '일식', '중식', '양식', '간식', '야식', '다이어트', '밀프랩'];
 
 export default function LikedRecipes() {
   const navigate = useNavigate();
 
-  const [recipes,      setRecipes]      = useState<Recipe[]>([]);
-  const [curFilter,    setCurFilter]    = useState<string>('all');
-  const [sortBy,       setSortBy]       = useState<string>('최신 등록순');
-  const [curSearch,    setCurSearch]    = useState<string>('');
-  const [removingId,   setRemovingId]   = useState<number | null>(null);
-  const [error,        setError]        = useState<string>('');
-  const [toastMessage, setToastMessage] = useState<string>('');
-  const [showToast,    setShowToast]    = useState<boolean>(false);
+  const [recipes, setRecipes] = useState<RecipeView[]>([]);
+  const [curFilter, setCurFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('최신 등록순');
+  const [curSearch, setCurSearch] = useState('');
+  const [removingId, setRemovingId] = useState<number | null>(null);
+  const [error, setError] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     const fetchLikedRecipes = async () => {
       try {
-        const response = await customAxios.get('/mypage/like');
-        setRecipes(response.data || []);
+        const res = await customAxios.get<(RecipeDto & { author?: string; scrappedAt?: string })[]>('/mypage/like');
+        const mapped = (res.data ?? []).map(dto => ({
+          ...toRecipeView(dto),
+          author: dto.author ?? '',
+          scrappedAt: dto.scrappedAt ?? '',
+          isHearted: true, // 좋아요 목록이므로 항상 true
+        }));
+        setRecipes(mapped);
       } catch (error) {
         console.error('좋아요 내역 불러오기 실패:', error);
         setError('좋아요 내역을 불러오지 못했습니다.');
@@ -72,7 +58,7 @@ export default function LikedRecipes() {
     setTimeout(async () => {
       try {
         await customAxios.post(`/mypage/${id}/like`);
-        setRecipes((prev) => prev.filter((r) => r.id !== id));
+        setRecipes(prev => prev.filter(r => r.id !== id));
         triggerToast(`"${title}" 좋아요를 취소했습니다.`);
       } catch (error) {
         console.error('좋아요 취소 요청 실패:', error);
@@ -84,14 +70,14 @@ export default function LikedRecipes() {
 
   const filteredRecipes = useMemo(() => {
     return recipes
-      .filter((r) => {
+      .filter(r => {
         const matchesCategory = curFilter === 'all' || r.category === curFilter;
         const matchesSearch = r.title.toLowerCase().includes(curSearch.toLowerCase());
         return matchesCategory && matchesSearch;
       })
       .sort((a, b) => {
-        if (sortBy === '인기순') return b.likes - a.likes;
-        if (sortBy === '요리시간 짧은순') return (parseInt(a.time) || 0) - (parseInt(b.time) || 0);
+        if (sortBy === '인기순') return b.heart - a.heart;
+        if (sortBy === '요리시간 짧은순') return a.time - b.time;
         if (a.scrappedAt && b.scrappedAt) return b.scrappedAt.localeCompare(a.scrappedAt);
         return b.id - a.id;
       });
@@ -188,9 +174,9 @@ export default function LikedRecipes() {
                       transform: removingId === r.id ? 'scale(0.95)' : 'none'
                     }}
                   >
-                    {/* ✅ 썸네일 — 이미지 있으면 img, 없으면 배경색 */}
+                    
                     <div style={{
-                      backgroundColor: THUMB_BG[r.category] || '#f5f5f5',
+                      backgroundColor:'#f5f5f5',
                       height: '140px', position: 'relative', overflow: 'hidden',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '52px'
                     }}>

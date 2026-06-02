@@ -1,19 +1,22 @@
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import axios from "axios";
 import type { RecipeView, RecipeDto } from '../types/Recipe';
 import { toRecipeView } from '../types/recipeMapper';
 import '../components/RecipeMain.css';
+import type { User } from "../types/User";
+import { API_BASE_URL } from "../config/config";
+import RecipeCard from '../pages/RecipeCard';
+import '../components/RecipeMain.css';
 
-const getMatchBadgeClass = (match: number) => {
-  if (match >= 100) return 'badge-match-full';
-  if (match >= 80) return 'badge-match-high';
-  return 'badge-match-mid';
+type RecipeProps = {
+  user: User | null;
 };
 
-const RecipeMain = () => {
+function RecipeMain({ user }: RecipeProps) {
   const navigate = useNavigate();
-
   const [recipes, setRecipes] = useState<RecipeView[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,6 +28,7 @@ const RecipeMain = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 6;
 
+  
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
@@ -70,6 +74,12 @@ const RecipeMain = () => {
     const tp = Math.max(1, Math.ceil(recipes.length / perPage));
     if (currentPage > tp) setCurrentPage(tp);
   }, [recipes, currentPage]);
+
+  const getMatchBadgeClass = (match: number) => {
+    if (match >= 100) return 'badge-match-full';
+    if (match >= 80) return 'badge-match-high';
+    return 'badge-match-mid';
+  };
 
   const toggleHeart = async (id: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -137,51 +147,177 @@ const RecipeMain = () => {
 
   if (loading) return <div className="loading-box">데이터를 확인하는 중...</div>;
 
+  const makeAdminButtons = (item: RecipeView, user: User | null, navigate: any) => {
+    if (user?.role !== 'ADMIN') return null;
+
+    return (
+      <div className="d-flex justify-content-center">
+        <Button // 수정을 위한 <Button>을 추가합니다.
+          variant="warning"
+          className="mb-2"
+          size="sm"
+          onClick={(event) => {
+            event.stopPropagation(); // 이벤트 버블링 방지
+            navigate(`/recipeMain/edit/${item.id}`); // 유일한 id가 있음
+          }}>
+          수정
+        </Button>
+
+        &nbsp;
+
+        <Button // 삭제를 위한 <Button>을 추가합니다. (confirm 함수 이용)(alert과는 다름)
+          variant="danger"
+          className="mb-2"
+          size="sm"
+          onClick={async (event) => {
+            event.stopPropagation(); // 이벤트 버블링 방지
+
+            const isDelete = window.confirm(`${item.title}  레시피를 삭제하시겠습니까?`);
+
+            if (isDelete === false) {
+              /* sweet alert2 사이트에 이쁜거 많음 */
+              alert(`${item.title} 레시피 삭제를 취소하였습니다.`)
+              return;
+            }
+
+            try { // 전체 배열에서 일부 데이터만 필터할 수 있음
+              const url = `${API_BASE_URL}/product/delete/${item.id}`;
+              await axios.delete(url);
+              alert(`'${item.title}' 레시피가 삭제되었습니다.`)
+
+              // 레시피를 갱신해주는 setter
+              // 이전(prev) 레시피 정보를 가져와서 필터링하는데
+              // 이전 레시피의 id와 해당 레시피 id가 같지 않으면 - 레시피 데이터에 해당 레시피가 없으면
+              // 레시피(목록)을 갱신해라
+              setRecipes(prev => prev.filter(p => p.id !== item.id));
+
+              navigate('/recipeMain');
+
+            } catch (error) {
+              console.log(error);
+              if (axios.isAxiosError(error)) {
+                alert(`레시피 삭제 실패 : ${error.response?.data || error.message}`);
+              } else {
+                console.log('알수 없는 에러 : ' + error);
+              }
+            };
+          }}>
+          삭제
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div className="recipe-main-container">
-      {/* ...header / filter-bar 동일... */}
-      <div className="feed-content">
-        <div className="recipe-grid">
-          {pagedRecipes.map(r => (
-            <div key={r.id} className="recipe-card" onClick={() => navigate(`/recipeMain/${r.id}`)}>
-              <div className="card-emoji-wrapper" style={{ backgroundColor: r.bg, overflow: 'hidden' }}>
-                {r.image ? (
-                  <img src={r.image} alt={r.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <span className="card-emoji">{r.emoji}</span>
-                )}
-                <span className={`card-match-badge ${getMatchBadgeClass(r.match)}`}>
-                  {r.match >= 100 ? '100% 일치' : `${r.match}% 일치`}
-                </span>
-              </div>
-              <div className="card-info">
-                <div className="card-title-row">
-                  <span className="card-category-tag">{r.category}</span>
-                  {r.urgent && <span className="card-urgent-tag">임박재료활용</span>}
-                  <span className="card-name">{r.title}</span>
-                </div>
-                <div className="card-desc">{r.desc}</div>
-                <div className="card-tags">
-                  {r.tags.map(t => <span key={t} className="card-tag">{t}</span>)}
-                </div>
-                <div className="card-footer">
-                  <div className="card-meta">
-                    <span>⏱️ {r.time}분</span>
-                    <button className={`card-heart-btn ${r.isHearted ? 'hearted' : ''}`}
-                      onClick={e => toggleHeart(r.id, e)}>
-                      {r.isHearted ? '❤️' : '🤍'} {r.heart}
-                    </button>
-                    <button className={`card-scrap-btn ${r.isScrapped ? 'scrapped' : ''}`}
-                      onClick={e => toggleScrap(r.id, e)}>
-                      {r.isScrapped ? '⭐' : '☆'} {r.scrap}
-                    </button>
-                  </div>
-                </div>
-              </div>
+      <div className="recipe-header">
+        <div className="header-top">
+          <div className="header-title">레시피</div>
+          <button className="recipe-register-btn" onClick={() => navigate('/recipeMain/register')}>
+            <span className="add-icon-small">＋</span> 레시피 등록
+          </button>
+        </div>
+
+        <div className="search-sort-bar">
+          <input
+            type="text"
+            placeholder="레시피 이름 또는 태그로 검색..."
+            value={searchQuery}
+            onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+            className="search-input"
+          />
+          <select
+            className="sort-select"
+            value={sortBy}
+            onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
+          >
+            <option>추천순</option>
+            <option>최신순</option>
+            <option>인기순</option>
+          </select>
+        </div>
+
+        <div className="category-tabs">
+          {['전체', '한식', '양식', '일식', '중식', '간식', '야식', '다이어트', '밀프랩'].map(cat => (
+            <div
+              key={cat}
+              onClick={() => { setActiveCategory(cat); setCurrentPage(1); }}
+              className={`category-tab ${activeCategory === cat ? 'active' : ''}`}
+            >
+              {cat}
             </div>
           ))}
         </div>
-        {/* ...pagination 동일... */}
+      </div>
+
+      <div className="filter-bar">
+        <div className="filter-group">
+          <span className="filter-label">재료 일치율</span>
+          <div className="filter-chips">
+            {[{ label: '전체', val: '전체' }, { label: '50% 이상', val: '50' },
+            { label: '70% 이상', val: '70' }, { label: '100% 일치', val: '100' }].map(item => {
+              const activeClass = activeMatch === item.val
+                ? (item.val === '50' || item.val === '70') ? 'active-match-orange' : 'active-green'
+                : '';
+              return (
+                <div key={item.val} onClick={() => { setActiveMatch(item.val); setCurrentPage(1); }}
+                  className={`filter-chip ${activeClass}`}>{item.label}</div>
+              );
+            })}
+          </div>
+        </div>
+        <div className="filter-divider" />
+        <div className="filter-group">
+          <span className="filter-label">조리 시간</span>
+          <div className="filter-chips">
+            {[{ label: '전체', val: '전체' }, { label: '15분 이하', val: '15' },
+            { label: '30분 이하', val: '30' }, { label: '60분 이하', val: '60' }].map(item => (
+              <div key={item.val} onClick={() => { setActiveTime(item.val); setCurrentPage(1); }}
+                className={`filter-chip ${activeTime === item.val ? 'active-green' : ''}`}>{item.label}</div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="feed-content">
+        <div className="recipe-grid">
+          {pagedRecipes.map(r => (
+            <RecipeCard
+              key={r.id}
+              recipe={r}
+              onClick={(id) => navigate(`/recipeMain/${id}`)}
+              metaExtra={
+                <>
+                  <button
+                    className={`card-heart-btn ${r.isHearted ? 'hearted' : ''}`}
+                    onClick={e => toggleHeart(r.id, e)}
+                  >
+                    {r.isHearted ? '❤️' : '🤍'} {r.heart}
+                  </button>
+                  <button
+                    className={`card-scrap-btn ${r.isScrapped ? 'scrapped' : ''}`}
+                    onClick={e => toggleScrap(r.id, e)}
+                  >
+                    {r.isScrapped ? '⭐' : '☆'} {r.scrap}
+                  </button>
+		              {makeAdminButtons(r, user, navigate) /* ADMIN이면 수정/삭제 버튼 렌더링 */}
+                </>
+              }
+            />
+          ))}
+        </div>
+
+        {totalPages > 1 && (
+          <div className="pagination-container">
+            <button className="pagination-arrow" disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>◀</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <div key={page} onClick={() => setCurrentPage(page)}
+                className={`pagination-number ${currentPage === page ? 'active' : ''}`}>{page}</div>
+            ))}
+            <button className="pagination-arrow" disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>▶</button>
+          </div>
+        )}
       </div>
     </div>
   );

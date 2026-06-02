@@ -41,7 +41,7 @@ public class RecipeController {
     // 2. 레시피 등록 API (로그인 필수)
     @PostMapping("/register")
     public ResponseEntity<?> registerRecipe(@RequestBody RecipeDto recipeDto, Principal principal) {
-        // 💡 비로그인 유저거나 익명 토큰 유저라면 사전에 401 컷
+        // 비로그인 유저거나 익명 토큰 유저라면 사전에 401 컷
         if (principal == null || "anonymousUser".equals(principal.getName())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 세션이 유효하지 않거나 로그인이 필요합니다.");
         }
@@ -53,7 +53,7 @@ public class RecipeController {
     // 3. 레시피 수정 API (로그인 필수)
     @PostMapping("/edit")
     public ResponseEntity<?> requestEditRecipe(@RequestBody RecipeDto recipeDto, Principal principal) {
-        // 💡 비로그인 유저거나 익명 토큰 유저라면 사전에 401 컷
+        // 비로그인 유저거나 익명 토큰 유저라면 사전에 401 컷
         if (principal == null || "anonymousUser".equals(principal.getName())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 세션이 유효하지 않거나 로그인이 필요합니다.");
         }
@@ -62,10 +62,13 @@ public class RecipeController {
         return ResponseEntity.ok(saved);
     }
 
+    // s3를 이용한 이미지 업로드
     @PostMapping("/upload-image")
     public ResponseEntity<String> uploadImage(
-            @RequestBody java.util.Map<String, String> body,
+            @RequestBody java.util.Map<String, String> body, //{"image": "data:image/png;base64,..."}
             Principal principal) {
+
+        //로그인 안했으면 차단
         if (principal == null || "anonymousUser".equals(principal.getName())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
-import '../components/RecipeRegister.css'; // 💡 분리된 CSS 파일 임포트
+import '../components/RecipeRegister.css';
 
 interface IngredientRow {
   name: string;
@@ -45,9 +45,10 @@ const RecipeRegister = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
+  const [searchTarget, setSearchTarget] = useState<{ index: number; keyword: string } | null>(null);
+
   const dropdownRefs = useRef<Array<HTMLDivElement | null>>([]);
 
-  // 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       dropdownRefs.current.forEach((ref, idx) => {
@@ -62,38 +63,20 @@ const RecipeRegister = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 식재료 검색 (Debounce)
-  const handleIngredientChange = (index: number, field: 'name' | 'quantity', value: string) => {
-    const newIngredients = [...mustIngredients];
-    newIngredients[index][field] = value;
+  // axiosInstance가 토큰 자동 처리하므로 헤더 별도 설정 불필요
+  useEffect(() => {
+    if (!searchTarget || !searchTarget.keyword.trim()) return;
 
-    if (field === 'quantity') {
-      setMustIngredients(newIngredients);
-      return;
-    }
-
-    if (!value.trim()) {
-      newIngredients[index].showDropdown = false;
-      newIngredients[index].searchResults = [];
-      setMustIngredients(newIngredients);
-      return;
-    }
-
-    setMustIngredients(newIngredients);
+    const { index, keyword } = searchTarget;
 
     const delayDebounce = setTimeout(async () => {
       try {
-        const token = localStorage.getItem('accessToken');
-
-        const response = await axiosInstance.get(`/product/search?name=${encodeURIComponent(value)}`, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : ''
-          }
-        });
-
+        const response = await axiosInstance.get(`/product/search?name=${encodeURIComponent(keyword)}`);
         setMustIngredients(prev =>
           prev.map((item, i) =>
-            i === index ? { ...item, searchResults: response.data, showDropdown: response.data.length > 0 } : item
+            i === index
+              ? { ...item, searchResults: response.data, showDropdown: response.data.length > 0 }
+              : item
           )
         );
       } catch (error) {
@@ -102,9 +85,25 @@ const RecipeRegister = () => {
     }, 200);
 
     return () => clearTimeout(delayDebounce);
+  }, [searchTarget]);
+
+  const handleIngredientChange = (index: number, field: 'name' | 'quantity', value: string) => {
+    setMustIngredients(prev =>
+      prev.map((item, i) => i === index ? { ...item, [field]: value } : item)
+    );
+
+    if (field === 'name') {
+      if (!value.trim()) {
+        setMustIngredients(prev =>
+          prev.map((item, i) => i === index ? { ...item, showDropdown: false, searchResults: [] } : item)
+        );
+        setSearchTarget(null);
+      } else {
+        setSearchTarget({ index, keyword: value });
+      }
+    }
   };
 
-  // 항목 선택 핸들러
   const handleSelectItem = (index: number, prod: any) => {
     const finalName = prod.itemName || prod.name || '';
     setMustIngredients(prev =>
@@ -112,6 +111,7 @@ const RecipeRegister = () => {
         i === index ? { ...item, name: finalName, showDropdown: false, searchResults: [] } : item
       )
     );
+    setSearchTarget(null);
   };
 
   const addIngredientRow = () => setMustIngredients([...mustIngredients, { name: "", quantity: "", showDropdown: false, searchResults: [] }]);
@@ -122,9 +122,7 @@ const RecipeRegister = () => {
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
+      reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -154,23 +152,18 @@ const RecipeRegister = () => {
     try {
       setLoading(true);
 
-      // 1단계: 이미지가 있으면 S3에 먼저 업로드
       let imageUrl = "default.png";
       if (imagePreview) {
-        const uploadRes = await axiosInstance.post('/recipeMain/upload-image', {
-          image: imagePreview
-        });
+        const uploadRes = await axiosInstance.post('/recipeMain/upload-image', { image: imagePreview });
         imageUrl = uploadRes.data;
       }
 
-      // 2단계: 레시피 데이터 등록
       const numericTime = parseInt(cookingTime.replace(/[^0-9]/g, "")) || 15;
       const stepsArray = method ? method.split('\n').map(s => s.trim()).filter(Boolean) : [];
       const finalDescription = optIngredients.trim()
         ? `${intro || title} (선택 재료: ${optIngredients})`
         : intro || `${title} 레시피입니다.`;
 
-      const token = localStorage.getItem('accessToken');
       const recipePayload = {
         title,
         dishName: title,
@@ -182,11 +175,7 @@ const RecipeRegister = () => {
         steps: stepsArray
       };
 
-      const response = await axiosInstance.post('/recipeMain/register', recipePayload, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : ''
-        }
-      });
+      const response = await axiosInstance.post('/recipeMain/register', recipePayload);
 
       if (response.status === 200 || response.status === 201) {
         alert('레시피 등록 서버 전송 완료!');
@@ -217,7 +206,6 @@ const RecipeRegister = () => {
           {id ? `레시피 수정 (ID: ${id})` : '레시피 등록'}
         </div>
 
-        {/* 이미지 업로드 */}
         <div className="form-group">
           <label className="form-label">요리 대표 이미지</label>
           <input type="file" accept="image/*" onChange={handleImageChange} className="file-input-text" />
@@ -229,13 +217,11 @@ const RecipeRegister = () => {
           )}
         </div>
 
-        {/* 레시피 이름 */}
         <div className="form-group">
           <label className="form-label">레시피 이름 *</label>
           <input className="form-input" type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="예: 두부 계란찜" />
         </div>
 
-        {/* 카테고리 & 조리시간 */}
         <div className="grid-two-columns">
           <div>
             <label className="form-label">카테고리 *</label>
@@ -251,13 +237,11 @@ const RecipeRegister = () => {
           </div>
         </div>
 
-        {/* 간단 소개 */}
         <div className="form-group">
           <label className="form-label">간단 소개</label>
           <input className="form-input" type="text" value={intro} onChange={(e) => setIntro(e.target.value)} placeholder="레시피를 한 줄로 소개해주세요" />
         </div>
 
-        {/* 필수 재료 및 용량 영역 */}
         <div className="form-group">
           <label className="form-label">필수 재료 및 용량 (g) *</label>
           {mustIngredients.map((item, index) => (
@@ -275,8 +259,7 @@ const RecipeRegister = () => {
                   placeholder="예: 두부"
                   autoComplete="off"
                 />
-
-                {item.showDropdown && item.searchResults && item.searchResults.length > 0 && (
+                {item.showDropdown && item.searchResults.length > 0 && (
                   <ul className="search-dropdown-list">
                     {item.searchResults.map((prod, pIdx) => {
                       const displayName = prod.itemName || prod.name || '이름 없음';
@@ -288,9 +271,7 @@ const RecipeRegister = () => {
                         >
                           <strong className="dropdown-item-name">{displayName}</strong>
                           {prod.category && (
-                            <span className="dropdown-item-category">
-                              {prod.category}
-                            </span>
+                            <span className="dropdown-item-category">{prod.category}</span>
                           )}
                         </li>
                       );
@@ -314,13 +295,11 @@ const RecipeRegister = () => {
           <button type="button" onClick={addIngredientRow} className="add-row-dashed-btn">+ 재료 추가</button>
         </div>
 
-        {/* 선택 재료 */}
         <div className="form-group">
           <label className="form-label">선택 재료 <span className="form-sublabel">쉼표로 구분</span></label>
           <input className="form-input" type="text" value={optIngredients} onChange={(e) => setOptIngredients(e.target.value)} placeholder="예: 참기름, 소금" />
         </div>
 
-        {/* 조리 방법 */}
         <div className="form-group">
           <label className="form-label">조리 방법</label>
           <textarea className="form-input form-textarea" value={method} onChange={(e) => setMethod(e.target.value)} placeholder={`조리 순서를 입력해주세요\n1. 두부를 먹기 좋은 크기로 썰어요\n2. ...`} />

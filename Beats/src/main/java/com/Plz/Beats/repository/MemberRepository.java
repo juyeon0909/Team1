@@ -21,4 +21,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     boolean existsByNameAndEmail(String name, String email); // 비밀번호 초기화 - 본인 확인
 
     Optional<Member> findByNameAndEmail(String name, String email); // 비밀번호 초기화 - 비번 변경
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Member m SET m.password = :password WHERE m.name = :name AND m.email = :email")
+    int updatePasswordByNameAndEmail(@Param("name") String name, @Param("email") String email, @Param("password") String password);
 }

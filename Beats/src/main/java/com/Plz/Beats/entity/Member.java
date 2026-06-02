@@ -49,4 +49,7 @@ public class Member {
 
     @Column(columnDefinition = "LONGTEXT")
     private String profileimage;
+
+    public void updatePassword(String encode) /* 비밀번호 초기화시 사용 */ {
+    }
 }

@@ -28,6 +28,8 @@ public class RecipeDto {
     private boolean hearted;
     private boolean scrapped;
 
+    private String author;       // 레시피 작성자 이름
+    private String scrappedAt;   // 스크랩/좋아요 누른 날짜 (목록 조회 시에만 채움, 평소엔 null
 
     @Getter
     @Setter

@@ -10,7 +10,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration // 이 클래스가 Spring 설정 클래스임을 의미
 public class S3Config {
-    // application.yml 또는 application.properties 에서
+    // application.properties 에서
     // access-key 값을 가져옴
     @Value("${cloud.aws.credentials.access-key}")
     private String accessKey;
@@ -29,7 +29,7 @@ public class S3Config {
     @Bean
     public S3Client s3Client() {
 
-        // AWS Access Key 와 Secret Key 로 인증 객체 생성
+        // AWS Access Key 와 Secret Key 로 인증서 객체 생성
         AwsBasicCredentials awsCreds =
                 AwsBasicCredentials.create(accessKey, secretKey);
 

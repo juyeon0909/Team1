@@ -1,50 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import type { RecipeView, RecipeDto } from '../types/Recipe';
+import { toRecipeView } from '../types/recipeMapper';
+import RecipeCard from '../pages/RecipeCard';
 import '../components/RecipeMainClip.css';
 
-interface ScrapedRecipe {
-  id: number;
-  title: string;
-  category: string;
-  time: string;
-  author: string;
-  likes: number;
-  scrapped: boolean;
-  scrappedAt: string;
-  image?: string;
-  match?: number;
-  emoji?: string;
-  bg?: string;
-  desc?: string;
-  tags?: string[];
-  urgent?: boolean;
-}
-
 const SORT_OPTIONS = ['최신 스크랩순', '좋아요순'];
-const CATEGORIES = ['전체', '한식', '일식', '중식', '양식', '간식', '야식', '다이어트식', '밀프랩'];
-
-const getMatchBadgeClass = (match?: number) => {
-  if (!match) return '';
-  if (match >= 100) return 'badge-match-full';
-  if (match >= 80)  return 'badge-match-high';
-  return 'badge-match-mid';
-};
+const CATEGORIES = ['전체', '한식', '일식', '중식', '양식', '간식', '야식', '다이어트', '밀프랩'];
 
 const RecipeMainClip = () => {
   const navigate = useNavigate();
-  const [recipes,        setRecipes]        = useState<ScrapedRecipe[]>([]);
+  const [recipes,        setRecipes]        = useState<RecipeView[]>([]);
   const [loading,        setLoading]        = useState(true);
   const [error,          setError]          = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('전체');
   const [sortBy,         setSortBy]         = useState('최신 스크랩순');
   const [searchQuery,    setSearchQuery]    = useState('');
   const [removingId,     setRemovingId]     = useState<number | null>(null);
+  const [currentPage,    setCurrentPage]    = useState(1);
+  const perPage = 6;
 
   useEffect(() => {
-    axiosInstance.get('/recipeMain/clip')
+    axiosInstance.get<(RecipeDto & { scrappedAt?: string })[]>('/recipeMain/clip')
       .then(res => {
-        setRecipes(res.data);
+        const mapped = (res.data ?? []).map(dto => ({
+          ...toRecipeView(dto),
+          scrappedAt: dto.scrappedAt ?? '',
+        }));
+        setRecipes(mapped);
         setLoading(false);
       })
       .catch(err => {
@@ -54,6 +38,7 @@ const RecipeMainClip = () => {
       });
   }, []);
 
+  // 스크랩 취소
   const handleScrapToggle = async (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
@@ -71,22 +56,50 @@ const RecipeMainClip = () => {
     }
   };
 
-  const filtered = recipes
-    .filter(r => {
-      if (activeCategory !== '전체' && r.category !== activeCategory) return false;
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        return (
-          r.title.toLowerCase().includes(q) ||
-          (r.tags ?? []).some(t => t.toLowerCase().includes(q))
-        );
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      if (sortBy === '좋아요순') return b.likes - a.likes;
-      return b.scrappedAt.localeCompare(a.scrappedAt);
-    });
+  // 좋아요 토글 (낙관적 업데이트 + 롤백)
+  const toggleHeart = async (id: number, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const original = recipes.find(r => r.id === id);
+    if (!original) return;
+    setRecipes(prev => prev.map(r =>
+      r.id === id
+        ? { ...r, isHearted: !r.isHearted, heart: r.isHearted ? r.heart - 1 : r.heart + 1 }
+        : r
+    ));
+    try {
+      await axiosInstance.post(`/mypage/${id}/like`);
+    } catch (err) {
+      setRecipes(prev => prev.map(r => r.id === id ? original : r));
+      console.error('좋아요 처리 실패:', err);
+    }
+  };
+
+  const filtered = useMemo(() => {
+    return recipes
+      .filter(r => {
+        if (activeCategory !== '전체' && r.category !== activeCategory) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return r.title.toLowerCase().includes(q) || r.tags.some(t => t.toLowerCase().includes(q));
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === '좋아요순') return b.heart - a.heart;
+        return (b.scrappedAt ?? '').localeCompare(a.scrappedAt ?? '');
+      });
+  }, [recipes, activeCategory, searchQuery, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const pagedRecipes = useMemo(() => {
+    const start = (currentPage - 1) * perPage;
+    return filtered.slice(start, start + perPage);
+  }, [filtered, currentPage]);
+
+  // 필터/목록이 줄어들면 currentPage 범위 클램핑
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [totalPages, currentPage]);
 
   if (loading) return <div className="scrap-page"><p style={{ padding: 32 }}>불러오는 중...</p></div>;
   if (error)   return <div className="scrap-page"><p style={{ padding: 32, color: 'red' }}>{error}</p></div>;
@@ -110,13 +123,13 @@ const RecipeMainClip = () => {
               type="text"
               placeholder="스크랩한 레시피 검색..."
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             />
           </div>
           <select
             className="scrap-sort-select"
             value={sortBy}
-            onChange={e => setSortBy(e.target.value)}
+            onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
           >
             {SORT_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
           </select>
@@ -127,7 +140,7 @@ const RecipeMainClip = () => {
             <div
               key={cat}
               className={`scrap-cat-tab ${activeCategory === cat ? 'active' : ''}`}
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => { setActiveCategory(cat); setCurrentPage(1); }}
             >
               {cat}
             </div>
@@ -151,24 +164,13 @@ const RecipeMainClip = () => {
               <strong>{filtered.length}개</strong>의 스크랩 레시피
             </div>
             <div className="scrap-grid">
-              {filtered.map(r => (
-                <div
+              {pagedRecipes.map(r => (
+                <RecipeCard
                   key={r.id}
-                  className={`scrap-card ${removingId === r.id ? 'removing' : ''}`}
-                  onClick={() => navigate(`/recipeMain/${r.id}`)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="scrap-card-img" style={{ background: r.bg ?? '#F0F0F0' }}>
-             {r.image ? (
-               <img src={r.image} alt={r.title} className="scrap-card-img-file" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-             ) : (
-               <span className="scrap-card-emoji">{r.emoji ?? '🍽️'}</span>
-             )}
-                    {r.match !== undefined && (
-                      <span className={`scrap-match-badge ${getMatchBadgeClass(r.match)}`}>
-                        {r.match === 100 ? '100% 일치' : `${r.match}% 일치`}
-                      </span>
-                    )}
+                  recipe={r}
+                  className={removingId === r.id ? 'removing' : ''}
+                  onClick={(id) => navigate(`/recipeMain/${id}`)}
+                  imageAction={
                     <button
                       className="scrap-heart-btn liked"
                       onClick={e => handleScrapToggle(r.id, e)}
@@ -176,27 +178,34 @@ const RecipeMainClip = () => {
                     >
                       ⭐
                     </button>
-                  </div>
-
-                  <div className="scrap-card-body">
-                    <div className="scrap-card-name">{r.title}</div>
-                    {r.desc && <div className="scrap-card-desc">{r.desc}</div>}
-                    <div className="scrap-card-tags">
-                      <span className="scrap-tag scrap-tag-cat">{r.category}</span>
-                      {r.urgent && <span className="scrap-tag scrap-tag-urgent">임박재료활용</span>}
-                      {(r.tags ?? []).map(t => <span key={t} className="scrap-tag">{t}</span>)}
-                    </div>
-                    <div className="scrap-card-footer">
-                      <div className="scrap-card-meta">
-                        <span>⏱️ {r.time}</span>
-                        <span>❤️ {r.likes}</span>
-                      </div>
-                      <span className="scrap-card-date">📌 {r.scrappedAt}</span>
-                    </div>
-                  </div>
-                </div>
+                  }
+                  metaExtra={
+                    <>
+                      <button
+                        className={`card-heart-btn ${r.isHearted ? 'hearted' : ''}`}
+                        onClick={e => toggleHeart(r.id, e)}
+                      >
+                        {r.isHearted ? '❤️' : '🤍'} {r.heart}
+                      </button>
+                      {r.scrappedAt && <span className="scrap-card-date">📌 {r.scrappedAt}</span>}
+                    </>
+                  }
+                />
               ))}
             </div>
+
+            {totalPages > 1 && (
+              <div className="pagination-container">
+                <button className="pagination-arrow" disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>◀</button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <div key={page} onClick={() => setCurrentPage(page)}
+                    className={`pagination-number ${currentPage === page ? 'active' : ''}`}>{page}</div>
+                ))}
+                <button className="pagination-arrow" disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>▶</button>
+              </div>
+            )}
           </>
         )}
       </div>

@@ -39,3 +39,25 @@ export const CATEGORY_DECODER: { [key: string]: string } = {
   DIET: "다이어트",
   RAP: "밀프랩",
 };
+
+export interface RecipeView {
+  id: number;
+  title: string;          // name 말고 title로 통일
+  category: string;       // 한글 변환된 값
+  categoryCode: string;   // 원본 코드 (KOR 등) — 필터링용
+  time: number;           // 항상 number로 통일
+  match: number;
+  emoji: string;
+  bg: string;
+  desc: string;
+  tags: string[];
+  heart: number;
+  scrap: number;
+  urgent: boolean;
+  isHearted: boolean;
+  isScrapped: boolean;
+  image: string;
+  scrappedAt?: string;
+  author?: string;
+  mustIngredients: { name: string; quantity: string }[];
+}

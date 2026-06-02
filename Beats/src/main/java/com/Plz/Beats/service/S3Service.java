@@ -17,20 +17,25 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3Service {
 
+    // S3Config가 만든 접속 객체 받아오기
     private final S3Client s3Client;
 
-    @Value("${cloud.aws.s3.bucket}")
+    @Value("${cloud.aws.s3.bucket}") // 버킷 이름
     private String bucket;
 
     public String uploadFile(MultipartFile file)
             throws IOException {
 
         // UUID 파일명 생성
+        // 파일명이 겹치지 않도록 UUID(랜덤문자)를 붙여줌
+        // 예) a1b2c3_고양이.jpg
         String fileName =
                 UUID.randomUUID() + "_" +
                         file.getOriginalFilename();
 
         // S3 업로드 요청
+        // 이 버킷에, 이 이름으로, 파일을 이런 타입으로 , 올리세요
+        // 하고 주문서를 작성
         PutObjectRequest putObjectRequest =
                 PutObjectRequest.builder()
                         .bucket(bucket)
@@ -38,13 +43,15 @@ public class S3Service {
                         .contentType(file.getContentType())
                         .build();
 
-        // 업로드 실행
+        // 여기가 실제로 업로드가 실행됨.
+        // 주문서 + 파일의 실제 바이트 데이터
         s3Client.putObject(
                 putObjectRequest,
                 RequestBody.fromBytes(file.getBytes())
         );
 
-        // 업로드된 파일 URL 반환
+        // 업로드가 끝났다면,
+        // 그 파일에 접근할 수 있는 url 생성.
         return "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + fileName;
     }
 

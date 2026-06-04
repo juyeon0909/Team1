@@ -80,7 +80,7 @@ public class RecipeController {
         }
     }
 
-    // 🟢 내가 등록한 마이페이지 레시피 목록 조회 API 추가
+    // 내가 등록한 마이페이지 레시피 목록 조회 API 추가
     @GetMapping("/mypage/recipe")
     public ResponseEntity<?> getMyPageRecipes(Principal principal) {
         // 비로그인 유저 예외 처리
@@ -94,7 +94,7 @@ public class RecipeController {
         return ResponseEntity.ok(myRecipes);
     }
 
-    // 4. 요리하기: 사용한 재료를 냉장고에서 차감
+    // 사용한 재료를 냉장고에서 차감
     @PostMapping("/{id}/cook")
     public ResponseEntity<?> cookRecipe(
             @PathVariable Long id,
@@ -107,6 +107,17 @@ public class RecipeController {
         return ResponseEntity.ok("재료 차감 완료");
     }
 
+    // 레시피 삭제 (관리자 전용)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteRecipe(@PathVariable Long id, Principal principal) {
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+        recipeService.deleteRecipeByAdmin(id);
+        return ResponseEntity.ok("삭제 완료");
+    }
+
+    // 매칭률 계산하기
     @GetMapping("/match")
     public ResponseEntity<?> getRecipesWithMatch(Principal principal) {
         if (principal == null || "anonymousUser".equals(principal.getName())) {
@@ -116,5 +127,31 @@ public class RecipeController {
 
         String email = principal.getName();
         return ResponseEntity.ok(recipeMatchService.getRecipesWithMatchRate(email));
+    }
+
+    // 레시피 단건 상세 조회 (로그인 필수)
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getRecipeDetail(@PathVariable Long id, Principal principal) {
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요한 서비스입니다.");
+        }
+        return ResponseEntity.ok(recipeService.getRecipeDetail(id, principal.getName()));
+    }
+
+    // 3. 레시피 수정 API (로그인 필수, 본인만)
+    @PostMapping("/edit/{id}")
+    public ResponseEntity<?> requestEditRecipe(
+            @PathVariable Long id,
+            @RequestBody RecipeDto recipeDto,
+            Principal principal) {
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+        try {
+            RecipeDto saved = recipeService.updateRecipe(id, recipeDto, principal.getName());
+            return ResponseEntity.ok(saved);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
     }
 }

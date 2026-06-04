@@ -1,15 +1,13 @@
-import { Button, Card, Col, Container, Row } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import axios from "axios";
 import type { RecipeView, RecipeDto } from '../types/Recipe';
 import { toRecipeView } from '../types/recipeMapper';
 import '../components/RecipeMain.css';
 import type { User } from "../types/User";
-import { API_BASE_URL } from "../config/config";
 import RecipeCard from '../pages/RecipeCard';
-import '../components/RecipeMain.css';
 
 type RecipeProps = {
   user: User | null;
@@ -17,6 +15,7 @@ type RecipeProps = {
 
 function RecipeMain({ user }: RecipeProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [recipes, setRecipes] = useState<RecipeView[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,11 +23,10 @@ function RecipeMain({ user }: RecipeProps) {
   const [activeCategory, setActiveCategory] = useState('전체');
   const [activeMatch, setActiveMatch] = useState('전체');
   const [activeTime, setActiveTime] = useState('전체');
-  const [urgentOnly, setUrgentOnly] = useState(false);
+  const [urgentOnly, setUrgentOnly] = useState(() => !!(location.state as any)?.urgentOnly);
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 6;
 
-  
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
@@ -37,7 +35,6 @@ function RecipeMain({ user }: RecipeProps) {
         if (Array.isArray(response.data) && response.data.length > 0) {
           const mapped = response.data.map(toRecipeView);
 
-          // 로그인 상태면 보관함 기반 매칭률을 받아 id별로 덮어쓰기
           const token = localStorage.getItem('accessToken');
           if (token) {
             try {
@@ -69,17 +66,10 @@ function RecipeMain({ user }: RecipeProps) {
     fetchRecipes();
   }, []);
 
-  // currentPage 범위 클램핑
   useEffect(() => {
     const tp = Math.max(1, Math.ceil(recipes.length / perPage));
     if (currentPage > tp) setCurrentPage(tp);
   }, [recipes, currentPage]);
-
-  const getMatchBadgeClass = (match: number) => {
-    if (match >= 100) return 'badge-match-full';
-    if (match >= 80) return 'badge-match-high';
-    return 'badge-match-mid';
-  };
 
   const toggleHeart = async (id: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -115,6 +105,25 @@ function RecipeMain({ user }: RecipeProps) {
     }
   };
 
+  const handleEdit = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/recipeMain/edit/${id}`);
+  };
+
+  const handleDelete = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm("정말 이 레시피를 삭제하시겠습니까?")) return;
+    axiosInstance.delete(`/recipeMain/${id}`)
+      .then(() => {
+        alert("레시피가 성공적으로 삭제되었습니다.");
+        setRecipes(prev => prev.filter(r => r.id !== id));
+      })
+      .catch((err) => {
+        console.error("레시피 삭제 실패:", err);
+        alert("삭제 중 오류가 발생했습니다.");
+      });
+  };
+
   const filteredRecipes = useMemo(() => {
     let result = recipes.filter(r => {
       if (urgentOnly && !r.urgent) return false;
@@ -146,67 +155,6 @@ function RecipeMain({ user }: RecipeProps) {
   }, [filteredRecipes, currentPage]);
 
   if (loading) return <div className="loading-box">데이터를 확인하는 중...</div>;
-
-  const makeAdminButtons = (item: RecipeView, user: User | null, navigate: any) => {
-    if (user?.role !== 'ADMIN') return null;
-
-    return (
-      <div className="d-flex justify-content-center">
-        <Button // 수정을 위한 <Button>을 추가합니다.
-          variant="warning"
-          className="mb-2"
-          size="sm"
-          onClick={(event) => {
-            event.stopPropagation(); // 이벤트 버블링 방지
-            navigate(`/recipeMain/edit/${item.id}`); // 유일한 id가 있음
-          }}>
-          수정
-        </Button>
-
-        &nbsp;
-
-        <Button // 삭제를 위한 <Button>을 추가합니다. (confirm 함수 이용)(alert과는 다름)
-          variant="danger"
-          className="mb-2"
-          size="sm"
-          onClick={async (event) => {
-            event.stopPropagation(); // 이벤트 버블링 방지
-
-            const isDelete = window.confirm(`${item.title}  레시피를 삭제하시겠습니까?`);
-
-            if (isDelete === false) {
-              /* sweet alert2 사이트에 이쁜거 많음 */
-              alert(`${item.title} 레시피 삭제를 취소하였습니다.`)
-              return;
-            }
-
-            try { // 전체 배열에서 일부 데이터만 필터할 수 있음
-              const url = `${API_BASE_URL}/product/delete/${item.id}`;
-              await axios.delete(url);
-              alert(`'${item.title}' 레시피가 삭제되었습니다.`)
-
-              // 레시피를 갱신해주는 setter
-              // 이전(prev) 레시피 정보를 가져와서 필터링하는데
-              // 이전 레시피의 id와 해당 레시피 id가 같지 않으면 - 레시피 데이터에 해당 레시피가 없으면
-              // 레시피(목록)을 갱신해라
-              setRecipes(prev => prev.filter(p => p.id !== item.id));
-
-              navigate('/recipeMain');
-
-            } catch (error) {
-              console.log(error);
-              if (axios.isAxiosError(error)) {
-                alert(`레시피 삭제 실패 : ${error.response?.data || error.message}`);
-              } else {
-                console.log('알수 없는 에러 : ' + error);
-              }
-            };
-          }}>
-          삭제
-        </Button>
-      </div>
-    );
-  };
 
   return (
     <div className="recipe-main-container">
@@ -266,6 +214,7 @@ function RecipeMain({ user }: RecipeProps) {
             })}
           </div>
         </div>
+
         <div className="filter-divider" />
         <div className="filter-group">
           <span className="filter-label">조리 시간</span>
@@ -277,7 +226,27 @@ function RecipeMain({ user }: RecipeProps) {
             ))}
           </div>
         </div>
+
+        <div className="filter-divider" />
+        <div className="filter-group">
+          <span className="filter-label">임박 재료</span>
+          <div className="filter-chips">
+            <div
+              onClick={() => { setUrgentOnly(false); setCurrentPage(1); }}
+              className={`filter-chip ${!urgentOnly ? 'active-green' : ''}`}
+            >
+              전체
+            </div>
+            <div
+              onClick={() => { setUrgentOnly(true); setCurrentPage(1); }}
+              className={`filter-chip ${urgentOnly ? 'active-match-orange' : ''}`}
+            >
+              임박재료 활용
+            </div>
+          </div>
+        </div>
       </div>
+
       <div className="feed-content">
         <div className="recipe-grid">
           {pagedRecipes.map(r => (
@@ -299,8 +268,15 @@ function RecipeMain({ user }: RecipeProps) {
                   >
                     {r.isScrapped ? '⭐' : '☆'} {r.scrap}
                   </button>
-		              {makeAdminButtons(r, user, navigate) /* ADMIN이면 수정/삭제 버튼 렌더링 */}
                 </>
+              }
+              footer={
+                user?.role === 'ADMIN' ? (
+                  <div className="rc-admin-btn-group">
+                    <button className="recipe-edit-btn" onClick={e => handleEdit(r.id, e)}>수정</button>
+                    <button className="recipe-delete-btn" onClick={e => handleDelete(r.id, e)}>삭제</button>
+                  </div>
+                ) : undefined
               }
             />
           ))}
@@ -321,5 +297,6 @@ function RecipeMain({ user }: RecipeProps) {
       </div>
     </div>
   );
-};
+}
+
 export default RecipeMain;

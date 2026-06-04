@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -25,4 +26,11 @@ public interface StorageItemRepository extends JpaRepository<Storage_item, Long>
     // 재료명으로 사용자 보관함 항목 조회 (유통기한 빠른 순)
     @Query("SELECT s FROM Storage_item s JOIN FETCH s.item WHERE s.member.email = :email AND s.item.name = :itemName ORDER BY s.expirationdate ASC")
     List<Storage_item> findByMemberEmailAndItemName(@Param("email") String email, @Param("itemName") String itemName);
+
+    @Query("SELECT DISTINCT s.item.id FROM Storage_item s " +
+            "WHERE s.member.email = :email " +
+            "AND s.expirationdate IS NOT NULL " +
+            "AND s.expirationdate <= :limitDate")
+    List<Long> findUrgentItemIdsByMemberEmail(@Param("email") String email,
+                                              @Param("limitDate") LocalDate limitDate);
 }

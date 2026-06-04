@@ -17,6 +17,7 @@ import Delete from '../pages/Delete';
 import RecipeRegister from '../pages/RecipeRegister'
 import RecipeEdit from '../pages/RecipeEdit'
 import FindPassword from '../pages/FindPassword.tsx'
+import ResetPassword from '../pages/ResetPassword.tsx'
 import AdminQna from '../pages/AdminQna';
 import PasswordlessWithdrawalPage from '../pages/PasswordlessWithdrawalPage'
 import PasswordlessRegisterPage from '../pages/PasswordlessRegisterPage'
@@ -46,7 +47,6 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
       <Route path='/recipeMain/edit/:id' element={<RecipeEdit />} />
-      <Route path='/product/register' element={<FridgeRegister />} />
       <Route path="/recipeMain/:id" element={<RecipeDetail />} />
       <Route path='/recipeMain' element={<RecipeMain user={user} />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
@@ -56,16 +56,15 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/mypage/qna' element={<MyPageQna />} />
       <Route path='/delete' element={<Delete />} />
       <Route path='/member/find-password' element={<FindPassword />} />
+      <Route path='/member/reset-password' element={<ResetPassword />} />
       <Route path='/admin/qna' element={<AdminQna />} />
       <Route path="/member/passwordless-register" element={<PasswordlessRegisterPage />} />
       <Route path="/member/reset-register" element={<PasswordlessWithdrawalPage />} />
       <Route path='/admin/recipe' element={<AdminRecipe />} />
-      <Route path="/admin/recipes/:id" element={<AdminRecipeDetail />} />
+      <Route path='/admin/recipes/:id' element={<AdminRecipeDetail />} />
 
     </Routes>
   );
 }
-{/* 커밋 체  크  */ }
-{/* 커밋 체쿠 나나난  */ }
-/*커밋체크*/
+
 export default App;

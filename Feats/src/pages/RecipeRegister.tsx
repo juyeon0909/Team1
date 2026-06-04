@@ -50,6 +50,14 @@ const RecipeRegister = () => {
   const dropdownRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인 후 이용가능한 서비스입니다.");
+      navigate("/member/login");
+    }
+  }, []);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       dropdownRefs.current.forEach((ref, idx) => {
         if (ref && !ref.contains(event.target as Node)) {
@@ -63,7 +71,6 @@ const RecipeRegister = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // axiosInstance가 토큰 자동 처리하므로 헤더 별도 설정 불필요
   useEffect(() => {
     if (!searchTarget || !searchTarget.keyword.trim()) return;
 
@@ -143,7 +150,7 @@ const RecipeRegister = () => {
 
     const filteredMustIngredients = mustIngredients
       .filter(item => item.name.trim() !== "" && item.quantity.trim() !== "")
-      .map(item => ({ name: item.name, quantity: item.quantity }));
+      .map(item => ({ name: item.name, quantity: parseInt(item.quantity.replace(/[^0-9]/g, ''), 10) || 0 }));
 
     if (filteredMustIngredients.length === 0) {
       return alert("필수 재료를 최소 한 개 이상 입력해주세요.");
@@ -152,7 +159,6 @@ const RecipeRegister = () => {
     try {
       setLoading(true);
 
-      // 1단계: 이미지가 있으면 S3에 먼저 업로드
       let imageUrl = "";
       if (imagePreview) {
         const uploadRes = await axiosInstance.post('/recipeMain/upload-image', { image: imagePreview });
@@ -199,7 +205,7 @@ const RecipeRegister = () => {
   return (
     <div style={pageContainerStyle}>
       <div style={backLinkStyle} onClick={() => navigate('/recipeMain')}>
-        <span>{id ? ' 레시피 상세로' : ' 레시피 목록으로'}</span>
+        <span><span>⬅</span>{id ? ' 레시피 상세로' : ' 레시피 목록으로'}</span>
       </div>
 
       <div className="register-card">
@@ -243,14 +249,16 @@ const RecipeRegister = () => {
           <input className="form-input" type="text" value={intro} onChange={(e) => setIntro(e.target.value)} placeholder="레시피를 한 줄로 소개해주세요" />
         </div>
 
+        {/* 필수 재료 영역 */}
         <div className="form-group">
-          <label className="form-label">필수 재료 및 용량 (g) *</label>
+          <label className="form-label">필수 재료 및 용량 *</label>
           {mustIngredients.map((item, index) => (
             <div
               key={index}
               ref={el => { dropdownRefs.current[index] = el; }}
               className="ingredient-row"
             >
+              {/* 식재료 자동완성 검색 인풋 */}
               <div className="relative-wrapper">
                 <input
                   className="form-input"
@@ -260,7 +268,9 @@ const RecipeRegister = () => {
                   placeholder="예: 두부"
                   autoComplete="off"
                 />
-                {item.showDropdown && item.searchResults.length > 0 && (
+
+                {/* 자동완성 드롭다운 리스트 */}
+                {item.showDropdown && item.searchResults && item.searchResults.length > 0 && (
                   <ul className="search-dropdown-list">
                     {item.searchResults.map((prod, pIdx) => {
                       const displayName = prod.itemName || prod.name || '이름 없음';
@@ -272,7 +282,9 @@ const RecipeRegister = () => {
                         >
                           <strong className="dropdown-item-name">{displayName}</strong>
                           {prod.category && (
-                            <span className="dropdown-item-category">{prod.category}</span>
+                            <span className="dropdown-item-category">
+                              {prod.category}
+                            </span>
                           )}
                         </li>
                       );
@@ -281,12 +293,13 @@ const RecipeRegister = () => {
                 )}
               </div>
 
+              {/* 수량/용량 인풋 */}
               <input
                 className="form-input"
                 type="text"
                 value={item.quantity}
                 onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
-                placeholder="숫자만 입력해주세요."
+                placeholder="예: 1모, 150g"
               />
               {mustIngredients.length > 1 && (
                 <button type="button" onClick={() => removeIngredientRow(index)} className="row-remove-btn">✕</button>

@@ -151,8 +151,7 @@ const RecipeRegister = () => {
     try {
       setLoading(true);
 
-      // 1단계: 이미지가 있으면 S3에 먼저 업로드
-      let imageUrl = "";
+      let imageUrl = "default.png";
       if (imagePreview) {
         const uploadRes = await axiosInstance.post('/recipeMain/upload-image', { image: imagePreview });
         imageUrl = uploadRes.data;

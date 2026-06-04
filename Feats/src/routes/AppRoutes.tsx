@@ -68,7 +68,5 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
     </Routes>
   );
 }
-{/* 커밋 체  크  */ }
-{/* 커밋 체쿠 나나난  */ }
-/*커밋체크*/
+
 export default App;

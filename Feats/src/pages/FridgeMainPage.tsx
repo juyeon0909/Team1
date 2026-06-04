@@ -49,81 +49,75 @@ const FridgeMain: React.FC = () => {
     }
   };
 
-  const getExpiryClass = (expiryDateStr: string): string => {
-    if (!expiryDateStr) return 'expiry-normal';
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); 
-    
-    const expiry = new Date(expiryDateStr);
-    expiry.setHours(0, 0, 0, 0);
-    
-    const diffTime = expiry.getTime() - today.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) return 'expiry-over'; 
-    if (diffDays <= 3) return 'expiry-danger';   
-    if (diffDays <= 7) return 'expiry-warning';  
+const getExpiryClass = (urgency?: string, dDay?: number): string => {
+    if ((dDay !== undefined && dDay <= 0) || urgency === 'urgent') return 'expiry-danger';   
+    if (urgency === 'warning') return 'expiry-warning';  
     return 'expiry-normal';                      
   };
+
+
 
   const getShortCategory = (categoryStr?: string): string => {
     if (!categoryStr) return '기'; 
     return categoryStr.trim().charAt(0);
   };
 
-  const sortIngredients = (list: Ingredient[], sortType: string) => {
+const sortIngredients = (list: Ingredient[], sortType: string) => {
     return [...list].sort((a, b) => {
-      const nameA = a.itemname || a.name || '';
-      const nameB = b.itemname || b.name || '';
+      const nameA = a.itemName || '';
+      const nameB = b.itemName || '';
 
       if (sortType === "가나다순") return nameA.localeCompare(nameB, 'ko');
       if (sortType === "재고순") return b.quantity - a.quantity; 
       if (sortType === "등록순") return b.id - a.id;
       if (sortType === "유통기한순") {
-        if (!a.expirationdate) return 1;
-        if (!b.expirationdate) return -1;
-        return new Date(a.expirationdate).getTime() - new Date(b.expirationdate).getTime(); 
+        const dDayA = a.dDay !== undefined ? a.dDay : 999;
+        const dDayB = b.dDay !== undefined ? b.dDay : 999;
+        return dDayA - dDayB; 
       }
       return 0;
     });
   };
 
-  // 검색 필터
-  const filteredIngredients = ingredients.filter((item) => {
-    const targetName = (item.itemname || item.name || '').toLowerCase();
+
+const filteredIngredients = ingredients.filter((item) => {
+    const targetName = (item.itemName || '').toLowerCase();
     const targetCategory = (item.category || '').toLowerCase();
     const search = searchTerm.toLowerCase().trim();
     return targetName.includes(search) || targetCategory.includes(search);
   });
 
+
   const todayStr = new Date().toISOString().split("T")[0]; 
 
-  // 신선 재료 그룹
-  const freshIngredients = filteredIngredients.filter(item => {
-    if (!item.expirationdate) return true; 
-    return item.expirationdate >= todayStr;
-  });
+const expiredItems = sortIngredients(filteredIngredients.filter(item => {
+    // 백엔드 dDay 필드가 존재한다면 최우선 신뢰
+    if (item.dDay !== undefined) return item.dDay <= 0;
+    
 
-  // 유통기한 초과 격리 그룹
-  const expiredItems = sortIngredients(filteredIngredients.filter(item => {
-    if (!item.expirationdate) return false;
-    return item.expirationdate < todayStr;
+    if (!item.expirationDate) return false;
+    return item.expirationDate <= todayStr; 
   }), "유통기한순");
 
+  const freshIngredients = filteredIngredients.filter(item => {
+    if (item.dDay !== undefined) return item.dDay > 0;
+    
+    if (!item.expirationDate) return true; 
+    return item.expirationDate > todayStr;
+  });
+
   const frozenItems = sortIngredients(freshIngredients.filter(item => {
-    const sType = (item.storagetype || item.type || '').toUpperCase();
-    return sType === 'FROZEN' || sType === '냉동';
+    return item.storageType === 'FROZEN';
   }), froSort);
 
   const refrigeratedItems = sortIngredients(freshIngredients.filter(item => {
-    const sType = (item.storagetype || item.type || '').toUpperCase();
-    return sType === 'REFRIGERATED' || sType === '냉장';
+    return item.storageType === 'REFRIGERATED';
   }), refSort);
 
   const roomItems = sortIngredients(freshIngredients.filter(item => {
-    const sType = (item.storagetype || item.type || '').toUpperCase();
-    return sType === 'ROOM_TEMP' || sType === '실온' || sType === '상온';
+    return item.storageType === 'ROOM_TEMP';
   }), roomSort);
+
 
   const renderSortSelect = (value: string, onChangeFn: (val: string) => void) => (
     <select value={value} onChange={(e) => onChangeFn(e.target.value)} className="room-sort-select" disabled={!currentUser}>
@@ -169,13 +163,14 @@ const FridgeMain: React.FC = () => {
             ) : frozenItems.length === 0 ? (
               <p className="empty-item-text">재료가 없습니다.</p>
             ) : frozenItems.map((item) => {
-              const finalName = item.itemname || item.name || '이름 없음';
+              const finalName = item.itemName || item.name || '이름 없음';
               return (
-                <div key={item.id} className={`storage-item-row ${getExpiryClass(item.expirationdate)}`}>
+                <div key={item.id} className={`storage-item-row ${getExpiryClass(item.urgency, item.dDay)}`}>
                   <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>{finalName}</span>
                   <span className="item-badge-short">{getShortCategory(item.category)}</span>
                   <span className="item-quantity">{item.quantity}g</span>
-                  <span className="item-expiry item-expiry-wrapper">{item.expirationdate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
+                  {/* <span className="item-expiry item-expiry-wrapper">{item.expirationdate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span> */}
+                  <span className="item-expiry item-expiry-wrapper">{item.expirationDate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
                 </div>
               );
             })}
@@ -195,13 +190,14 @@ const FridgeMain: React.FC = () => {
             ) : refrigeratedItems.length === 0 ? (
               <p className="empty-item-text">재료가 없습니다.</p>
             ) : refrigeratedItems.map((item) => {
-              const finalName = item.itemname || item.name || '이름 없음';
+              const finalName = item.itemName || item.name || '이름 없음';
               return (
-                <div key={item.id} className={`storage-item-row ${getExpiryClass(item.expirationdate)}`}>
+                <div key={item.id} className={`storage-item-row ${getExpiryClass(item.urgency, item.dDay)}`}>
                   <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>{finalName}</span>
                   <span className="item-badge-short">{getShortCategory(item.category)}</span>
                   <span className="item-quantity">{item.quantity}g</span>
-                  <span className="item-expiry item-expiry-wrapper">{item.expirationdate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
+                  {/* <span className="item-expiry item-expiry-wrapper">{item.expirationdate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span> */}
+                  <span className="item-expiry item-expiry-wrapper">{item.expirationDate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
                 </div>
               );
             })}
@@ -221,13 +217,14 @@ const FridgeMain: React.FC = () => {
             ) : roomItems.length === 0 ? (
               <p className="empty-item-text">재료가 없습니다.</p>
             ) : roomItems.map((item) => {
-              const finalName = item.itemname || item.name || '이름 없음';
+              const finalName = item.itemName || item.name || '이름 없음';
               return (
-                <div key={item.id} className={`storage-item-row ${getExpiryClass(item.expirationdate)}`}>
+                <div key={item.id} className={`storage-item-row ${getExpiryClass(item.urgency, item.dDay)}`}>
                   <span className="item-name-link" onClick={() => navigate(`/product/edit/${item.id}`)}>{finalName}</span>
                   <span className="item-badge-short">{getShortCategory(item.category)}</span>
                   <span className="item-quantity">{item.quantity}g</span>
-                  <span className="item-expiry item-expiry-wrapper">{item.expirationdate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
+                  {/* <span className="item-expiry item-expiry-wrapper">{item.expirationdate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span> */}
+                  <span className="item-expiry item-expiry-wrapper">{item.expirationDate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
                 </div>
               );
             })}
@@ -239,7 +236,7 @@ const FridgeMain: React.FC = () => {
       {currentUser && expiredItems.length > 0 && (
         <div className="expired-storage-container">
           <h3 className="expired-container-title">
-            유통기한 초과 재료 ({expiredItems.length}종)
+            유통기한 초과 재료 
           </h3>
           <p className="expired-container-sub">
             * 유통기한이 지난 식품들입니다. 냄새와 상태를 확인하시고 사용하거나 ✕ 버튼을 눌러 폐기 처리해 주세요.
@@ -247,7 +244,7 @@ const FridgeMain: React.FC = () => {
           
           <div className="expired-items-list">
             {expiredItems.map((item) => {
-              const finalName = item.itemname || item.name || '이름 없음';
+              const finalName = item.itemName || item.name || '이름 없음';
               return (
                 <div key={item.id} className="expired-item-row">
                   <span className="expired-item-name" onClick={() => navigate(`/product/edit/${item.id}`)}>
@@ -257,7 +254,7 @@ const FridgeMain: React.FC = () => {
                     <span className="expired-badge-text">기한 초과됨</span>
                     <span className="expired-item-qty">{item.quantity}g</span>
                     <span className="expired-item-date-wrapper">
-                      ({item.expirationdate})
+                      ({item.expirationDate})
                       <button onClick={(e) => handleDelete(item.id, finalName, e)} className="expired-btn-delete">✕</button>
                     </span>
                   </div>

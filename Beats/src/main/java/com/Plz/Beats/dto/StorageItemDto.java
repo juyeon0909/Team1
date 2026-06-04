@@ -9,12 +9,12 @@ import java.time.LocalDate;
 @Getter @Setter
 public class StorageItemDto {
     private Long id;
-    private String itemname;
+    private String itemName;
     private int quantity;
-    private String storagetype;  // "냉장" / "냉동" / "실온"
+    private String storageType;  // "냉장" / "냉동" / "실온"
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate expirationdate;
+    private LocalDate expirationDate;
 
     private long dDay;           // 남은 일수 (음수면 이미 만료)
     private String urgency;      // "urgent" / "warning" / "normal"

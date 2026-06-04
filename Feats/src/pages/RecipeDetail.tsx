@@ -1,95 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import type { RecipeView, RecipeDto } from '../types/Recipe';
+import { toRecipeView } from '../types/recipeMapper';
 import '../components/RecipeMain.css';
-
-interface Recipe {
-  id: number;
-  name: string;
-  cat: string;
-  time: number;
-  match: number;
-  emoji: string;
-  bg: string;
-  desc: string;
-  tags: string[];
-  heart: number;
-  scrap: number;
-  urgent: boolean;
-  isHearted?: boolean;
-  isScrapped?: boolean;
-  mustIngredients: { name: string; quantity: string }[];
-  selectIngredients: string[];
-  missingIngredients: string[];
-  steps: string[];
-  image: string;
-}
-
-const CATEGORY_DECODER: { [key: string]: string } = {
-  KOR: '한식', YANG: '양식', JAN: '일식', CHN: '중식',
-  GAN: '간식', YA: '야식', DIET: '다이어트', RAP: '밀프랩',
-};
 
 const RecipeDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const [recipe,          setRecipe]          = useState<Recipe | null>(null);
+  const [recipe,          setRecipe]          = useState<RecipeView | null>(null);
   const [loading,         setLoading]         = useState(true);
   const [isModalOpen,     setIsModalOpen]     = useState(false);
-  const [mustIngredients, setMustIngredients] = useState<{ name: string; quantity: string }[]>([]);
+  const [mustIngredients, setMustIngredients] = useState<{ name: string; quantity: string | number }[]>([]);
 
+  // 로그인 가드
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('로그인 후 이용 가능한 서비스입니다.');
+      navigate('/member/login');
+    }
+  }, [navigate]);
+
+  // 단건 상세 조회
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/recipeMain');
-        if (response.data && Array.isArray(response.data)) {
-          const mapped: Recipe[] = response.data.map((item: any) => ({
-            id:                 item.recipeId    ?? item.id,
-            name:               item.title,
-            cat:                CATEGORY_DECODER[item.category] ?? item.category ?? '한식',
-            time:               item.cookingTime,
-            desc:               item.description,
-            steps:              Array.isArray(item.steps) ? item.steps : [],
-            mustIngredients:    item.mustIngredients   ?? [],
-            selectIngredients:  item.selectIngredients ?? [],
-            missingIngredients: item.missingIngredients ?? [],
-            match:              item.match      ?? 0,
-            emoji:              item.emoji      ?? '🍳',
-            bg:                 item.bg         ?? '#E1F5EE',
-            tags:               [CATEGORY_DECODER[item.category] ?? item.category ?? '한식', `${item.cookingTime}분`],
-            heart:              item.likeCount  ?? 0,
-            scrap:              item.scrapCount ?? 0,
-            urgent:             item.urgent     ?? false,
-            isHearted:          item.hearted    ?? false,
-            isScrapped:         item.scrapped   ?? false,
-            image:              item.image,
-          }));
-          const found = mapped.find(r => r.id === parseInt(id!, 10));
-          if (found) {
-            setRecipe(found);
-            setMustIngredients(found.mustIngredients.map(i => ({ ...i })));
-          }
-        }
+        const res = await axiosInstance.get<RecipeDto>(`/recipeMain/${id}`);
+        const view = toRecipeView(res.data);
+        setRecipe(view);
+        setMustIngredients(view.mustIngredients.map(i => ({ ...i })));
       } catch (error) {
         console.error('레시피 로딩 실패:', error);
+        setRecipe(null);
       } finally {
         setLoading(false);
       }
     };
-    fetchRecipe();
+    if (id) fetchRecipe();
   }, [id]);
 
   const toggleHeart = async (e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (!recipe) return;
-    const prev = recipe.isHearted ?? false;
-    setRecipe({ ...recipe, isHearted: !prev, heart: prev ? Math.max(0, recipe.heart - 1) : recipe.heart + 1 });
+    const original = recipe;
+    setRecipe({
+      ...recipe,
+      isHearted: !recipe.isHearted,
+      heart: recipe.isHearted ? recipe.heart - 1 : recipe.heart + 1,
+    });
     try {
       await axiosInstance.post(`/mypage/${recipe.id}/like`);
     } catch (err) {
-      setRecipe(r => r && ({ ...r, isHearted: prev, heart: prev ? r.heart + 1 : Math.max(0, r.heart - 1) }));
+      setRecipe(original);
       console.error('좋아요 처리 실패:', err);
     }
   };
@@ -97,12 +62,16 @@ const RecipeDetail = () => {
   const toggleScrap = async (e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (!recipe) return;
-    const prev = recipe.isScrapped ?? false;
-    setRecipe({ ...recipe, isScrapped: !prev, scrap: prev ? Math.max(0, recipe.scrap - 1) : recipe.scrap + 1 });
+    const original = recipe;
+    setRecipe({
+      ...recipe,
+      isScrapped: !recipe.isScrapped,
+      scrap: recipe.isScrapped ? recipe.scrap - 1 : recipe.scrap + 1,
+    });
     try {
       await axiosInstance.post(`/recipeMain/${recipe.id}/clip`);
     } catch (err) {
-      setRecipe(r => r && ({ ...r, isScrapped: prev, scrap: prev ? r.scrap + 1 : Math.max(0, r.scrap - 1) }));
+      setRecipe(original);
       console.error('스크랩 처리 실패:', err);
     }
   };
@@ -116,11 +85,11 @@ const RecipeDetail = () => {
   const handleCookStart = async () => {
     if (!recipe) return;
     try {
-      const token = localStorage.getItem('accessToken');
-      const payload = mustIngredients.map(item => ({ name: item.name, quantity: item.quantity }));
-      await axiosInstance.post(`/recipeMain/${recipe.id}/cook`, payload, {
-        headers: { Authorization: token ? `Bearer ${token}` : '' },
-      });
+      const payload = mustIngredients.map(item => ({
+        name: item.name,
+        quantity: parseInt(String(item.quantity).replace(/[^0-9]/g, ''), 10) || 0,
+      }));
+      await axiosInstance.post(`/recipeMain/${recipe.id}/cook`, payload);
       alert('요리가 완료되었습니다! 사용한 재료가 냉장고에서 차감되었습니다.');
       setIsModalOpen(false);
       navigate('/recipeMain');
@@ -156,14 +125,15 @@ const RecipeDetail = () => {
               fontSize: '72px', marginBottom: '20px', overflow: 'hidden',
             }}>
               {recipe.image ? (
-                <img src={recipe.image} alt={recipe.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                <img src={recipe.image} alt={recipe.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
               ) : (
                 recipe.emoji
               )}
             </div>
 
             <div style={{ background: '#fff', border: '0.5px solid #eee', borderRadius: '8px', padding: '20px 24px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '20px', fontWeight: 500, marginBottom: '8px' }}>{recipe.name}</div>
+              <div style={{ fontSize: '20px', fontWeight: 500, marginBottom: '8px' }}>{recipe.title}</div>
+              {recipe.author && <div style={{ fontSize: '12px', color: '#999', marginBottom: '8px' }}>👤 {recipe.author}</div>}
               <div style={{ fontSize: '13px', color: '#666', marginBottom: '14px' }}>{recipe.desc}</div>
               <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: '#666' }}>
                 <span>⏱️ {recipe.time}분</span>
@@ -208,14 +178,14 @@ const RecipeDetail = () => {
               <div style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>필수 재료</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', marginBottom: '14px', fontSize: '13px' }}>
                 {recipe.mustIngredients.map((ing, idx) => (
-                  <div key={idx}>• {ing.name} {ing.quantity}</div>
+                  <div key={idx}>• {ing.name} {ing.quantity}g</div>
                 ))}
               </div>
 
               <div style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>선택 재료</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', fontSize: '13px' }}>
                 {recipe.selectIngredients.map((ing, idx) => (
-                  <div key={idx}>• {ing}</div>
+                  <div key={idx}>• {typeof ing === 'string' ? ing : ing.name}</div>
                 ))}
               </div>
             </div>
@@ -224,7 +194,7 @@ const RecipeDetail = () => {
               <div style={{ background: '#FCEBEB', border: '0.5px solid #F09595', borderRadius: '8px', padding: '14px 16px' }}>
                 <div style={{ fontSize: '12px', fontWeight: 500, color: '#791F1F', marginBottom: '8px' }}>🛒 없는 재료</div>
                 <div style={{ fontSize: '12px', color: '#A32D2D' }}>
-                  {recipe.missingIngredients.join(', ')}
+                  {recipe.missingIngredients.map(m => typeof m === 'string' ? m : m.name).join(', ')}
                 </div>
               </div>
             )}

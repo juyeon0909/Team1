@@ -16,11 +16,15 @@ export const toRecipeView = (dto: RecipeDto): RecipeView => {
     tags: [category, `${dto.cookingTime}분`],
     heart: dto.likeCount ?? 0,
     scrap: dto.scrapCount ?? 0,
-    urgent: false,
+    urgent: dto.urgent ?? false,
     isHearted: dto.hearted ?? false,
     isScrapped: dto.scrapped ?? false,
     image: dto.image ?? '',
     mustIngredients: dto.mustIngredients ?? [],
-    author: (dto as any).author ?? '', 
+    steps: dto.steps ?? [],
+    selectIngredients: dto.selectIngredients ?? [],
+    missingIngredients: dto.missingIngredients ?? [],
+    author: dto.author ?? '',
+    scrappedAt: dto.scrappedAt ?? '',
   };
 };

@@ -3,7 +3,7 @@
 // 재료 공통 인터페이스
 export interface IngredientDto {
   name: string;
-  quantity: string;
+  quantity: string | number;
 }
 
 // 메인 목록 및 레시피 공통 DTO 인터페이스
@@ -22,7 +22,10 @@ export interface RecipeDto {
   likeCount: number;       // 좋아요 수
   scrapCount: number;      // 스크랩 수
   hearted: boolean;        // 로그인 유저의 좋아요 여부
+  author?: string;       // 작성자 이름 (선택적)
   scrapped: boolean;       // 로그인 유저의 스크랩 여부
+  scrappedAt?: string; // 스크랩 날짜 (선택적)
+  urgent?: boolean; // 임박 재료 활용 여부 (선택적)
 }
 
 // 레시피 상세 응답 인터페이스 (RecipeDto와 동일 구조로 대응)
@@ -59,5 +62,8 @@ export interface RecipeView {
   image: string;
   scrappedAt?: string;
   author?: string;
-  mustIngredients: { name: string; quantity: string }[];
+  mustIngredients: { name: string; quantity: string | number }[];
+  steps: string[];
+  selectIngredients: (string | { name: string; quantity: string | number })[];
+  missingIngredients: (string | { name: string; quantity: string | number })[];
 }

@@ -159,7 +159,7 @@ const RecipeRegister = () => {
     try {
       setLoading(true);
 
-      let imageUrl = "default.png";
+      let imageUrl = "";
       if (imagePreview) {
         const uploadRes = await axiosInstance.post('/recipeMain/upload-image', { image: imagePreview });
         imageUrl = uploadRes.data;

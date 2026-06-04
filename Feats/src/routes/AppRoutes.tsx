@@ -17,11 +17,14 @@ import Delete from '../pages/Delete';
 import RecipeRegister from '../pages/RecipeRegister'
 import RecipeEdit from '../pages/RecipeEdit'
 import FindPassword from '../pages/FindPassword.tsx'
+import ResetPassword from '../pages/ResetPassword.tsx'
 import AdminQna from '../pages/AdminQna';
 import PasswordlessWithdrawalPage from '../pages/PasswordlessWithdrawalPage'
 import PasswordlessRegisterPage from '../pages/PasswordlessRegisterPage'
 import AdminRecipe from '../pages/AdminRecipe';
 import IngredientList from "../pages/IngredientList.tsx";
+import RecipeDetail from "../pages/RecipeDetail";
+import AdminRecipeDetail from '../pages/AdminRecipeDetail';
 
 
 
@@ -43,10 +46,10 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/ingredient/list' element={<IngredientList />} />
       <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
-      <Route path='/recipeMain/edit' element={<RecipeEdit />} />
+      <Route path='/recipeMain/edit/:id' element={<RecipeEdit />} />
       <Route path='/product/register' element={<FridgeRegister />} />
-      <Route path="/recipeMain/:id" element={<RecipeMain />} />
-      <Route path='/recipeMain' element={<RecipeMain />} />
+      <Route path="/recipeMain/:id" element={<RecipeDetail />} />
+      <Route path='/recipeMain' element={<RecipeMain user={user} />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
       <Route path="/mypage/edit" element={<MyPageEdit name={user?.name || "이름 없음"} setName={(newName) => setUser(prev => prev ? { ...prev, name: newName } : null)} triggerToast={(msg) => console.log(msg)} />} />
       <Route path='/mypage/recipe' element={<MyPageRecipe />} />
@@ -54,14 +57,16 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/mypage/qna' element={<MyPageQna />} />
       <Route path='/delete' element={<Delete />} />
       <Route path='/member/find-password' element={<FindPassword />} />
+      <Route path='/member/reset-password' element={<ResetPassword />} />
       <Route path='/admin/qna' element={<AdminQna />} />
       <Route path="/member/passwordless-register" element={<PasswordlessRegisterPage />} />
       <Route path="/member/reset-register" element={<PasswordlessWithdrawalPage />} />
       <Route path='/admin/recipe' element={<AdminRecipe />} />
+      <Route path="/admin/recipes/:id" element={<AdminRecipeDetail />} />
+
 
     </Routes>
   );
 }
-{/* 커밋 체크  */}
-{/* 커밋 체크 나나난  */ }
+
 export default App;

@@ -1,6 +1,6 @@
 package com.Plz.Beats.service;
 
-import com.Plz.Beats.dto.ScrapDto;
+import com.Plz.Beats.dto.RecipeDto;
 import com.Plz.Beats.entity.Member;
 import com.Plz.Beats.entity.Recipe;
 import com.Plz.Beats.entity.Scrap;
@@ -22,26 +22,19 @@ public class ScrapService {
     private final ScrapRepository scrapRepository;
     private final MemberRepository memberRepository;
     private final RecipeRepository recipeRepository;
+    private final RecipeService recipeService;   // toDto 재사용을 위해 주입
 
     // 현재 로그인 유저의 스크랩 목록 조회
     @Transactional(readOnly = true)
-    public List<ScrapDto> getScrappedRecipes(String email) {
+    public List<RecipeDto> getScrappedRecipes(String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         return scrapRepository.findByMember(member).stream()
                 .map(scrap -> {
-                    Recipe r = scrap.getRecipe();
-                    return new ScrapDto(
-                            r.getId(),
-                            r.getTitle(),
-                            r.getCategory().getDescription(),
-                            r.getCookingTime() + "분",
-                            r.getMember().getName(),
-                            scrapRepository.countByRecipe(r),
-                            true,
-                            scrap.getCreatedAt().toLocalDate().toString()
-                    );
+                    RecipeDto dto = recipeService.toDto(scrap.getRecipe(), member);
+                    dto.setScrappedAt(scrap.getCreatedAt().toLocalDate().toString());
+                    return dto;
                 })
                 .collect(Collectors.toList());
     }
@@ -68,4 +61,5 @@ public class ScrapService {
             return true; // 스크랩 추가
         }
     }
+
 }

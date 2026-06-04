@@ -120,7 +120,7 @@ const RecipeDetail = () => {
           style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px', cursor: 'pointer' }}
           onClick={() => navigate('/recipeMain')}
         >
-          <span>⬅️</span>
+          <span>⬅</span>
           <span style={{ fontSize: '13px', color: '#666' }}>레시피 목록으로</span>
         </div>
 
@@ -215,7 +215,7 @@ const RecipeDetail = () => {
                 onClick={toggleScrap}
                 style={{
                   flex: 1, padding: '10px',
-                  background: recipe.isScrapped ? '#BA7517' : '#1D9E75',
+                  background: recipe.isScrapped ? '#BA7517' : '#6FBC44',
                   color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer',
                 }}
               >
@@ -223,7 +223,7 @@ const RecipeDetail = () => {
               </button>
               <button
                 onClick={() => setIsModalOpen(true)}
-                style={{ flex: 1, padding: '10px', background: '#0BA574', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
+                style={{ flex: 1, padding: '10px', background: '#6FBC44', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
               >
                 요리하기
               </button>

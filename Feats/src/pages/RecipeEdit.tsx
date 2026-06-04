@@ -26,6 +26,7 @@ const RecipeEdit = () => {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<boolean>(false);
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
@@ -40,6 +41,7 @@ const RecipeEdit = () => {
   const [imagePreview, setImagePreview] = useState<string>('');
 
   const dropdownRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -88,6 +90,40 @@ const RecipeEdit = () => {
     };
     if (id) fetchRecipeData();
   }, [id]);
+
+  // 이미지 선택 → base64 변환 → 서버 업로드 → S3 URL 저장
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 업로드할 수 있습니다.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('이미지 크기는 5MB 이하만 가능합니다.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64 = reader.result as string;
+      // 업로드 전 즉시 미리보기 (낙관적)
+      setImagePreview(base64);
+      try {
+        setUploading(true);
+        const res = await axiosInstance.post('/recipeMain/upload-image', { image: base64 });
+        // 서버가 돌려준 S3 URL로 교체
+        setImagePreview(res.data);
+      } catch (error) {
+        console.error('이미지 업로드 실패:', error);
+        alert('이미지 업로드에 실패했습니다. 다시 시도해 주세요.');
+      } finally {
+        setUploading(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   // 식재료 자동완성 검색 (Debounce)
   const handleIngredientChange = (index: number, field: 'name' | 'quantity', value: string) => {
@@ -142,6 +178,7 @@ const RecipeEdit = () => {
   const onSave = async () => {
     if (!title.trim()) return alert('레시피 이름을 입력해주세요.');
     if (!category) return alert('카테고리를 선택해주세요.');
+    if (uploading) return alert('이미지 업로드가 끝난 뒤 저장해 주세요.');
 
     // 수량은 숫자만 추출해서 전송 (백엔드 Integer)
     const filteredMustIngredients = mustIngredients
@@ -203,6 +240,68 @@ const RecipeEdit = () => {
 
       <div className="edit-card">
         <div className="edit-card-title">레시피 수정</div>
+
+        {/* 이미지 미리보기 + 업로드 */}
+        <div className="form-group">
+          <label className="form-label">레시피 사진</label>
+          <div
+            className="image-upload-box"
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '220px',
+              border: '1px dashed #c7d0d9',
+              borderRadius: '8px',
+              background: '#f8fafc',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              overflow: 'hidden',
+            }}
+          >
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="레시피 미리보기"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
+                <div style={{ fontSize: '32px', marginBottom: '8px' }}>📷</div>
+                클릭해서 사진 업로드
+              </div>
+            )}
+
+            {uploading && (
+              <div style={{
+                position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '13px', color: '#475569',
+              }}>
+                업로드 중...
+              </div>
+            )}
+
+            {imagePreview && !uploading && (
+              <div style={{
+                position: 'absolute', bottom: '10px', right: '10px',
+                background: 'rgba(0,0,0,0.6)', color: '#fff',
+                padding: '4px 10px', borderRadius: '6px', fontSize: '12px',
+              }}>
+                사진 변경
+              </div>
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            style={{ display: 'none' }}
+          />
+        </div>
 
         <div className="form-group">
           <label className="form-label">레시피 이름 *</label>

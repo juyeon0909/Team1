@@ -1,6 +1,6 @@
 import React from 'react';
 import type { RecipeView } from '../types/Recipe';
-import '../components/RecipeCard.css';
+import '../components/Recipecard.css';
 
 interface RecipeCardProps {
   recipe: RecipeView;

@@ -1,22 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import "../components/mainPage.css"; 
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
 import type { Ingredient } from "../types/Fridge.ts";
 import type { User } from "../types/User.ts";
-
 type Urgency = "urgent" | "warning" | "normal";
 
-// 레시피 인터페이스 (임시)
-interface Recipe {
-    id: number;
-    name: string;
-    icon: string;
-    iconBg: string;
-    tags: string[];
-    matchText: string;
-    category: string;
-}
+// // 레시피 인터페이스 (임시)
+// interface Recipe {
+//     id: number;
+//     name: string;
+//     icon: string;
+//     iconBg: string;
+//     tags: string[];
+//     matchText: string;
+//     category: string;
+// }
 
 // 술라이드 박스용 로컬 인터페이스
 interface BannerItem {
@@ -27,12 +26,6 @@ interface BannerItem {
 }
 
 const CATEGORIES = ["전체", "한식", "양식", "일식", "중식", "간식", "야식", "다이어트", "밀프랩"] as const;
-
-const RECIPES: Recipe[] = [
-    { id: 1, name: "두부 계란찜", icon: "🍳", iconBg: "#e8f5e9", tags: ["한식", "10분", "간단"], matchText: "재료 4/4", category: "한식" },
-    { id: 2, name: "대파 계란볶음밥", icon: "🍚", iconBg: "#fff8e1", tags: ["한식", "15분"], matchText: "재료 3/4", category: "한식" },
-    { id: 3, name: "애호박 된장찌개", icon: "🥘", iconBg: "#f3e5f5", tags: ["한식", "20분"], matchText: "재료 3/4", category: "한식" }
-];
 
 
 //    하위 컴포넌트 1: 오토 슬라이드 히어로 배너
@@ -237,17 +230,120 @@ const ExpiringIngredients: React.FC<ExpiringIngredientsProps> = ({ ingredients, 
 };
 
 
-//    하위 컴포넌트 4: 오늘의 추천 레시피 구역
-   
+
 const RecommendedRecipes: React.FC = () => {
+    const navigate = useNavigate();
+    const [recipes, setRecipes] = useState<any[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
     const [activeCategory, setActiveCategory] = useState<string>("전체");
     const [query, setQuery] = useState<string>("");
 
-    const visibleRecipes = activeCategory === "전체" ? RECIPES : RECIPES.filter((r) => r.category === activeCategory);
+    const isLoggedIn = !!localStorage.getItem("accessToken");
+
+    useEffect(() => {
+        const fetchMainRecipes = async () => {
+            try {
+                setLoading(true);
+                const response = await axiosInstance.get<any[]>('/recipeMain');
+                let mapped = response.data || [];
+
+                mapped = mapped.map((r: any) => {
+                    return {
+                        ...r,
+                        title: r.title || r.name || "이름 없는 레시피",
+                        // 백엔드 엔티티 사정에 맞춰 좋아요 필드 다중 추적 방어선
+                        heart: r.heart !== undefined ? r.heart : (r.likes || r.likeCount || r.viewCount || 0)
+                    };
+                });
+                console.log("🟢 [날것의 백엔드 데이터 변수명 리스트]:", Object.keys(mapped[0] || {}));
+                console.log("🟢 [날것의 백엔드 첫번째 데이터 알맹이]:", mapped[0]);
+
+                if (isLoggedIn) {
+                    try {
+                        const matchRes = await axiosInstance.get('/recipeMain/match');
+                        console.log("🟢 [매칭률 백엔드 첫번째 데이터 알맹이]:", matchRes.data?.[0]);
+                        if (Array.isArray(matchRes.data)) {
+                            const rateMap = new Map<number, number>(
+                                matchRes.data.map((m: any) => [m.id, m.matchRate ?? 0])
+                            );
+                            mapped.forEach(r => {
+                                if (rateMap.has(r.id)) r.match = rateMap.get(r.id)!;
+                            });
+                        }
+                    } catch (matchErr) {
+                        console.error('메인페이지 매칭률 연동 실패:', matchErr);
+                    }
+                }
+                if (isLoggedIn) {
+                    mapped = [...mapped].sort((a, b) => (b.match || 0) - (a.match || 0));
+                } else {
+                    // 비로그인일 때 총 좋아요 개수(heart)가 많은 순서대로 상위 정렬 실행
+                    mapped = [...mapped].sort((a, b) => (b.heart || 0) - (a.heart || 0));
+                }
+                //  로그인 조건에 따라 추천순(매칭률) / 인기순(하트수) 분기 정렬 연산
+                if (isLoggedIn) {
+                    mapped = [...mapped].sort((a, b) => (b.match || 0) - (a.match || 0));
+                } else {
+                    mapped = [...mapped].sort((a, b) => (b.heart || 0) - (a.heart || 0));
+                }
+console.log("=== 백엔드에서 넘어온 진짜 레시피 첫 번째 데이터 ===", response.data?.[0]);
+console.log("=== 카테고리 탭 연동 직전 정제된 데이터 ===", mapped?.[0]);
+console.log("=== 🏁 백엔드가 주는 전체 레시피 카테고리 실시간 검사 🏁 ===");
+mapped.forEach(r => console.log(`요리명: [${r.title || r.name}] ➡️ 진짜 백엔드 카테고리 코드: "${r.category}"`));
+setRecipes(mapped);
+                setRecipes(mapped);
+            } catch (error) {
+                console.error('메인페이지 레시피 로딩 실패:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMainRecipes();
+    }, [isLoggedIn]);
+
+
+
+const categoryMap: Record<string, string> = {
+        "한식": "KOR",
+        "일식": "JAN", 
+        "중식": "CHN",
+        "양식": "YANG", 
+        "간식": "GAN",
+        "야식": "YA",
+        "다이어트": "DIET",
+        "밀프랩": "RAP"
+    };
+
+
+    const visibleRecipes = useMemo(() => {
+        return recipes.filter((r) => {
+           
+            if (activeCategory !== "전체") {
+                const targetBackendCode = categoryMap[activeCategory];
+                if (r.category !== targetBackendCode) {
+                    return false;
+                }
+            }
+
+            // 검색어 필터링 
+            if (query.trim()) {
+                const q = query.toLowerCase();
+                const titleMatch = r.title?.toLowerCase().includes(q);
+                const tagMatch = Array.isArray(r.tags) && r.tags.some((t: string) => t.toLowerCase().includes(q));
+                return titleMatch || tagMatch;
+            }
+
+            return true;
+        }).slice(0, 3); // 메인페이지 레이아웃용 상위 3개 고정
+    }, [recipes, activeCategory, query]);
 
     return (
         <div className="section-card">
-            <div className="section-header"><span className="section-title">오늘의 추천 레시피</span><button className="section-more" type="button">더 보기</button></div>
+            <div className="section-header">
+                <span className="section-title">오늘의 추천 레시피</span>
+                <button className="section-more" type="button" onClick={() => navigate("/recipeMain")}>더 보기</button>
+            </div>
             <div className="recipe-search">
                 <span className="search-icon"></span>
                 <input type="text" placeholder="재료 이름이나 레시피를 검색하세요..." value={query} onChange={(e) => setQuery(e.target.value)} />
@@ -258,20 +354,31 @@ const RecommendedRecipes: React.FC = () => {
                 ))}
             </div>
             <div className="recipe-list">
-                {visibleRecipes.map((recipe) => (
-                    <div className="recipe-item" key={recipe.id}>
-                        <div className="recipe-icon" style={{ background: recipe.iconBg }}>{recipe.icon}</div>
-                        <div className="recipe-info">
-                            <div className="recipe-name">{recipe.name}</div>
-                            <div className="recipe-tags">{recipe.tags.map((tag) => <span className="recipe-tag" key={tag}>{tag}</span>)}</div>
+                {loading ? (
+                    <p style={{ textAlign: "center", color: "#999", padding: "2rem" }}>추천 레시피를 선별 중입니다...</p>
+                ) : visibleRecipes.length === 0 ? (
+                    <p style={{ textAlign: "center", color: "#999", padding: "2rem" }}>조건에 맞는 추천 레시피가 없습니다.</p>
+                ) : (
+                    visibleRecipes.map((recipe) => (
+                        <div className="recipe-item" key={recipe.id} onClick={() => navigate(`/recipeMain/${recipe.id}`)} style={{ cursor: "pointer" }}>
+                            <div className="recipe-icon" style={{ background: recipe.iconBg || "#f1f5f9" }}>{recipe.icon || "🍽️"}</div>
+                            <div className="recipe-info">
+                                <div className="recipe-name">{recipe.title}</div>
+                                <div className="recipe-tags">{recipe.tags?.slice(0, 3).map((tag: string) => <span className="recipe-tag" key={tag}>{tag}</span>)}</div>
+                            </div>
+                            {isLoggedIn ? (
+                                <span className="recipe-match" style={{ color: "#6fbc44", fontWeight: "bold" }}>일치율 {recipe.match ?? 0}%</span>
+                            ) : (
+                                <span className="recipe-match" style={{ color: "#ef4444" }}>❤️ {recipe.heart ?? 0}</span>
+                            )}
                         </div>
-                        <span className="recipe-match">{recipe.matchText}</span>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
         </div>
     );
 };
+
 
 
 //    메인 컴포넌트 
@@ -292,77 +399,22 @@ const MainPage: React.FC = () => {
         if (user.name) setUserName(user.name);
         setIsLoggedIn(true);
         
-    //     axiosInstance.get<any[]>(`/product/list/${user.id}`)
-    //         .then((res) => {
-    //             const rawData = res.data || [];
-    //             setTotalCount(rawData.length);
-
-    //             const today = new Date();
-    //             today.setHours(0, 0, 0, 0);
-
-    //             const processed = rawData.map((item) => {
-    //                 const targetDateStr = item.expirationdate || item.expiry;
-    //                 let dDayResult = 999;
-    //                 let urgencyResult: Urgency = "normal";
-
-    //                 if (targetDateStr) {
-    //                     const expDate = new Date(targetDateStr);
-    //                     expDate.setHours(0, 0, 0, 0);
-    //                     dDayResult = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                        
-                        
-    //                     if (dDayResult < 0) urgencyResult = "normal"; // 혹은 기한초과
-    //                     else if (dDayResult <= 3) urgencyResult = "urgent";
-    //                     else if (dDayResult <= 7) urgencyResult = "warning";
-    //                 }
-
-    //                 return {
-    //                     ...item,
-    //                     itemname: item.itemname || item.name || "이름 없음",
-    //                     dDay: dDayResult,
-    //                     urgency: urgencyResult
-    //                 };
-    //             });
-
-    //             setUrgentCount(processed.filter(i => i.urgency === "urgent" || i.urgency === "warning").length);
-
-    //             const finalMainList = processed
-    //                 .filter(i => i.urgency === "urgent" || i.urgency === "warning")
-    //                 .sort((a, b) => (a.dDay ?? 0) - (b.dDay ?? 0))
-    //                 .slice(0, 5);  // 띠지 몇개까지 보이게 하고 싶은가
-
-    //             setIngredients(finalMainList);
-    //         })
-    //         .catch((err) => console.error("데이터 연동 실패:", err))
-    //         .finally(() => setLoading(false));
-    // }, []);
 axiosInstance.get<any[]>(`/product/list/${user.id}`)
             .then((res) => {
                 const rawData = res.data || [];
                 setTotalCount(rawData.length);
 
-                // 🟢 백엔드에서 전송해주는 정제 필드(itemName, expirationDate, storageType, dDay, urgency)를 다이렉트로 매핑
+                
                 const processed = rawData.map((item) => {
                     const serverDday = item.dDay !== undefined ? item.dDay : item.dday;
                     return {
                         ...item,
-                        // 만약 구형 백엔드 필드가 섞여들어와도 완벽 방어하는 2중 안전선 가동
-                        // itemName: item.itemName || item.itemname || item.name || "이름 없음",
-                        // storageType: item.storageType || item.storagetype || "REFRIGERATED",
-                        // expirationDate: item.expirationDate || item.expirationdate || item.expiry,
-                        // dDay: item.dDay !== undefined ? item.dDay : 999,
-                        // urgency: item.urgency || "normal"
+                        
                         dDay: serverDday !== undefined ? serverDday : 999,
                         urgency: item.urgency || "normal"
                     };
                 });
 
-                // setUrgentCount(processed.filter(i => i.urgency === "urgent" || i.urgency === "warning").length);
-
-                // const finalMainList = processed
-                //     .filter(i => i.urgency === "urgent" || i.urgency === "warning")
-                //     .sort((a, b) => (a.dDay ?? 0) - (b.dDay ?? 0))
-                //     .slice(0, 5);  
                 setUrgentCount(processed.filter(i => 
                     (i.urgency === "urgent" || i.urgency === "warning") && (i.dDay !== undefined && i.dDay >= 0)
                 ).length);

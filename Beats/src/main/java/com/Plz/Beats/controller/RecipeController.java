@@ -145,9 +145,13 @@ public class RecipeController {
             @RequestBody RecipeDto recipeDto,
             Principal principal) {
         if (principal == null || "anonymousUser".equals(principal.getName())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 세션이 유효하지 않거나 로그인이 필요합니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
-        RecipeDto saved = recipeService.updateRecipe(id, recipeDto, principal.getName());
-        return ResponseEntity.ok(saved);
+        try {
+            RecipeDto saved = recipeService.updateRecipe(id, recipeDto, principal.getName());
+            return ResponseEntity.ok(saved);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
     }
 }

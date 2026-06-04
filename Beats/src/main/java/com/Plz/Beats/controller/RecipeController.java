@@ -117,4 +117,26 @@ public class RecipeController {
         String email = principal.getName();
         return ResponseEntity.ok(recipeMatchService.getRecipesWithMatchRate(email));
     }
+
+    // 레시피 단건 상세 조회 (로그인 필수)
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getRecipeDetail(@PathVariable Long id, Principal principal) {
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요한 서비스입니다.");
+        }
+        return ResponseEntity.ok(recipeService.getRecipeDetail(id, principal.getName()));
+    }
+
+    // 3. 레시피 수정 API (로그인 필수, 본인만)
+    @PostMapping("/edit/{id}")
+    public ResponseEntity<?> requestEditRecipe(
+            @PathVariable Long id,
+            @RequestBody RecipeDto recipeDto,
+            Principal principal) {
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 세션이 유효하지 않거나 로그인이 필요합니다.");
+        }
+        RecipeDto saved = recipeService.updateRecipe(id, recipeDto, principal.getName());
+        return ResponseEntity.ok(saved);
+    }
 }

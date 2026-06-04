@@ -60,4 +60,7 @@ export interface RecipeView {
   scrappedAt?: string;
   author?: string;
   mustIngredients: { name: string; quantity: string }[];
+    steps: string[];
+  selectIngredients: (string | { name: string; quantity: string | number })[];
+  missingIngredients: (string | { name: string; quantity: string | number })[];
 }

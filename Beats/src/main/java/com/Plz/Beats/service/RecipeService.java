@@ -132,6 +132,60 @@ public class RecipeService {
         return dto;
     }
 
+    // 레시피 수정 (본인만 가능, 수정 시 다시 승인 대기로)
+    @Transactional
+    public RecipeDto updateRecipe(Long id, RecipeDto dto, String username) {
+        if ("GUEST".equals(username) || username == null) {
+            throw new IllegalArgumentException("레시피 수정은 로그인 후 이용 가능합니다.");
+        }
+
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
+
+        // 본인 확인
+        if (!recipe.getMember().getEmail().equals(username)) {
+            throw new IllegalArgumentException("본인이 등록한 레시피만 수정할 수 있습니다.");
+        }
+
+        recipe.setTitle(dto.getTitle());
+        recipe.setDishName(dto.getDishName() != null ? dto.getDishName() : dto.getTitle());
+        if (dto.getImage() != null && !dto.getImage().isEmpty()) {
+            recipe.setImage(dto.getImage());
+        }
+        recipe.setCategory(Category.valueOf(dto.getCategory()));
+        recipe.setCookingTime(dto.getCookingTime());
+        recipe.setDescription(dto.getDescription());
+        recipe.setApprovalStatus(ApprovalStatus.PENDING); // 수정하면 다시 승인 대기
+        recipe.setUpdatedAt(LocalDateTime.now());
+
+        if (dto.getSteps() != null && !dto.getSteps().isEmpty()) {
+            recipe.setCookingMethod(String.join("\n", dto.getSteps()));
+        }
+
+        // 기존 재료 전부 비우고 새로 채움 (orphanRemoval = true 라 DB에서도 삭제됨)
+        recipe.getRecipeIngredients().clear();
+        if (dto.getMustIngredients() != null) {
+            for (RecipeDto.MustIngredientDto ingDto : dto.getMustIngredients()) {
+                RecipeIngredient ingredient = new RecipeIngredient();
+                Item item = itemRepository.findByName(ingDto.getName().trim())
+                        .orElseGet(() -> {
+                            Item newItem = new Item();
+                            newItem.setName(ingDto.getName().trim());
+                            return itemRepository.save(newItem);
+                        });
+                ingredient.setItem(item);
+                ingredient.setQuantity(ingDto.getQuantity());
+                ingredient.setUnit("g");
+                ingredient.setRequired(true);
+                ingredient.setRecipe(recipe);
+                recipe.getRecipeIngredients().add(ingredient);
+            }
+        }
+
+        dto.setId(recipe.getId());
+        return dto;
+    }
+
     // 승인된 레시피 목록 조회
     public List<RecipeDto> getRecipes(String username) {
         List<Recipe> recipes = recipeRepository.findByApprovalStatus(ApprovalStatus.APPROVED);
@@ -157,6 +211,18 @@ public class RecipeService {
         return myRecipes.stream()
                 .map(recipe -> toDto(recipe, member))
                 .collect(Collectors.toList());
+    }
+
+    // 레시피 단건 상세 조회 (로그인 유저 기준 hearted/scrapped 판정)
+    public RecipeDto getRecipeDetail(Long id, String username) {
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
+
+        Member member = null;
+        if (username != null && !"GUEST".equals(username)) {
+            member = memberRepository.findByEmail(username).orElse(null);
+        }
+        return toDto(recipe, member);
     }
 
     // 관리자용 PENDING 레시피 목록 조회

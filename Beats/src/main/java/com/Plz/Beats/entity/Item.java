@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import java.time.LocalDateTime; // 💡 임포트 추가
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -40,4 +42,7 @@ public class Item {
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt; // TIMESTAMP
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Storage_item> storageItems = new ArrayList<>();
 }

@@ -285,8 +285,12 @@ public class RecipeService {
                         r.getMember().getName(),
                         r.getMember().getEmail(),
                         r.getRecipeIngredients().stream()
-                                .map(ing -> ing.getItem() != null ? ing.getItem().getName() : "")
+                                .map(ing -> new RecipeDto.MustIngredientDto(
+                                        ing.getItem() != null ? ing.getItem().getName() : "",
+                                        ing.getQuantity() != null ? ing.getQuantity() : 0  // quantity 추가
+                                ))
                                 .collect(Collectors.toList()),
+                        null,
                         r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : "",
                         r.getImage(),
                         r.getCookingMethod()
@@ -306,8 +310,12 @@ public class RecipeService {
                 r.getMember().getName(),
                 r.getMember().getEmail(),
                 r.getRecipeIngredients().stream()
-                        .map(ing -> ing.getItem() != null ? ing.getItem().getName() : "")
+                        .map(ing -> new RecipeDto.MustIngredientDto(
+                                ing.getItem() != null ? ing.getItem().getName() : "",
+                                ing.getQuantity() != null ? ing.getQuantity() : 0  // quantity 추가
+                        ))
                         .collect(Collectors.toList()),
+                null,
                 r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : "",
                 r.getImage(),
                 r.getCookingMethod()

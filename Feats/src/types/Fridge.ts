@@ -6,11 +6,11 @@ export type Urgency = "urgent" | "warning" | "normal";
 export interface Ingredient {
   id: number;
   name: string;
-  itemname?: string;       
+  itemName?: string;       
   quantity: number;
-  expirationdate: string;
+  expirationDate: string;
   expiry?: string;        
-  storagetype: string;     
+  storageType: string;     
   type?: string;    
   category?: string;
   dDay?: number;

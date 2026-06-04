@@ -46,8 +46,7 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/ingredient/list' element={<IngredientList />} />
       <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
-      <Route path='/recipeMain/edit/:id' element={<RecipeEdit />} />
-      <Route path='/product/register' element={<FridgeRegister />} />
+      <Route path='/recipeMain/edit' element={<RecipeEdit />} />
       <Route path="/recipeMain/:id" element={<RecipeDetail />} />
       <Route path='/recipeMain' element={<RecipeMain user={user} />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />
@@ -62,8 +61,7 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path="/member/passwordless-register" element={<PasswordlessRegisterPage />} />
       <Route path="/member/reset-register" element={<PasswordlessWithdrawalPage />} />
       <Route path='/admin/recipe' element={<AdminRecipe />} />
-      <Route path="/admin/recipes/:id" element={<AdminRecipeDetail />} />
-
+      <Route path='/admin/recipe/:id' element={<AdminRecipeDetail />} />
 
     </Routes>
   );

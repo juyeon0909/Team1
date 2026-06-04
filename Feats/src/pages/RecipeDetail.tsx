@@ -31,7 +31,14 @@ const RecipeDetail = () => {
         const res = await axiosInstance.get<RecipeDto>(`/recipeMain/${id}`);
         const view = toRecipeView(res.data);
         setRecipe(view);
-        setMustIngredients(view.mustIngredients.map(i => ({ ...i })));
+        const missingNames = new Set(
+          view.missingIngredients.map(m => (typeof m === 'string' ? m : m.name))
+        );
+        setMustIngredients(
+          view.mustIngredients
+            .filter(i => !missingNames.has(i.name))
+            .map(i => ({ ...i }))
+        );
       } catch (error) {
         console.error('레시피 로딩 실패:', error);
         setRecipe(null);
@@ -120,7 +127,7 @@ const RecipeDetail = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', maxWidth: '960px', margin: '0 auto' }}>
           <div>
             <div style={{
-              height: '220px', background: recipe.bg, borderRadius: '8px',
+              height: '300px', background: recipe.bg, borderRadius: '8px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '72px', marginBottom: '20px', overflow: 'hidden',
             }}>
@@ -194,7 +201,11 @@ const RecipeDetail = () => {
               <div style={{ background: '#FCEBEB', border: '0.5px solid #F09595', borderRadius: '8px', padding: '14px 16px' }}>
                 <div style={{ fontSize: '12px', fontWeight: 500, color: '#791F1F', marginBottom: '8px' }}>🛒 없는 재료</div>
                 <div style={{ fontSize: '12px', color: '#A32D2D' }}>
-                  {recipe.missingIngredients.map(m => typeof m === 'string' ? m : m.name).join(', ')}
+                  {recipe.missingIngredients.map((m, idx) => {
+                    const name = typeof m === 'string' ? m : m.name;
+                    const qty = typeof m === 'string' ? '' : (m.quantity != null ? `${m.quantity}g` : '');
+                    return <div key={idx}>• {name} {qty}</div>;
+                  })}                
                 </div>
               </div>
             )}
@@ -225,6 +236,14 @@ const RecipeDetail = () => {
         <div className="modal-overlay">
           <div style={{ backgroundColor: '#fff', width: '360px', maxWidth: '90vw', borderRadius: '12px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
             <div className="modal-title">🍳 사용할 재료 및 수량 확인</div>
+            {recipe.missingIngredients && recipe.missingIngredients.length > 0 && (
+              <div style={{ marginBottom: '12px', fontSize: '12px', color: '#C0392B' }}>
+                <div>없는 재료는 차감에서 제외됩니다.</div>
+                <div>
+                  ({recipe.missingIngredients.map(m => typeof m === 'string' ? m : m.name).join(', ')})
+                </div>
+              </div>
+            )}
             <div className="modal-list">
               {mustIngredients.map((item, index) => (
                 <div key={index} className="modal-item">

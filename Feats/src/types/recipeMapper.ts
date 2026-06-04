@@ -21,6 +21,9 @@ export const toRecipeView = (dto: RecipeDto): RecipeView => {
     isScrapped: dto.scrapped ?? false,
     image: dto.image ?? '',
     mustIngredients: dto.mustIngredients ?? [],
+    steps: dto.steps ?? [],
+    selectIngredients: dto.selectIngredients ?? [],
+    missingIngredients: dto.missingIngredients ?? [],
     author: (dto as any).author ?? '', 
   };
 };

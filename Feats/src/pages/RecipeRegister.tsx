@@ -205,7 +205,7 @@ const RecipeRegister = () => {
   return (
     <div style={pageContainerStyle}>
       <div style={backLinkStyle} onClick={() => navigate('/recipeMain')}>
-        <span>{id ? ' 레시피 상세로' : ' 레시피 목록으로'}</span>
+        <span><span>⬅</span>{id ? ' 레시피 상세로' : ' 레시피 목록으로'}</span>
       </div>
 
       <div className="register-card">

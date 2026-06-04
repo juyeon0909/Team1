@@ -31,7 +31,7 @@
   padding: 5px 10px;
   cursor: pointer;
   font-weight: 500;
-  background-color: #1D9E75;
+  background-color: #6FBC44;
   color: #fff;
 }
 
@@ -82,9 +82,9 @@
 }
 
 .category-tab.active {
-  color: #1D9E75;
+  color: #6FBC44;
   font-weight: 500;
-  border-bottom: 2px solid #1D9E75;
+  border-bottom: 2px solid #6FBC44;
 }
 
 /* 필터 영역 */
@@ -130,7 +130,7 @@
 }
 
 .filter-chip.active-green {
-  background-color: #1D9E75;
+  background-color: #6FBC44;
   color: #fff;
 }
 
@@ -205,7 +205,7 @@
 
 .card-category-tag {
   font-size: 11px;
-  color: #1D9E75;
+  color: #6FBC44;
   background-color: #E1F5EE;
   padding: 1px 5px;
   border-radius: 4px;
@@ -247,7 +247,7 @@
 }
 
 .pagination-number.active {
-  background-color: #1D9E75;
+  background-color: #6FBC44;
   color: #fff;
 }
 
@@ -299,7 +299,7 @@
   margin-top: 24px;
   width: 100%;
   padding: 12px;
-  background-color: #0BA574;
+  background-color: #6FBC44;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -379,7 +379,7 @@
 .modal-confirm-btn {
   flex: 1.5;
   padding: 10px;
-  background-color: #0BA574;
+  background-color: #6FBC44;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -413,7 +413,7 @@
 }
 
 .badge-match-full {
-  background-color: #1D9E75;
+  background-color: #6FBC44;
   color: #fff;
 }
 
@@ -518,4 +518,42 @@
 
 .card-heart-btn.hearted {
   color: #E74C3C;
+}
+
+.rc-admin-btn-group {
+  display: flex;
+  gap: 8px;
+  padding: 0 14px 14px;
+  width: 100%;
+}
+
+.rc-admin-btn-group .recipe-edit-btn,
+.rc-admin-btn-group .recipe-delete-btn {
+  flex: 1;
+  width: 100%;
+  padding: 7px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.rc-admin-btn-group .recipe-edit-btn {
+  background-color: #f0faf5;
+  color: #6FBC44;
+  border: 0.5px solid #6FBC44;
+}
+
+.rc-admin-btn-group .recipe-edit-btn:hover {
+  background-color: #d8f5ea;
+}
+
+.rc-admin-btn-group .recipe-delete-btn {
+  background-color: #fff5f5;
+  color: #e03131;
+  border: 0.5px solid #e03131;
+}
+
+.rc-admin-btn-group .recipe-delete-btn:hover {
+  background-color: #ffe3e3;
 }

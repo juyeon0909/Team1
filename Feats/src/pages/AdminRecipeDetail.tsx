@@ -12,7 +12,7 @@ interface AdminRecipeDetailData {
     description: string;
     authorName: string;
     authorEmail: string;
-    ingredients: string[];
+     ingredients: { name: string; quantity: string }[];
     registeredAt: string;
     image?: string;
     cookingMethod?: string;
@@ -128,17 +128,35 @@ function AdminRecipeDetail() {
 
                 {/* 필수 재료 */}
                 <div className="form-group">
-                    <label className="form-label">필수 재료</label>
+                    <label className="form-label">필수 재료 및 용량</label>
                     {recipe.ingredients.length > 0 ? (
                         recipe.ingredients.map((ing, i) => (
                             <div key={i} className="ingredient-row" style={{ marginBottom: '8px' }}>
-                                <input className="form-input" type="text" value={ing} readOnly style={{ background: '#f8f8f8', cursor: 'default' }} />
+                                <input className="form-input" type="text" value={ing.name} readOnly style={{ background: '#f8f8f8', cursor: 'default' }} />
+                                <input className="form-input" type="text" value={ing.quantity} readOnly style={{ background: '#f8f8f8', cursor: 'default' }} />
                             </div>
                         ))
                     ) : (
                         <input className="form-input" type="text" value="재료 정보 없음" readOnly style={{ background: '#f8f8f8', cursor: 'default' }} />
                     )}
                 </div>
+
+                {/* 선택 재료 */}
+                <div className="form-group">
+                    <label className="form-label">선택 재료 <span className="form-sublabel">쉼표로 구분</span></label>
+                    <input
+                        className="form-input"
+                        type="text"
+                        value={
+                            recipe.description?.match(/\(선택 재료: (.+?)\)$/)?.[1] || ''
+                        }
+                        readOnly
+                        style={{ background: '#f8f8f8', cursor: 'default' }}
+                        placeholder="선택 재료 없음"
+                    />
+                </div>
+
+                
 
                 {/* 조리 방법 */}
                 {recipe.cookingMethod && (

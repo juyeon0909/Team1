@@ -50,6 +50,14 @@ const RecipeRegister = () => {
   const dropdownRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인 후 이용가능한 서비스입니다.");
+      navigate("/member/login");
+    }
+  }, []);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       dropdownRefs.current.forEach((ref, idx) => {
         if (ref && !ref.contains(event.target as Node)) {
@@ -143,7 +151,7 @@ const RecipeRegister = () => {
 
     const filteredMustIngredients = mustIngredients
       .filter(item => item.name.trim() !== "" && item.quantity.trim() !== "")
-      .map(item => ({ name: item.name, quantity: item.quantity }));
+      .map(item => ({ name: item.name, quantity: parseInt(item.quantity.replace(/[^0-9]/g, ''), 10) || 0 }));
 
     if (filteredMustIngredients.length === 0) {
       return alert("필수 재료를 최소 한 개 이상 입력해주세요.");

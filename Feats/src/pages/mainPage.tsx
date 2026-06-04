@@ -21,9 +21,10 @@ interface HeroCardProps {
     userName: string;
     totalCount: number;
     urgentCount: number;
+    recommendRecipe: number;
 }
 
-const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }) => {
+const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount, recommendRecipe }) => {
     const banners: BannerItem[] = [
         { id: 0, greeting: `안녕하세요, ${userName}님`, title: <>냉장고 속 재료로<br />무엇을 만들어볼까요?</>, sub: "냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요." },
         { id: 1, greeting: "요리 팁", title: <>맛있는 <br />요리</>, sub: "냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요." },
@@ -110,7 +111,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }
             <div className="hero-stats">
                 <div className="stat-box"><div className="num">{totalCount}</div><div className="label">보유 재료</div></div>
                 <div className="stat-box"><div className="num urgent-highlight">{urgentCount}</div><div className="label">임박 재료</div></div>
-                <div className="stat-box"><div className="num">24</div><div className="label">추천 레시피</div></div>
+                <div className="stat-box"><div className="num">{recommendRecipe}</div><div className="label">추천 레시피</div></div>
             </div>
         </div>
     );
@@ -144,7 +145,8 @@ const AlertBar: React.FC<AlertBarProps> = ({ ingredients, isLoggedIn }) => {
                     <span className="tag d6">임박 재료 없음</span>
                 )}
             </div>
-            <span className="alert-link" onClick={() => navigate("/recipeMain")} style={{ cursor: "pointer" }}>
+            <span className="alert-link" onClick={() => navigate("/recipeMain", { state: { urgentOnly: true } })} 
+                style={{ cursor: "pointer" }}>
                 관련 레시피 보기 →
             </span>
         </div>
@@ -154,11 +156,10 @@ const AlertBar: React.FC<AlertBarProps> = ({ ingredients, isLoggedIn }) => {
 // 하위 컴포넌트 3: 유통기한 임박 재료 리스트
 interface ExpiringIngredientsProps {
     ingredients: Ingredient[];
-    loading: boolean;
     isLoggedIn: boolean;
 }
 
-const ExpiringIngredients: React.FC<ExpiringIngredientsProps> = ({ ingredients, loading, isLoggedIn }) => {
+const ExpiringIngredients: React.FC<ExpiringIngredientsProps> = ({ ingredients, isLoggedIn }) => {
     const navigate = useNavigate();
 
     return (
@@ -168,9 +169,7 @@ const ExpiringIngredients: React.FC<ExpiringIngredientsProps> = ({ ingredients, 
                 <button className="section-more" type="button" onClick={() => navigate("/product/insert")}>전체 보기</button>
             </div>
             <div className="ingredient-list">
-                {loading ? (
-                    <p style={{ textAlign: "center", color: "#999", padding: "1rem" }}>불러오는 중...</p>
-                ) : !isLoggedIn ? (
+                {!isLoggedIn ? (
                     <p style={{ textAlign: "center", color: "#999", padding: "1rem" }}>로그인 후 사용 가능합니다.</p>
                 ) : ingredients.length === 0 ? (
                     <p style={{ textAlign: "center", color: "#999", padding: "1rem" }}>임박 재료가 없습니다.</p>
@@ -196,62 +195,16 @@ const ExpiringIngredients: React.FC<ExpiringIngredientsProps> = ({ ingredients, 
     );
 };
 
-// 하위 컴포넌트 4: 오늘의 추천 레시피 구역
-const RecommendedRecipes: React.FC = () => {
+// 하위 컴포넌트 4
+interface RecommendedRecipesProps {
+    recipes: any[];
+    isLoggedIn: boolean;
+}
+
+const RecommendedRecipes: React.FC<RecommendedRecipesProps> = ({ recipes, isLoggedIn }) => {
     const navigate = useNavigate();
-    const [recipes, setRecipes] = useState<any[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
     const [activeCategory, setActiveCategory] = useState<string>("전체");
     const [query, setQuery] = useState<string>("");
-
-    const isLoggedIn = !!localStorage.getItem("accessToken");
-
-    useEffect(() => {
-        const fetchMainRecipes = async () => {
-            try {
-                setLoading(true);
-                const response = await axiosInstance.get<any[]>('/recipeMain');
-                let mapped = response.data || [];
-
-                mapped = mapped.map((r: any) => ({
-                    ...r,
-                    title: r.title || r.name || "이름 없는 레시피",
-                    heart: r.heart !== undefined ? r.heart : (r.likes || r.likeCount || r.viewCount || 0)
-                }));
-
-                if (isLoggedIn) {
-                    try {
-                        const matchRes = await axiosInstance.get('/recipeMain/match');
-                        if (Array.isArray(matchRes.data)) {
-                            const rateMap = new Map<number, number>(
-                                matchRes.data.map((m: any) => [m.id, m.matchRate ?? 0])
-                            );
-                            mapped.forEach(r => {
-                                if (rateMap.has(r.id)) r.match = rateMap.get(r.id)!;
-                            });
-                        }
-                    } catch (matchErr) {
-                        console.error('메인페이지 매칭률 연동 실패:', matchErr);
-                    }
-                }
-
-                // 로그인 정렬 분기 결합 정리 (중복 정렬 제거)
-                if (isLoggedIn) {
-                    mapped = [...mapped].sort((a, b) => (b.match || 0) - (a.match || 0));
-                } else {
-                    mapped = [...mapped].sort((a, b) => (b.heart || 0) - (a.heart || 0));
-                }
-
-                setRecipes(mapped);
-            } catch (error) {
-                console.error('메인페이지 레시피 로딩 실패:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchMainRecipes();
-    }, [isLoggedIn]);
 
     const categoryMap: Record<string, string> = {
         "한식": "KOR", "일식": "JAN", "중식": "CHN", "양식": "YANG",
@@ -268,7 +221,13 @@ const RecommendedRecipes: React.FC = () => {
                 const q = query.toLowerCase();
                 const titleMatch = r.title?.toLowerCase().includes(q);
                 const tagMatch = Array.isArray(r.tags) && r.tags.some((t: string) => t.toLowerCase().includes(q));
-                return titleMatch || tagMatch;
+                const mustMatch = Array.isArray(r.mustIngredients) && r.mustIngredients.some((ing: any) =>
+                    ing.name?.toLowerCase().includes(q)
+                );
+               const selectMatch = Array.isArray(r.selectIngredients) && r.selectIngredients.some((ing: any) =>
+                    ing.name?.toLowerCase().includes(q)
+                );
+                return titleMatch || tagMatch || mustMatch || selectMatch;
             }
             return true;
         }).slice(0, 3);
@@ -290,9 +249,7 @@ const RecommendedRecipes: React.FC = () => {
                 ))}
             </div>
             <div className="recipe-list">
-                {loading ? (
-                    <p style={{ textAlign: "center", color: "#999", padding: "2rem" }}>추천 레시피를 선별 중입니다...</p>
-                ) : visibleRecipes.length === 0 ? (
+                {visibleRecipes.length === 0 ? (
                     <p style={{ textAlign: "center", color: "#999", padding: "2rem" }}>조건에 맞는 추천 레시피가 없습니다.</p>
                 ) : (
                     visibleRecipes.map((recipe) => (
@@ -318,15 +275,60 @@ const RecommendedRecipes: React.FC = () => {
 // 메인 컴포넌트 
 const MainPage: React.FC = () => {
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [recipes, setRecipes] = useState<any[]>([]);
     const [userName, setUserName] = useState("사용자");
     const [totalCount, setTotalCount] = useState(0);
+    const [recommendRecipe, setRecommendRecipe] = useState(0);
     const [urgentCount, setUrgentCount] = useState(0);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
+        const fetchMainRecipes = async () => {
+            try {
+                const response = await axiosInstance.get<any[]>('/recipeMain');
+                let mapped = response.data || [];
+console.log("🔥 백엔드가 실제로 던져준 레시피 알맹이 구조:", response.data?.[0]);
+                mapped = mapped.map((r: any) => ({
+                    ...r,
+                    title: r.title || r.name || "이름 없는 레시피",
+                    heart: r.heart !== undefined ? r.heart : (r.likes || r.likeCount || r.viewCount || 0)
+                }));
+
+                if (isLoggedIn) {
+                    try {
+                        const matchRes = await axiosInstance.get('/recipeMain/match');
+                        if (Array.isArray(matchRes.data)) {
+                            const rateMap = new Map<number, number>(
+                                matchRes.data.map((m: any) => [m.id, m.matchRate ?? 0])
+                            );
+                            mapped.forEach(r => {
+                                if (rateMap.has(r.id)) r.match = rateMap.get(r.id)!;
+                            });
+                        }
+                    } catch (matchErr) {
+                        console.error('메인페이지 매칭률 연동 실패:', matchErr);
+                    }
+                }
+
+                if (isLoggedIn) {
+                    mapped = [...mapped].sort((a, b) => (b.match || 0) - (a.match || 0));
+                } else {
+                    mapped = [...mapped].sort((a, b) => (b.heart || 0) - (a.heart || 0));
+                }
+
+                setRecipes(mapped);
+                setRecommendRecipe(mapped.length); 
+            } catch (error) {
+                console.error('메인페이지 레시피 로딩 실패:', error);
+            }
+        };
+
+        fetchMainRecipes();
+    }, [isLoggedIn]);
+
+    useEffect(() => {
         const stored = localStorage.getItem("user");
-        if (!stored) { setLoading(false); return; }
+        if (!stored) return;
 
         const user: User = JSON.parse(stored);
         if (user.name) setUserName(user.name);
@@ -362,18 +364,17 @@ const MainPage: React.FC = () => {
 
                 setIngredients(finalMainList);
             })
-            .catch((err) => console.error("데이터 연동 실패:", err))
-            .finally(() => setLoading(false));
+            .catch((err) => console.error("데이터 연동 실패:", err));
     }, []);
 
     return (
         <div className="imf-root">
             <main className="imf-main">
-                <HeroCard userName={userName} totalCount={totalCount} urgentCount={urgentCount} />
+                <HeroCard userName={userName} totalCount={totalCount} urgentCount={urgentCount} recommendRecipe={recommendRecipe}/>
                 <AlertBar ingredients={ingredients} isLoggedIn={isLoggedIn} />
                 <div className="bottom-grid">
-                    <ExpiringIngredients ingredients={ingredients} loading={loading} isLoggedIn={isLoggedIn} />
-                    <RecommendedRecipes />
+                    <ExpiringIngredients ingredients={ingredients} isLoggedIn={isLoggedIn} />
+                    <RecommendedRecipes recipes={recipes} isLoggedIn={isLoggedIn} />
                 </div>
             </main>
             <footer className="imf-footer" />

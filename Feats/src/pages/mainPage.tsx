@@ -6,16 +6,7 @@ import type { Ingredient } from "../types/Fridge.ts";
 import type { User } from "../types/User.ts";
 type Urgency = "urgent" | "warning" | "normal";
 
-// // 레시피 인터페이스 (임시)
-// interface Recipe {
-//     id: number;
-//     name: string;
-//     icon: string;
-//     iconBg: string;
-//     tags: string[];
-//     matchText: string;
-//     category: string;
-// }
+
 
 // 술라이드 박스용 로컬 인터페이스
 interface BannerItem {

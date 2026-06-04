@@ -110,7 +110,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }
             <div className="hero-stats">
                 <div className="stat-box"><div className="num">{totalCount}</div><div className="label">보유 재료</div></div>
                 <div className="stat-box"><div className="num urgent-highlight">{urgentCount}</div><div className="label">임박 재료</div></div>
-                <div className="stat-box"><div className="num">24</div><div className="label">추천 레시피</div></div>
+                <div className="stat-box"><div className="num">0</div><div className="label">추천 레시피</div></div>
             </div>
         </div>
     );

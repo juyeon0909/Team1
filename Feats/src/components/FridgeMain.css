@@ -76,7 +76,7 @@
   margin-left: auto; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border);
   font-size: 13px; cursor: pointer; background-color: var(--white); color: var(--text-mid); outline: none;
 }
-.room-sort-select:focus { border-color: var(--green); }
+.room-sort-select:focus { border-color: var(--green); background: #f0fff0; } /* 색상 변경 */
 
 /*보관실별 테마 배경색 */
 .frozen-theme { background-color: #f2f9ff; border-bottom-color: #d2e8ff; }

@@ -43,6 +43,10 @@ jobs:
             -e BUCKET_NAME="${{ secrets.BUCKET_NAME }}" \
             -e SERVER_URL="${{ secrets.SERVER_URL }}" \
             -e SERVER_KEY="${{ secrets.SERVER_KEY }}" \
+            -e MAIL_HOST="${{ secrets.MAIL_HOST }}" \
+            -e MAIL_PORT="${{ secrets.MAIL_PORT }}" \
+            -e MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" \
+            -e MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}" \
             "${{ secrets.DOCKER_IMAGE }}"
             
             docker image prune -f

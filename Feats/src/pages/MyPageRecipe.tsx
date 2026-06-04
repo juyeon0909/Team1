@@ -1,35 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import type { RecipeView, RecipeDto } from '../types/Recipe';
+import { toRecipeView } from '../types/recipeMapper';
+import RecipeCard from '../pages/RecipeCard';
 import '../components/MyPageRecipe.css';
-
-interface Recipe {
-  id: number;
-  title: string;
-  dishName: string;
-  category: string;
-  cookingTime: number;
-  description: string;
-  image?: string;
-}
 
 const TOKEN_KEY = 'accessToken';
 
 const MyPageRecipe = () => {
   const navigate = useNavigate();
-  const [myRecipes, setMyRecipes] = useState<Recipe[]>([]);
+  const [myRecipes, setMyRecipes] = useState<RecipeView[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 6;
 
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
 
-    axiosInstance.get('/mypage/recipe', {
+    axiosInstance.get<RecipeDto[]>('/mypage/recipe', {
       headers: {
         Authorization: token ? `Bearer ${token}` : ''
       }
     })
       .then((res) => {
-        setMyRecipes(res.data);
+        const mapped = (res.data ?? []).map(toRecipeView);
+        setMyRecipes(mapped);
         setLoading(false);
       })
       .catch((err) => {
@@ -37,6 +33,23 @@ const MyPageRecipe = () => {
         setLoading(false);
       });
   }, []);
+
+  // 목록이 줄어들면 currentPage 범위 클램핑
+  useEffect(() => {
+    const tp = Math.max(1, Math.ceil(myRecipes.length / perPage));
+    if (currentPage > tp) setCurrentPage(tp);
+  }, [myRecipes, currentPage]);
+
+  const totalPages = Math.max(1, Math.ceil(myRecipes.length / perPage));
+  const pagedRecipes = useMemo(() => {
+    const start = (currentPage - 1) * perPage;
+    return myRecipes.slice(start, start + perPage);
+  }, [myRecipes, currentPage]);
+
+  const handleEdit = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/recipeMain/edit/${id}`);
+  };
 
   const handleDelete = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -51,13 +64,11 @@ const MyPageRecipe = () => {
     })
       .then(() => {
         alert("레시피가 성공적으로 삭제되었습니다.");
-        setMyRecipes(myRecipes.filter(recipe => recipe.id !== id));
-        navigate('/mypage/recipe');
+        setMyRecipes(prev => prev.filter(recipe => recipe.id !== id));
       })
       .catch((err) => {
         console.error("레시피 삭제 실패:", err);
         alert("삭제 중 오류가 발생했습니다.");
-        navigate('/mypage/recipe');
       });
   };
 
@@ -98,38 +109,36 @@ const MyPageRecipe = () => {
           아직 등록한 레시피가 없습니다. 나만의 비법 레시피를 등록해보세요!
         </div>
       ) : (
-        <div className="recipe-card-grid">
-          {myRecipes.map((recipe) => (
-            <div
-              key={recipe.id}
-              onClick={() => navigate(`/recipeMain/${recipe.id}`)}
-              className="recipe-item-card"
-            >
-              <div className="recipe-card-image-box">
-                {recipe.image ? (
-                  <img src={recipe.image} alt={recipe.title} className="recipe-card-img" />
-                ) : (
-                  <div className="recipe-card-no-img">🍳</div>
-                )}
-              </div>
+        <>
+          <div className="recipe-card-grid">
+            {pagedRecipes.map((r) => (
+              <RecipeCard
+                key={r.id}
+                recipe={r}
+                onClick={(id) => navigate(`/recipeMain/${id}`)}
+                footer={
+                  <>
+                    <button className="recipe-edit-btn" onClick={e => handleEdit(r.id, e)}>수정</button>
+                    <button className="recipe-delete-btn" onClick={e => handleDelete(r.id, e)}>삭제</button>
+                  </>
+                }
+              />
+            ))}
+          </div>
 
-              <div style={{ padding: '14px' }}>
-                <span style={{ fontSize: '11px', color: '#6FBC44', fontWeight: 'bold' }}>{recipe.category}</span>
-                <h3 style={{ fontSize: '14px', margin: '4px 0 6px 0', color: '#111', fontWeight: '500' }}>{recipe.dishName}</h3>
-                <p style={{ fontSize: '12px', color: '#666', margin: '0 0 12px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {recipe.description}
-                </p>
-              </div>
-
-              <button
-                onClick={(e) => handleDelete(recipe.id, e)}
-                className="recipe-delete-absolute-btn"
-              >
-                ✕
-              </button>
+          {totalPages > 1 && (
+            <div className="pagination-container">
+              <button className="pagination-arrow" disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}>◀</button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <div key={page} onClick={() => setCurrentPage(page)}
+                  className={`pagination-number ${currentPage === page ? 'active' : ''}`}>{page}</div>
+              ))}
+              <button className="pagination-arrow" disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}>▶</button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -401,4 +401,5 @@ axiosInstance.get<any[]>(`/product/list/${user.id}`)
     );
 };
 
+/*커밋 체크*/
 export default MainPage;

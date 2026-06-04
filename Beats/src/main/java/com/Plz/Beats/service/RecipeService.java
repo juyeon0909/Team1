@@ -32,10 +32,55 @@ public class RecipeService {
     private final ItemRepository itemRepository;
     private final RecipeLikeRepository recipeLikeRepository;
     private final ScrapRepository scrapRepository;
+    private final S3Service s3Service;
+
 
     /**
-     * 레시피 등록 및 수정
+     * Recipe 엔티티를 RecipeDto로 변환하는 공통 메서드.
+     * 메인 목록 / 스크랩 목록 / 좋아요 목록이 모두 이 메서드를 재사용한다.
+     *
+     * @param recipe        변환할 레시피
+     * @param currentMember 현재 로그인 회원 (비로그인이면 null) — hearted/scrapped 판정용
      */
+    public RecipeDto toDto(Recipe recipe, Member currentMember) {
+        RecipeDto dto = new RecipeDto();
+        dto.setId(recipe.getId());
+        dto.setTitle(recipe.getTitle());
+        dto.setDishName(recipe.getDishName());
+        dto.setCategory(recipe.getCategory().name());   // 코드값("RAP") — 한글 변환은 프론트 담당
+        dto.setCookingTime(recipe.getCookingTime());     // 숫자
+        dto.setDescription(recipe.getDescription());
+        dto.setImage(recipe.getImage());
+        dto.setAuthor(recipe.getMember().getName());     // 작성자 이름
+
+        if (recipe.getCookingMethod() != null) {
+            dto.setSteps(Arrays.asList(recipe.getCookingMethod().split("\n")));
+        }
+
+        List<RecipeDto.MustIngredientDto> ingDtos = recipe.getRecipeIngredients().stream()
+                .map(ing -> new RecipeDto.MustIngredientDto(
+                        ing.getItem() != null ? ing.getItem().getName() : "알 수 없는 재료",
+                        ing.getQuantity()
+                ))
+                .collect(Collectors.toList());
+        dto.setMustIngredients(ingDtos);
+
+        dto.setLikeCount(recipeLikeRepository.countByRecipe(recipe));
+        dto.setScrapCount(scrapRepository.countByRecipe(recipe));
+
+        if (currentMember != null) {
+            dto.setHearted(recipeLikeRepository.findByMemberAndRecipe(currentMember, recipe).isPresent());
+            dto.setScrapped(scrapRepository.findByMemberAndRecipe(currentMember, recipe).isPresent());
+        } else {
+            dto.setHearted(false);
+            dto.setScrapped(false);
+        }
+
+        return dto;
+    }
+
+
+    // 레시피 등록 및 수정
     @Transactional
     public RecipeDto createRecipe(RecipeDto dto, String username) {
         if ("GUEST".equals(username) || username == null) {
@@ -49,11 +94,12 @@ public class RecipeService {
         recipe.setMember(member);
         recipe.setTitle(dto.getTitle());
         recipe.setDishName(dto.getDishName() != null ? dto.getDishName() : dto.getTitle());
-        recipe.setImage(dto.getImage() != null ? dto.getImage() : "default_recipe.png");
+        recipe.setImage(dto.getImage() != null && !dto.getImage().isEmpty()
+                ? dto.getImage()
+                : "https://in-my-fridge-image-bucket.s3.ap-northeast-2.amazonaws.com/default.png");
         recipe.setCategory(Category.valueOf(dto.getCategory()));
         recipe.setCookingTime(dto.getCookingTime());
         recipe.setDescription(dto.getDescription());
-        // 등록 시 항상 PENDING으로 저장 — 관리자 승인 전까지 목록에 노출되지 않음
         recipe.setApprovalStatus(ApprovalStatus.PENDING);
         recipe.setUpdatedAt(LocalDateTime.now());
 
@@ -66,17 +112,15 @@ public class RecipeService {
         if (dto.getMustIngredients() != null) {
             for (RecipeDto.MustIngredientDto ingDto : dto.getMustIngredients()) {
                 RecipeIngredient ingredient = new RecipeIngredient();
-
                 Item item = itemRepository.findByName(ingDto.getName().trim())
                         .orElseGet(() -> {
                             Item newItem = new Item();
                             newItem.setName(ingDto.getName().trim());
                             return itemRepository.save(newItem);
                         });
-
                 ingredient.setItem(item);
                 ingredient.setQuantity(ingDto.getQuantity());
-                ingredient.setUnit("");
+                ingredient.setUnit("g");
                 ingredient.setRequired(true);
                 ingredient.setRecipe(recipe);
                 recipe.getRecipeIngredients().add(ingredient);
@@ -88,13 +132,8 @@ public class RecipeService {
         return dto;
     }
 
-    /**
-     * 전체 레시피 목록 조회
-     * - APPROVED 상태인 레시피만 반환 (PENDING, REJECTED 제외)
-     */
+    // 승인된 레시피 목록 조회
     public List<RecipeDto> getRecipes(String username) {
-        // ✅ 수정: findAll() → findByApprovalStatus(APPROVED)
-        // 기존 findAll()은 PENDING 레시피도 노출시키는 문제가 있었음
         List<Recipe> recipes = recipeRepository.findByApprovalStatus(ApprovalStatus.APPROVED);
 
         Member member = null;
@@ -103,80 +142,24 @@ public class RecipeService {
         }
         final Member currentMember = member;
 
-        return recipes.stream().map(recipe -> {
-            RecipeDto dto = new RecipeDto();
-            dto.setId(recipe.getId());
-            dto.setTitle(recipe.getTitle());
-            dto.setDishName(recipe.getDishName());
-            dto.setCategory(recipe.getCategory().name());
-            dto.setCookingTime(recipe.getCookingTime());
-            dto.setDescription(recipe.getDescription());
-            dto.setImage(recipe.getImage());
-
-            if (recipe.getCookingMethod() != null) {
-                dto.setSteps(Arrays.asList(recipe.getCookingMethod().split("\n")));
-            }
-
-            List<RecipeDto.MustIngredientDto> ingDtos = recipe.getRecipeIngredients().stream()
-                    .map(ing -> new RecipeDto.MustIngredientDto(
-                            ing.getItem() != null ? ing.getItem().getName() : "알 수 없는 재료",
-                            ing.getQuantity()
-                    ))
-                    .collect(Collectors.toList());
-            dto.setMustIngredients(ingDtos);
-
-            dto.setLikeCount(recipeLikeRepository.countByRecipe(recipe));
-            dto.setScrapCount(scrapRepository.countByRecipe(recipe));
-            if (currentMember != null) {
-                dto.setHearted(recipeLikeRepository.findByMemberAndRecipe(currentMember, recipe).isPresent());
-                dto.setScrapped(scrapRepository.findByMemberAndRecipe(currentMember, recipe).isPresent());
-            } else {
-                dto.setHearted(false);
-                dto.setScrapped(false);
-            }
-
-            return dto;
-        }).collect(Collectors.toList());
+        return recipes.stream()
+                .map(recipe -> toDto(recipe, currentMember))
+                .collect(Collectors.toList());
     }
 
-    /**
-     * 내가 등록한 레시피 목록 조회 (마이페이지용)
-     */
+    // 내가 등록한 레시피 목록 조회 (마이페이지용)
     public List<RecipeDto> getMyRecipes(String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         List<Recipe> myRecipes = recipeRepository.findByMember(member);
 
-        return myRecipes.stream().map(recipe -> {
-            RecipeDto dto = new RecipeDto();
-            dto.setId(recipe.getId());
-            dto.setTitle(recipe.getTitle());
-            dto.setDishName(recipe.getDishName());
-            dto.setCategory(recipe.getCategory().name());
-            dto.setCookingTime(recipe.getCookingTime());
-            dto.setDescription(recipe.getDescription());
-            dto.setImage(recipe.getImage());
-
-            if (recipe.getCookingMethod() != null) {
-                dto.setSteps(Arrays.asList(recipe.getCookingMethod().split("\n")));
-            }
-
-            List<RecipeDto.MustIngredientDto> ingDtos = recipe.getRecipeIngredients().stream()
-                    .map(ing -> new RecipeDto.MustIngredientDto(
-                            ing.getItem() != null ? ing.getItem().getName() : "알 수 없는 재료",
-                            ing.getQuantity()
-                    ))
-                    .collect(Collectors.toList());
-            dto.setMustIngredients(ingDtos);
-
-            return dto;
-        }).collect(Collectors.toList());
+        return myRecipes.stream()
+                .map(recipe -> toDto(recipe, member))
+                .collect(Collectors.toList());
     }
 
-    /**
-     * 관리자용 PENDING 레시피 목록 조회
-     */
+    // 관리자용 PENDING 레시피 목록 조회
     public List<AdminRecipeDto> getPendingRecipes() {
         return recipeRepository.findByApprovalStatus(ApprovalStatus.PENDING)
                 .stream().map(r -> new AdminRecipeDto(
@@ -188,15 +171,44 @@ public class RecipeService {
                         r.getMember().getName(),
                         r.getMember().getEmail(),
                         r.getRecipeIngredients().stream()
-                                .map(ing -> ing.getItem() != null ? ing.getItem().getName() : "")
+                                .map(ing -> new RecipeDto.MustIngredientDto(
+                                        ing.getItem() != null ? ing.getItem().getName() : "",
+                                        ing.getQuantity() != null ? ing.getQuantity() : 0  // quantity 추가
+                                ))
                                 .collect(Collectors.toList()),
-                        r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : ""
+                        null,
+                        r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : "",
+                        r.getImage(),
+                        r.getCookingMethod()
                 )).collect(Collectors.toList());
     }
 
-    /**
-     * 레시피 승인
-     */
+    // 관리자용 레시피 단건 조회
+    public AdminRecipeDto getRecipeById(Long id) {
+        Recipe r = recipeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
+        return new AdminRecipeDto(
+                r.getId(),
+                r.getTitle(),
+                r.getCategory().getDescription(),
+                r.getCookingTime(),
+                r.getDescription(),
+                r.getMember().getName(),
+                r.getMember().getEmail(),
+                r.getRecipeIngredients().stream()
+                        .map(ing -> new RecipeDto.MustIngredientDto(
+                                ing.getItem() != null ? ing.getItem().getName() : "",
+                                ing.getQuantity() != null ? ing.getQuantity() : 0  // quantity 추가
+                        ))
+                        .collect(Collectors.toList()),
+                null,
+                r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : "",
+                r.getImage(),
+                r.getCookingMethod()
+        );
+    }
+
+    // 레시피 승인
     @Transactional
     public void approveRecipe(Long id) {
         Recipe recipe = recipeRepository.findById(id)
@@ -204,9 +216,7 @@ public class RecipeService {
         recipe.setApprovalStatus(ApprovalStatus.APPROVED);
     }
 
-    /**
-     * 레시피 거절
-     */
+    // 레시피 거절
     @Transactional
     public void rejectRecipe(Long id) {
         Recipe recipe = recipeRepository.findById(id)
@@ -214,24 +224,16 @@ public class RecipeService {
         recipe.setApprovalStatus(ApprovalStatus.REJECTED);
     }
 
-    /**
-     * 레시피 삭제 (본인만 가능)
-     */
+    // 레시피 삭제 (본인만 가능)
     @Transactional
     public void deleteRecipe(Long id, String email) {
-        System.out.println("=== deleteRecipe 호출됨 id=" + id + " email=" + email);
-
         Recipe recipe = recipeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
 
-        System.out.println("=== 레시피 작성자=" + recipe.getMember().getEmail());
-
         if (!recipe.getMember().getEmail().equals(email)) {
-            System.out.println("=== 본인 아님!");
             throw new RuntimeException("본인이 등록한 레시피만 삭제할 수 있습니다.");
         }
 
         recipeRepository.delete(recipe);
-        System.out.println("=== 삭제 완료");
     }
 }

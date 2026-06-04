@@ -52,7 +52,8 @@ public class SecurityConfig {
                 "/first",
                 "/",
                 "/api/member/delete", // 회원 탈퇴
-                "/api/passwordless/**" // 패스워드리스 로그인 (인증 전 호출)
+                "/api/passwordless/**", // 패스워드리스 로그인 (인증 전 호출)
+                "/api/member/reset-password/**" // 비밀번호 초기화
         };
 
         http
@@ -69,6 +70,8 @@ public class SecurityConfig {
                         .requestMatchers(permitUrls).permitAll()
                         .requestMatchers("/api/member/delete").permitAll() // 인증 필요
                         .requestMatchers("/api/member/join").permitAll()
+                                .requestMatchers("/api/member/reset-password").permitAll()
+                                .requestMatchers("/api/member/reset-password/**").permitAll()
                                 .requestMatchers("/api/recipeMain").permitAll()
                                 .requestMatchers("/api/recipeMain/**").permitAll()
                                 .requestMatchers("/api/recipeMain/clip").authenticated()
@@ -95,7 +98,7 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    // 2. AuthenticationProvider는 별도의 Bean으로 분리하여 등록해 줍니다.
+    // 2.  AuthenticationProvider는 별도의 Bean으로 분리하여 등록해 줍니다.
     @Bean
     public DaoAuthenticationProvider authenticationProvider(
             UserDetailsService userDetailsService,
@@ -107,3 +110,4 @@ public class SecurityConfig {
         return provider;
     }
 }
+/* 커밋 체크 */

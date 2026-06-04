@@ -14,6 +14,9 @@ public class AdminRecipeDto {
     private String description;
     private String authorName;
     private String authorEmail;
-    private List<String> ingredients;
+    private List<RecipeDto.MustIngredientDto> ingredients;
+    private List<RecipeDto.SelectIngredientDto> selectIngredients;
     private String registeredAt;
+    private String image;
+    private String cookingMethod;
 }

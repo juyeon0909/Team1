@@ -272,5 +272,5 @@ function ResetPassword() {
     </Container>
   );
 }
-/* 비밀번호 강도 쳌 추가 */
+/* 비밀번호 강도 체크 추가 */
 export default ResetPassword;

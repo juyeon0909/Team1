@@ -74,7 +74,7 @@ const RecipeEdit = () => {
         if (data.mustIngredients && data.mustIngredients.length > 0) {
           setMustIngredients(data.mustIngredients.map(ing => ({
             name: ing.name || '',
-            quantity: String(ing.quantity ?? ''),
+            quantity: String(ing.quantity ?? '').replace(/g$/i, '').trim(),
             showDropdown: false,
             searchResults: []
           })));

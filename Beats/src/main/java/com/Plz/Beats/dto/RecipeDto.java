@@ -32,6 +32,7 @@ public class RecipeDto {
     private String author;       // 레시피 작성자 이름
     private String scrappedAt;   // 스크랩/좋아요 누른 날짜 (목록 조회 시에만 채움, 평소엔 null
 
+
     @Getter
     @Setter
     @NoArgsConstructor
@@ -40,12 +41,18 @@ public class RecipeDto {
         private String name;
         private Integer quantity;
     }
-
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class SelectIngredientDto{
         private String name;
         private Integer quantity;
     }
-
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class MissingIngredientDto{
         private String name;
         private Integer quantity;

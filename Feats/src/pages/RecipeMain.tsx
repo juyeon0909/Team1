@@ -181,27 +181,18 @@ function RecipeMain({ user }: RecipeProps) {
               return;
             }
 
-            try { // 전체 배열에서 일부 데이터만 필터할 수 있음
-              const url = `${API_BASE_URL}/product/delete/${item.id}`;
-              await axios.delete(url);
-              alert(`'${item.title}' 레시피가 삭제되었습니다.`)
-
-              // 레시피를 갱신해주는 setter
-              // 이전(prev) 레시피 정보를 가져와서 필터링하는데
-              // 이전 레시피의 id와 해당 레시피 id가 같지 않으면 - 레시피 데이터에 해당 레시피가 없으면
-              // 레시피(목록)을 갱신해라
+            try {
+              await axiosInstance.delete(`/recipeMain/${item.id}`);
+              alert(`'${item.title}' 레시피가 삭제되었습니다.`);
               setRecipes(prev => prev.filter(p => p.id !== item.id));
-
-              navigate('/recipeMain');
-
             } catch (error) {
               console.log(error);
               if (axios.isAxiosError(error)) {
                 alert(`레시피 삭제 실패 : ${error.response?.data || error.message}`);
               } else {
-                console.log('알수 없는 에러 : ' + error);
+                console.log('알 수 없는 에러 : ' + error);
               }
-            };
+            }
           }}>
           삭제
         </Button>

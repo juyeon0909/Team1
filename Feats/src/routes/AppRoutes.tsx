@@ -46,7 +46,7 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path='/ingredient/list' element={<IngredientList />} />
       <Route path='/recipeMain/clip' element={<RecipeMainClip />} />
       <Route path='/recipeMain/register' element={<RecipeRegister />} />
-      <Route path='/recipeMain/edit' element={<RecipeEdit />} />
+      <Route path='/recipeMain/edit/:id' element={<RecipeEdit />} />
       <Route path="/recipeMain/:id" element={<RecipeDetail />} />
       <Route path='/recipeMain' element={<RecipeMain user={user} />} />
       <Route path='/mypage/info' element={<MyPageInfo />} />

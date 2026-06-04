@@ -1,14 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react";
-import "../components/mainPage.css"; 
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
 import type { Ingredient } from "../types/Fridge.ts";
 import type { User } from "../types/User.ts";
+import "../components/mainPage.css"; 
+
 type Urgency = "urgent" | "warning" | "normal";
 
-
-
-// 술라이드 박스용 로컬 인터페이스
 interface BannerItem {
     id: number;
     greeting: string;
@@ -18,9 +16,7 @@ interface BannerItem {
 
 const CATEGORIES = ["전체", "한식", "양식", "일식", "중식", "간식", "야식", "다이어트", "밀프랩"] as const;
 
-
-//    하위 컴포넌트 1: 오토 슬라이드 히어로 배너
-   
+// 하위 컴포넌트 1: 오토 슬라이드 히어로 배너
 interface HeroCardProps {
     userName: string;
     totalCount: number;
@@ -28,7 +24,6 @@ interface HeroCardProps {
 }
 
 const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }) => {
-    
     const banners: BannerItem[] = [
         { id: 0, greeting: `안녕하세요, ${userName}님`, title: <>냉장고 속 재료로<br />무엇을 만들어볼까요?</>, sub: "냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요." },
         { id: 1, greeting: "요리 팁", title: <>맛있는 <br />요리</>, sub: "냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요." },
@@ -36,32 +31,21 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }
     ];
 
     const slideCount = banners.length;
+    const extendedBanners = [banners[slideCount - 1], ...banners, banners[0]];
 
-    // 무한 루프: [마지막 카피] - [1] - [2] - [3] - [첫번째 카피] 구조로 기차 연결
-    const extendedBanners = [
-        banners[slideCount - 1], // 인덱스 0: 3번 배너의 가짜 카피
-        ...banners,              // 인덱스 1, 2, 3: 진짜 배너들
-        banners[0]               // 인덱스 4: 1번 배너의 가짜 카피
-    ];
-
-    // 시작 위치 1번 배너 
     const [currentIndex, setCurrentIndex] = useState(1);
     const [isTransition, setIsTransition] = useState(true);
     const [isSliding, setIsSliding] = useState(false);  
-    // 공통 이동 제어 함수
 
     const moveSlide = (targetIndex: number) => {
-        if (isSliding) return; // 🌟 이동 중일 때는 화살표 클릭 입력을 칼같이 씹어버림!
-        
-        setIsSliding(true); // 이동 시작 마킹
+        if (isSliding) return; 
+        setIsSliding(true); 
         setIsTransition(true);
         setCurrentIndex(targetIndex);
     };
 
-    // 오토 슬라이드 타이머 (5초마다 오른쪽 칸으로 전진)
     useEffect(() => {
         const timer = setInterval(() => {
-            // 오토 슬라이드 작동 시에도 sliding 상태가 아닐 때만 전진
             if (!isSliding) {
                 moveSlide(currentIndex + 1);
             }
@@ -69,17 +53,15 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }
         return () => clearInterval(timer);
     }, [currentIndex, isSliding]);
 
-    // 애니메이션이 끝난 직후 순간이동 처리
     const handleTransitionEnd = () => {
-        setIsSliding(false); // 🌟 애니메이션이 무사히 끝났으므로 락(Lock) 해제
-        
+        setIsSliding(false); 
         if (currentIndex === slideCount + 1) {
             setIsTransition(false);
-            setCurrentIndex(1); // 가짜 1번에서 진짜 1번으로 워프
+            setCurrentIndex(1); 
         }
         else if (currentIndex === 0) {
             setIsTransition(false);
-            setCurrentIndex(slideCount); // 가짜 3번에서 진짜 3번으로 워프
+            setCurrentIndex(slideCount); 
         }
     };
 
@@ -91,55 +73,50 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, totalCount, urgentCount }
 
     return (
         <div className="hero-card">
-          <div className="hero-carousel-container">
-            
-            <div 
-              className="hero-carousel-track" 
-              style={{ 
-                transform: `translateX(-${currentIndex * 100}%)`,
-                transition: isTransition ? "transform 0.35s ease-in-out" : "none"   // 메인 배너 슬라이드 속도 
-              }}
-              onTransitionEnd={handleTransitionEnd}
-            >
-              {extendedBanners.map((banner, index) => (
-                <div className="hero-carousel-slide" key={`${banner.id}-${index}`}>
-                  <div className="hero-text">
-                    <p className="hero-greeting">{banner.greeting}</p>
-                    <h1 className="hero-title">{banner.title}</h1>
-                    <p className="hero-sub">{banner.sub}</p>
-                  </div>
+            <div className="hero-carousel-container">
+                <div 
+                    className="hero-carousel-track" 
+                    style={{ 
+                        transform: `translateX(-${currentIndex * 100}%)`,
+                        transition: isTransition ? "transform 0.35s ease-in-out" : "none" 
+                    }}
+                    onTransitionEnd={handleTransitionEnd}
+                >
+                    {extendedBanners.map((banner, index) => (
+                        <div className="hero-carousel-slide" key={`${banner.id}-${index}`}>
+                            <div className="hero-text">
+                                <p className="hero-greeting">{banner.greeting}</p>
+                                <h1 className="hero-title">{banner.title}</h1>
+                                <p className="hero-sub">{banner.sub}</p>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-              ))}
             </div>
-        </div>
             
-            {/* 하단 점 내비게이션 */}
             <div className="carousel-page-dots">
-              {banners.map((_, idx) => (
-                <span 
-                  key={idx} 
-                  className={`carousel-dot ${getDotActiveIndex() === idx ? "active" : ""}`} 
-                  onClick={() => moveSlide(idx + 1)}
-                />
-              ))}
+                {banners.map((_, idx) => (
+                    <span 
+                        key={idx} 
+                        className={`carousel-dot ${getDotActiveIndex() === idx ? "active" : ""}`} 
+                        onClick={() => moveSlide(idx + 1)}
+                    />
+                ))}
             </div>
-          
-                {/* 좌우 화살표 버튼 제어 */}
-        <button className="carousel-nav-btn prev" onClick={() => moveSlide(currentIndex - 1)}>〈</button>
-        <button className="carousel-nav-btn next" onClick={() => moveSlide(currentIndex + 1)}>〉</button>
+            
+            <button className="carousel-nav-btn prev" onClick={() => moveSlide(currentIndex - 1)}>〈</button>
+            <button className="carousel-nav-btn next" onClick={() => moveSlide(currentIndex + 1)}>〉</button>
 
-          <div className="hero-stats">
-            <div className="stat-box"><div className="num">{totalCount}</div><div className="label">보유 재료</div></div>
-            <div className="stat-box"><div className="num urgent-highlight">{urgentCount}</div><div className="label">임박 재료</div></div>
-            <div className="stat-box"><div className="num">24</div><div className="label">추천 레시피</div></div>
-          </div>
+            <div className="hero-stats">
+                <div className="stat-box"><div className="num">{totalCount}</div><div className="label">보유 재료</div></div>
+                <div className="stat-box"><div className="num urgent-highlight">{urgentCount}</div><div className="label">임박 재료</div></div>
+                <div className="stat-box"><div className="num">24</div><div className="label">추천 레시피</div></div>
+            </div>
         </div>
     );
 };
 
-
-//  하위 컴포넌트 2: 유통기한 알림 띠 바
-   
+// 하위 컴포넌트 2: 유통기한 알림 띠 바
 interface AlertBarProps {
     ingredients: Ingredient[];
     isLoggedIn: boolean;
@@ -167,15 +144,14 @@ const AlertBar: React.FC<AlertBarProps> = ({ ingredients, isLoggedIn }) => {
                     <span className="tag d6">임박 재료 없음</span>
                 )}
             </div>
-            <span className="alert-link" onClick={() => navigate("/recipeMain", { state: { urgentOnly: true } })} style={{ cursor: "pointer" }}>
+            <span className="alert-link" onClick={() => navigate("/recipeMain")} style={{ cursor: "pointer" }}>
                 관련 레시피 보기 →
             </span>
         </div>
     );
 };
 
-//    하위 컴포넌트 3: 유통기한 임박 재료 리스트
-   
+// 하위 컴포넌트 3: 유통기한 임박 재료 리스트
 interface ExpiringIngredientsProps {
     ingredients: Ingredient[];
     loading: boolean;
@@ -220,8 +196,7 @@ const ExpiringIngredients: React.FC<ExpiringIngredientsProps> = ({ ingredients, 
     );
 };
 
-
-
+// 하위 컴포넌트 4: 오늘의 추천 레시피 구역
 const RecommendedRecipes: React.FC = () => {
     const navigate = useNavigate();
     const [recipes, setRecipes] = useState<any[]>([]);
@@ -238,21 +213,15 @@ const RecommendedRecipes: React.FC = () => {
                 const response = await axiosInstance.get<any[]>('/recipeMain');
                 let mapped = response.data || [];
 
-                mapped = mapped.map((r: any) => {
-                    return {
-                        ...r,
-                        title: r.title || r.name || "이름 없는 레시피",
-                        // 백엔드 엔티티 사정에 맞춰 좋아요 필드 다중 추적 방어선
-                        heart: r.heart !== undefined ? r.heart : (r.likes || r.likeCount || r.viewCount || 0)
-                    };
-                });
-                console.log("🟢 [날것의 백엔드 데이터 변수명 리스트]:", Object.keys(mapped[0] || {}));
-                console.log("🟢 [날것의 백엔드 첫번째 데이터 알맹이]:", mapped[0]);
+                mapped = mapped.map((r: any) => ({
+                    ...r,
+                    title: r.title || r.name || "이름 없는 레시피",
+                    heart: r.heart !== undefined ? r.heart : (r.likes || r.likeCount || r.viewCount || 0)
+                }));
 
                 if (isLoggedIn) {
                     try {
                         const matchRes = await axiosInstance.get('/recipeMain/match');
-                        console.log("🟢 [매칭률 백엔드 첫번째 데이터 알맹이]:", matchRes.data?.[0]);
                         if (Array.isArray(matchRes.data)) {
                             const rateMap = new Map<number, number>(
                                 matchRes.data.map((m: any) => [m.id, m.matchRate ?? 0])
@@ -265,23 +234,14 @@ const RecommendedRecipes: React.FC = () => {
                         console.error('메인페이지 매칭률 연동 실패:', matchErr);
                     }
                 }
-                if (isLoggedIn) {
-                    mapped = [...mapped].sort((a, b) => (b.match || 0) - (a.match || 0));
-                } else {
-                    // 비로그인일 때 총 좋아요 개수(heart)가 많은 순서대로 상위 정렬 실행
-                    mapped = [...mapped].sort((a, b) => (b.heart || 0) - (a.heart || 0));
-                }
-                //  로그인 조건에 따라 추천순(매칭률) / 인기순(하트수) 분기 정렬 연산
+
+                // 로그인 정렬 분기 결합 정리 (중복 정렬 제거)
                 if (isLoggedIn) {
                     mapped = [...mapped].sort((a, b) => (b.match || 0) - (a.match || 0));
                 } else {
                     mapped = [...mapped].sort((a, b) => (b.heart || 0) - (a.heart || 0));
                 }
-console.log("=== 백엔드에서 넘어온 진짜 레시피 첫 번째 데이터 ===", response.data?.[0]);
-console.log("=== 카테고리 탭 연동 직전 정제된 데이터 ===", mapped?.[0]);
-console.log("=== 🏁 백엔드가 주는 전체 레시피 카테고리 실시간 검사 🏁 ===");
-mapped.forEach(r => console.log(`요리명: [${r.title || r.name}] ➡️ 진짜 백엔드 카테고리 코드: "${r.category}"`));
-setRecipes(mapped);
+
                 setRecipes(mapped);
             } catch (error) {
                 console.error('메인페이지 레시피 로딩 실패:', error);
@@ -293,40 +253,25 @@ setRecipes(mapped);
         fetchMainRecipes();
     }, [isLoggedIn]);
 
-
-
-const categoryMap: Record<string, string> = {
-        "한식": "KOR",
-        "일식": "JAN", 
-        "중식": "CHN",
-        "양식": "YANG", 
-        "간식": "GAN",
-        "야식": "YA",
-        "다이어트": "DIET",
-        "밀프랩": "RAP"
+    const categoryMap: Record<string, string> = {
+        "한식": "KOR", "일식": "JAN", "중식": "CHN", "양식": "YANG",
+        "간식": "GAN", "야식": "YA", "다이어트": "DIET", "밀프랩": "RAP"
     };
-
 
     const visibleRecipes = useMemo(() => {
         return recipes.filter((r) => {
-           
             if (activeCategory !== "전체") {
                 const targetBackendCode = categoryMap[activeCategory];
-                if (r.category !== targetBackendCode) {
-                    return false;
-                }
+                if (r.category !== targetBackendCode) return false;
             }
-
-            // 검색어 필터링 
             if (query.trim()) {
                 const q = query.toLowerCase();
                 const titleMatch = r.title?.toLowerCase().includes(q);
                 const tagMatch = Array.isArray(r.tags) && r.tags.some((t: string) => t.toLowerCase().includes(q));
                 return titleMatch || tagMatch;
             }
-
             return true;
-        }).slice(0, 3); // 메인페이지 레이아웃용 상위 3개 고정
+        }).slice(0, 3);
     }, [recipes, activeCategory, query]);
 
     return (
@@ -370,10 +315,7 @@ const categoryMap: Record<string, string> = {
     );
 };
 
-
-
-//    메인 컴포넌트 
-
+// 메인 컴포넌트 
 const MainPage: React.FC = () => {
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [loading, setLoading] = useState(true);
@@ -390,17 +332,18 @@ const MainPage: React.FC = () => {
         if (user.name) setUserName(user.name);
         setIsLoggedIn(true);
         
-axiosInstance.get<any[]>(`/product/list/${user.id}`)
+        axiosInstance.get<any[]>(`/product/list/${user.id}`)
             .then((res) => {
                 const rawData = res.data || [];
                 setTotalCount(rawData.length);
 
-                
                 const processed = rawData.map((item) => {
                     const serverDday = item.dDay !== undefined ? item.dDay : item.dday;
                     return {
                         ...item,
-                        
+                        itemName: item.itemName || item.itemname || "이름 없음",
+                        storageType: item.storageType || item.storagetype || "REFRIGERATED",
+                        expirationDate: item.expirationDate || item.expirationdate,
                         dDay: serverDday !== undefined ? serverDday : 999,
                         urgency: item.urgency || "normal"
                     };
@@ -410,24 +353,18 @@ axiosInstance.get<any[]>(`/product/list/${user.id}`)
                     (i.urgency === "urgent" || i.urgency === "warning") && (i.dDay !== undefined && i.dDay >= 0)
                 ).length);
 
-                
                 const finalMainList = processed
                     .filter(i => 
-                        
                         (i.urgency === "urgent" || i.urgency === "warning") && (i.dDay !== undefined && i.dDay >= 0)
                     )
                     .sort((a, b) => (a.dDay ?? 0) - (b.dDay ?? 0))
                     .slice(0, 5);
-
 
                 setIngredients(finalMainList);
             })
             .catch((err) => console.error("데이터 연동 실패:", err))
             .finally(() => setLoading(false));
     }, []);
-
-
-
 
     return (
         <div className="imf-root">
@@ -444,5 +381,4 @@ axiosInstance.get<any[]>(`/product/list/${user.id}`)
     );
 };
 
-/*커밋 체크*/
 export default MainPage;

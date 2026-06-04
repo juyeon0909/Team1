@@ -128,9 +128,9 @@ function RecipeMain({ user }: RecipeProps) {
     let result = recipes.filter(r => {
       if (urgentOnly && !r.urgent) return false;
       if (activeCategory !== '전체' && r.category !== activeCategory) return false;
-      if (activeMatch === '100' && r.match < 100) return false;
-      if (activeMatch === '70' && r.match < 70) return false;
-      if (activeMatch === '50' && r.match < 50) return false;
+      if (activeMatch === '100' && (r.match ?? 0) < 100) return false;
+      if (activeMatch === '70' && (r.match ?? 0) < 70) return false;
+      if (activeMatch === '50' && (r.match ?? 0) < 50) return false;
       if (activeTime === '15' && r.time > 15) return false;
       if (activeTime === '30' && r.time > 30) return false;
       if (activeTime === '60' && r.time > 60) return false;
@@ -141,7 +141,7 @@ function RecipeMain({ user }: RecipeProps) {
       return true;
     });
 
-    if (sortBy === '추천순') result = [...result].sort((a, b) => b.match - a.match);
+    if (sortBy === '추천순') result = [...result].sort((a, b) => (b.match ?? 0) - (a.match ?? 0));
     if (sortBy === '인기순') result = [...result].sort((a, b) => b.heart - a.heart);
     if (sortBy === '최신순') result = [...result].sort((a, b) => b.id - a.id);
 

@@ -20,5 +20,7 @@ export const toRecipeView = (dto: RecipeDto): RecipeView => {
     isHearted: dto.hearted ?? false,
     isScrapped: dto.scrapped ?? false,
     image: dto.image ?? '',
+    mustIngredients: dto.mustIngredients ?? [],
+    author: (dto as any).author ?? '', 
   };
 };

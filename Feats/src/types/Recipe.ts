@@ -59,4 +59,5 @@ export interface RecipeView {
   image: string;
   scrappedAt?: string;
   author?: string;
+  mustIngredients: { name: string; quantity: string }[];
 }

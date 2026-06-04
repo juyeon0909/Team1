@@ -79,7 +79,7 @@ const RecipeEdit = () => {
           if (data.mustIngredients && data.mustIngredients.length > 0) {
             setMustIngredients(data.mustIngredients.map((ing: any) => ({
               name: ing.name || "",
-              quantity: ing.quantity || "",
+              quantity: String(ing.quantity ?? ""),
               showDropdown: false,
               searchResults: []
             })));
@@ -164,7 +164,7 @@ const RecipeEdit = () => {
     if (!category) return alert("카테고리를 선택해주세요.");
 
     const filteredMustIngredients = mustIngredients
-      .filter(item => item.name.trim() !== "" && item.quantity.trim() !== "")
+      .filter(item => item.name.trim() !== "" && String(item.quantity).trim() !== "")
       .map(item => ({ name: item.name, quantity: item.quantity }));
 
     if (filteredMustIngredients.length === 0) {

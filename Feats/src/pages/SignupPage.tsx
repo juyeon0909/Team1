@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Alert } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
+import axiosLib from "axios"
 import axios from "../api/axiosInstance.tsx";
 import "../components/SignupPage.css";
 
@@ -15,17 +16,17 @@ interface SignupErrors {
 
 function SignupPage() {
   // ── 원본과 동일한 state 구조 ──
-  const [name, setName]       = useState("");
-  const [email, setEmail]     = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState("");
-  const [errors, setErrors]   = useState<SignupErrors>({
+  const [errors, setErrors] = useState<SignupErrors>({
     name: "", email: "", password: "", address: "", general: "",
   });
 
   // ── 추가: 비밀번호 확인 / UI 상태 ──
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [showPw, setShowPw]   = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
   const [pwStrength, setPwStrength] = useState({
     width: "0%", color: "#eee",
@@ -38,16 +39,16 @@ function SignupPage() {
   /* ── 비밀번호 강도 체크 ── */
   const checkStrength = (val: string) => {
     let score = 0;
-    if (val.length >= 8)          score++;
-    if (/[A-Za-z]/.test(val))     score++;
-    if (/[0-9]/.test(val))        score++;
+    if (val.length >= 8) score++;
+    if (/[A-Za-z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
     if (/[^A-Za-z0-9]/.test(val)) score++;
 
     const map: Record<number, typeof pwStrength> = {
-      0: { width: "0%",   color: "#eee",    label: "영문, 숫자, 특수문자 포함 8자 이상", labelColor: "#aaa"     },
-      1: { width: "25%",  color: "#e53935", label: "약함",      labelColor: "#e53935" },
-      2: { width: "50%",  color: "#fb8c00", label: "보통",      labelColor: "#fb8c00" },
-      3: { width: "75%",  color: "#fdd835", label: "강함",      labelColor: "#b8a200" },
+      0: { width: "0%", color: "#eee", label: "영문, 숫자, 특수문자 포함 8자 이상", labelColor: "#aaa" },
+      1: { width: "25%", color: "#e53935", label: "약함", labelColor: "#e53935" },
+      2: { width: "50%", color: "#fb8c00", label: "보통", labelColor: "#fb8c00" },
+      3: { width: "75%", color: "#fdd835", label: "강함", labelColor: "#b8a200" },
       4: { width: "100%", color: "#4caf50", label: "매우 강함", labelColor: "#4caf50" },
     };
     setPwStrength(map[score]);
@@ -56,8 +57,8 @@ function SignupPage() {
   /* ── 비밀번호 일치 체크 ── */
   const checkMatch = (pw: string, pw2: string) => {
     if (!pw2) { setMatchMsg({ text: "", color: "" }); return; }
-    if (pw === pw2) setMatchMsg({ text: "비밀번호가 일치합니다",       color: "#4caf50" });
-    else            setMatchMsg({ text: "비밀번호가 일치하지 않습니다", color: "#e53935" });
+    if (pw === pw2) setMatchMsg({ text: "비밀번호가 일치합니다", color: "#4caf50" });
+    else setMatchMsg({ text: "비밀번호가 일치하지 않습니다", color: "#e53935" });
   };
 
   /* ── 버튼 활성화 조건 ── */
@@ -86,9 +87,8 @@ function SignupPage() {
         navigate("/");
       }
     } catch (error) {
-      if (axios.isAxiosError(error)) {
+      if (axiosLib.isAxiosError(error)) {
         if (error.response?.data) {
-          // 원본과 동일: 서버에서 받은 필드별 오류 객체로 저장
           setErrors(error.response.data);
         }
       } else {

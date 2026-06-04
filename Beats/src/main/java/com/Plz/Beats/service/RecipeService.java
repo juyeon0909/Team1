@@ -251,7 +251,26 @@ public class RecipeService {
         if (username != null && !"GUEST".equals(username)) {
             member = memberRepository.findByEmail(username).orElse(null);
         }
-        return toDto(recipe, member);
+
+        // 임박 재료도 같이 판정하려면 집합 전달 (상세에서도 urgent 보고 싶으면)
+        RecipeDto dto = toDto(recipe, member, getUrgentItemIds(member));
+
+        // 없는 재료 계산: 내 보관함에 없는 필수 재료
+        if (member != null) {
+            Set<Long> myItemIds = new HashSet<>(
+                    storageItemRepository.findItemIdsByMemberEmail(member.getEmail()));
+
+            List<RecipeDto.MissingIngredientDto> missing = recipe.getRecipeIngredients().stream()
+                    .filter(ing -> ing.getItem() != null && !myItemIds.contains(ing.getItem().getId()))
+                    .map(ing -> new RecipeDto.MissingIngredientDto(
+                            ing.getItem().getName(),
+                            ing.getQuantity()
+                    ))
+                    .collect(Collectors.toList());
+            dto.setMissingIngredients(missing);
+        }
+
+        return dto;
     }
 
     // 관리자용 PENDING 레시피 목록 조회
@@ -321,6 +340,14 @@ public class RecipeService {
             throw new RuntimeException("본인이 등록한 레시피만 삭제할 수 있습니다.");
         }
 
+        recipeRepository.delete(recipe);
+    }
+
+    // 관리자용 레시피 삭제 (권한 체크 없이 삭제)
+    @Transactional
+    public void deleteRecipeByAdmin(Long id) {
+        Recipe recipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
         recipeRepository.delete(recipe);
     }
 }

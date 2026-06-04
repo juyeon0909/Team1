@@ -1,6 +1,6 @@
 import { Button, Card, Col, Container, Row } from "react-bootstrap";
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import axios from "axios";
 import type { RecipeView, RecipeDto } from '../types/Recipe';
@@ -17,6 +17,7 @@ type RecipeProps = {
 
 function RecipeMain({ user }: RecipeProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [recipes, setRecipes] = useState<RecipeView[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,7 +25,7 @@ function RecipeMain({ user }: RecipeProps) {
   const [activeCategory, setActiveCategory] = useState('전체');
   const [activeMatch, setActiveMatch] = useState('전체');
   const [activeTime, setActiveTime] = useState('전체');
-  const [urgentOnly, setUrgentOnly] = useState(false);
+  const [urgentOnly, setUrgentOnly] = useState(() => !!(location.state as any)?.urgentOnly);
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 6;
 
@@ -266,6 +267,7 @@ function RecipeMain({ user }: RecipeProps) {
             })}
           </div>
         </div>
+        
         <div className="filter-divider" />
         <div className="filter-group">
           <span className="filter-label">조리 시간</span>
@@ -277,7 +279,30 @@ function RecipeMain({ user }: RecipeProps) {
             ))}
           </div>
         </div>
+
+
+        <div className="filter-divider" />
+        <div className="filter-group">
+          <span className="filter-label">임박 재료</span>
+          <div className="filter-chips">
+            <div
+              onClick={() => { setUrgentOnly(false); setCurrentPage(1); }}
+              className={`filter-chip ${!urgentOnly ? 'active-green' : ''}`}
+            >
+              전체
+            </div>
+            <div
+              onClick={() => { setUrgentOnly(true); setCurrentPage(1); }}
+              className={`filter-chip ${urgentOnly ? 'active-match-orange' : ''}`}
+            >
+              임박재료 활용
+            </div>
+          </div>
+        </div>
       </div>
+
+      
+
       <div className="feed-content">
         <div className="recipe-grid">
           {pagedRecipes.map(r => (

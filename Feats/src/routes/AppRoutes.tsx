@@ -61,7 +61,7 @@ function App({ user, handleLoginSuccess, setUser }: AppProps) {
       <Route path="/member/passwordless-register" element={<PasswordlessRegisterPage />} />
       <Route path="/member/reset-register" element={<PasswordlessWithdrawalPage />} />
       <Route path='/admin/recipe' element={<AdminRecipe />} />
-      <Route path='/admin/recipe/:id' element={<AdminRecipeDetail />} />
+      <Route path='/admin/recipes/:id' element={<AdminRecipeDetail />} />
 
     </Routes>
   );

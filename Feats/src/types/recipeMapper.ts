@@ -16,7 +16,7 @@ export const toRecipeView = (dto: RecipeDto): RecipeView => {
     tags: [category, `${dto.cookingTime}분`],
     heart: dto.likeCount ?? 0,
     scrap: dto.scrapCount ?? 0,
-    urgent: false,
+    urgent: dto.urgent ?? false,
     isHearted: dto.hearted ?? false,
     isScrapped: dto.scrapped ?? false,
     image: dto.image ?? '',
@@ -24,6 +24,7 @@ export const toRecipeView = (dto: RecipeDto): RecipeView => {
     steps: dto.steps ?? [],
     selectIngredients: dto.selectIngredients ?? [],
     missingIngredients: dto.missingIngredients ?? [],
-    author: (dto as any).author ?? '', 
+    author: dto.author ?? '',
+    scrappedAt: dto.scrappedAt ?? '',
   };
 };

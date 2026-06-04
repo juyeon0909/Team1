@@ -174,7 +174,7 @@ const AlertBar: React.FC<AlertBarProps> = ({ ingredients, isLoggedIn }) => {
                     <span className="tag d6">임박 재료 없음</span>
                 )}
             </div>
-            <span className="alert-link" onClick={() => navigate("/recipeMain")} style={{ cursor: "pointer" }}>
+            <span className="alert-link" onClick={() => navigate("/recipeMain", { state: { urgentOnly: true } })} style={{ cursor: "pointer" }}>
                 관련 레시피 보기 →
             </span>
         </div>

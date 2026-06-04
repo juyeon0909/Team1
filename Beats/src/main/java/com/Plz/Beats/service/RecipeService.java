@@ -13,13 +13,18 @@ import com.Plz.Beats.repository.RecipeLikeRepository;
 import com.Plz.Beats.repository.RecipeRepository;
 import com.Plz.Beats.repository.ScrapRepository;
 import com.Plz.Beats.repository.ItemRepository;
+import com.Plz.Beats.repository.StorageItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,25 +38,34 @@ public class RecipeService {
     private final RecipeLikeRepository recipeLikeRepository;
     private final ScrapRepository scrapRepository;
     private final S3Service s3Service;
+    private final StorageItemRepository storageItemRepository;
 
 
     /**
-     * Recipe 엔티티를 RecipeDto로 변환하는 공통 메서드.
-     * 메인 목록 / 스크랩 목록 / 좋아요 목록이 모두 이 메서드를 재사용한다.
+     * Recipe → RecipeDto 변환 (2-파라미터). 임박 판정 없이 urgent=false.
+     * 스크랩/좋아요 목록, 상세 조회 등 임박 표시가 필요 없는 곳에서 사용.
+     */
+    public RecipeDto toDto(Recipe recipe, Member currentMember) {
+        return toDto(recipe, currentMember, Collections.emptySet());
+    }
+
+    /**
+     * Recipe → RecipeDto 변환 (3-파라미터). urgentItemIds로 임박 여부 판정.
      *
      * @param recipe        변환할 레시피
      * @param currentMember 현재 로그인 회원 (비로그인이면 null) — hearted/scrapped 판정용
+     * @param urgentItemIds 유통기한 임박(3일 이내) 재료 item.id 집합 (없으면 빈 집합)
      */
-    public RecipeDto toDto(Recipe recipe, Member currentMember) {
+    public RecipeDto toDto(Recipe recipe, Member currentMember, Set<Long> urgentItemIds) {
         RecipeDto dto = new RecipeDto();
         dto.setId(recipe.getId());
         dto.setTitle(recipe.getTitle());
         dto.setDishName(recipe.getDishName());
-        dto.setCategory(recipe.getCategory().name());   // 코드값("RAP") — 한글 변환은 프론트 담당
-        dto.setCookingTime(recipe.getCookingTime());     // 숫자
+        dto.setCategory(recipe.getCategory().name());
+        dto.setCookingTime(recipe.getCookingTime());
         dto.setDescription(recipe.getDescription());
         dto.setImage(recipe.getImage());
-        dto.setAuthor(recipe.getMember().getName());     // 작성자 이름
+        dto.setAuthor(recipe.getMember().getName());
 
         if (recipe.getCookingMethod() != null) {
             dto.setSteps(Arrays.asList(recipe.getCookingMethod().split("\n")));
@@ -76,11 +90,27 @@ public class RecipeService {
             dto.setScrapped(false);
         }
 
+        // 임박 재료가 이 레시피 재료에 하나라도 포함되면 urgent
+        boolean urgent = false;
+        if (urgentItemIds != null && !urgentItemIds.isEmpty()) {
+            urgent = recipe.getRecipeIngredients().stream()
+                    .anyMatch(ing -> ing.getItem() != null && urgentItemIds.contains(ing.getItem().getId()));
+        }
+        dto.setUrgent(urgent);
+
         return dto;
     }
 
+    // 로그인 유저의 임박 재료(유통기한 3일 이내) item.id 집합
+    private Set<Long> getUrgentItemIds(Member member) {
+        if (member == null) return Collections.emptySet();
+        LocalDate limit = LocalDate.now().plusDays(3);
+        return new HashSet<>(
+                storageItemRepository.findUrgentItemIdsByMemberEmail(member.getEmail(), limit));
+    }
 
-    // 레시피 등록 및 수정
+
+    // 레시피 등록
     @Transactional
     public RecipeDto createRecipe(RecipeDto dto, String username) {
         if ("GUEST".equals(username) || username == null) {
@@ -142,7 +172,6 @@ public class RecipeService {
         Recipe recipe = recipeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
 
-        // 본인 확인
         if (!recipe.getMember().getEmail().equals(username)) {
             throw new IllegalArgumentException("본인이 등록한 레시피만 수정할 수 있습니다.");
         }
@@ -155,14 +184,13 @@ public class RecipeService {
         recipe.setCategory(Category.valueOf(dto.getCategory()));
         recipe.setCookingTime(dto.getCookingTime());
         recipe.setDescription(dto.getDescription());
-        recipe.setApprovalStatus(ApprovalStatus.PENDING); // 수정하면 다시 승인 대기
+        recipe.setApprovalStatus(ApprovalStatus.PENDING);
         recipe.setUpdatedAt(LocalDateTime.now());
 
         if (dto.getSteps() != null && !dto.getSteps().isEmpty()) {
             recipe.setCookingMethod(String.join("\n", dto.getSteps()));
         }
 
-        // 기존 재료 전부 비우고 새로 채움 (orphanRemoval = true 라 DB에서도 삭제됨)
         recipe.getRecipeIngredients().clear();
         if (dto.getMustIngredients() != null) {
             for (RecipeDto.MustIngredientDto ingDto : dto.getMustIngredients()) {
@@ -186,7 +214,7 @@ public class RecipeService {
         return dto;
     }
 
-    // 승인된 레시피 목록 조회
+    // 승인된 레시피 목록 조회 (메인 — 임박 판정 포함)
     public List<RecipeDto> getRecipes(String username) {
         List<Recipe> recipes = recipeRepository.findByApprovalStatus(ApprovalStatus.APPROVED);
 
@@ -195,9 +223,10 @@ public class RecipeService {
             member = memberRepository.findByEmail(username).orElse(null);
         }
         final Member currentMember = member;
+        final Set<Long> urgentItemIds = getUrgentItemIds(currentMember);   // 한 번만 조회
 
         return recipes.stream()
-                .map(recipe -> toDto(recipe, currentMember))
+                .map(recipe -> toDto(recipe, currentMember, urgentItemIds))
                 .collect(Collectors.toList());
     }
 

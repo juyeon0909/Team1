@@ -357,13 +357,25 @@ axiosInstance.get<any[]>(`/product/list/${user.id}`)
                     };
                 });
 
-                // 🟢 정형화된 필드로 즉시 카운트 연산 돌입
-                setUrgentCount(processed.filter(i => i.urgency === "urgent" || i.urgency === "warning").length);
+                // setUrgentCount(processed.filter(i => i.urgency === "urgent" || i.urgency === "warning").length);
 
+                // const finalMainList = processed
+                //     .filter(i => i.urgency === "urgent" || i.urgency === "warning")
+                //     .sort((a, b) => (a.dDay ?? 0) - (b.dDay ?? 0))
+                //     .slice(0, 5);  
+                setUrgentCount(processed.filter(i => 
+                    (i.urgency === "urgent" || i.urgency === "warning") && (i.dDay !== undefined && i.dDay >= 0)
+                ).length);
+
+                
                 const finalMainList = processed
-                    .filter(i => i.urgency === "urgent" || i.urgency === "warning")
+                    .filter(i => 
+                        
+                        (i.urgency === "urgent" || i.urgency === "warning") && (i.dDay !== undefined && i.dDay >= 0)
+                    )
                     .sort((a, b) => (a.dDay ?? 0) - (b.dDay ?? 0))
-                    .slice(0, 5);  
+                    .slice(0, 5);
+
 
                 setIngredients(finalMainList);
             })

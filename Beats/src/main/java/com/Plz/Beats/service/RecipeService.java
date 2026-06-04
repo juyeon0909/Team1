@@ -17,6 +17,7 @@ import com.Plz.Beats.repository.StorageItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.Plz.Beats.constant.Role;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -39,7 +40,7 @@ public class RecipeService {
     private final ScrapRepository scrapRepository;
     private final S3Service s3Service;
     private final StorageItemRepository storageItemRepository;
-
+    private final MailService mailService;
 
     /**
      * Recipe → RecipeDto 변환 (2-파라미터). 임박 판정 없이 urgent=false.
@@ -169,13 +170,29 @@ public class RecipeService {
             throw new IllegalArgumentException("레시피 수정은 로그인 후 이용 가능합니다.");
         }
 
+        Member requester = memberRepository.findByEmail(username)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
         Recipe recipe = recipeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
 
-        if (!recipe.getMember().getEmail().equals(username)) {
+        // 관리자가 아니면 본인만 수정 가능
+        boolean isAdmin = requester.getRole() == Role.ADMIN;
+        if (!isAdmin && !recipe.getMember().getEmail().equals(username)) {
             throw new IllegalArgumentException("본인이 등록한 레시피만 수정할 수 있습니다.");
         }
 
+        // 수정전에 백업본을 변수에 복사하기
+        String beforeTitle    = recipe.getTitle();
+        String beforeCategory = recipe.getCategory().getDescription(); // 한글
+        Integer beforeTime    = recipe.getCookingTime();
+        String beforeDesc     = recipe.getDescription();
+        String beforeSteps    = recipe.getCookingMethod();
+        String beforeIngredients = recipe.getRecipeIngredients().stream()
+                .map(ing -> ing.getItem() != null ? ing.getItem().getName() : "")
+                .collect(java.util.stream.Collectors.joining(", "));
+
+        // 실제 수정 작업
         recipe.setTitle(dto.getTitle());
         recipe.setDishName(dto.getDishName() != null ? dto.getDishName() : dto.getTitle());
         if (dto.getImage() != null && !dto.getImage().isEmpty()) {
@@ -210,8 +227,61 @@ public class RecipeService {
             }
         }
 
+        // 수정 후 현재 값 저장하기
+        String afterCategory = Category.valueOf(dto.getCategory()).getDescription(); // 한글
+        String afterSteps    = recipe.getCookingMethod();
+        String afterIngredients = recipe.getRecipeIngredients().stream()
+                .map(ing -> ing.getItem() != null ? ing.getItem().getName() : "")
+                .collect(java.util.stream.Collectors.joining(", "));
+
+        // 변경 알림 보내기 (수정 유무와 관계없이 무조건 발송)
+        // 여기는 알림이라 실제 작업은 XX
+        String to = recipe.getMember().getEmail();
+        String subject = "[레시피 수정 알림] \"" + dto.getTitle() + "\" 레시피가 수정되었습니다.";
+        String body = buildRecipeDiffMail(
+                recipe.getMember().getName(),
+                beforeTitle,    dto.getTitle(),
+                beforeCategory, afterCategory,
+                beforeTime,     dto.getCookingTime(),
+                beforeDesc,     dto.getDescription(),
+                beforeSteps,    afterSteps,
+                beforeIngredients, afterIngredients
+        );
+        mailService.sendMail(to, subject, body);
+
         dto.setId(recipe.getId());
         return dto;
+    }
+
+    // 수정 전 후 비교 이메일 본문 생성
+    private String buildRecipeDiffMail(
+            String author,
+            String beforeTitle, String afterTitle,
+            String beforeCategory, String afterCategory,
+            Integer beforeTime, Integer afterTime,
+            String beforeDesc, String afterDesc,
+            String beforeSteps, String afterSteps,
+            String beforeIngredients, String afterIngredients) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(author).append("님, 등록하신 레시피가 관리자에 의해 수정되었습니다.\n");
+        sb.append("──────────────────────────────\n");
+        sb.append(field("제목", beforeTitle, afterTitle));
+        sb.append(field("카테고리", beforeCategory, afterCategory));
+        sb.append(field("조리시간", beforeTime + "분", afterTime + "분"));
+        sb.append(field("소개", beforeDesc, afterDesc));
+        sb.append(field("재료", beforeIngredients, afterIngredients));
+        sb.append(field("조리방법", beforeSteps, afterSteps));
+        return sb.toString();
+    }
+
+    private String field(String label, String before, String after) {
+        String b = (before == null || before.isBlank()) ? "(없음)" : before;
+        String a = (after == null || after.isBlank()) ? "(없음)" : after;
+        return "▶ " + label + "\n"
+                + "변경 전 : \n   " + b + "\n\n"
+                + "변경 후 : \n   " + a + "\n\n"
+                + "──────────────────────────────\n";
     }
 
     // 승인된 레시피 목록 조회 (메인 — 임박 판정 포함)

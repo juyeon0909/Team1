@@ -9,7 +9,7 @@ export const toRecipeView = (dto: RecipeDto): RecipeView => {
     category,
     categoryCode: dto.category,
     time: dto.cookingTime,
-    match: 0,
+    match: undefined,
     emoji: '🍳',
     bg: '#E1F5EE',
     desc: dto.description,

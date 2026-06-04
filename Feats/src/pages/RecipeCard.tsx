@@ -16,10 +16,10 @@ interface RecipeCardProps {
 }
 
 const getMatchBadgeClass = (match: number) => {
-  if (!match) return '';
   if (match >= 100) return 'badge-match-full';
   if (match >= 80) return 'badge-match-high';
-  return 'badge-match-mid';
+  if (match > 0) return 'badge-match-mid';
+  return 'badge-match-low';
 };
 
 const RecipeCard = ({
@@ -43,7 +43,7 @@ const RecipeCard = ({
           <span className="rc-emoji">{r.emoji}</span>
         )}
 
-        {r.match > 0 && (
+        {r.match !== undefined && (
           <span className={`rc-match-badge ${getMatchBadgeClass(r.match)}`}>
             {r.match >= 100 ? '100% 일치' : `${r.match}% 일치`}
           </span>

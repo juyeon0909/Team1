@@ -50,6 +50,7 @@
 .badge-match-full { background: #16a34a; }
 .badge-match-high { background: #6FBC44; }
 .badge-match-mid  { background: #f59e0b; }
+.badge-match-low  { background: #94a3b8; }
 
 .rc-urgent-badge {
   position: absolute;

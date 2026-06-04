@@ -49,7 +49,7 @@ export interface RecipeView {
   category: string;       // 한글 변환된 값
   categoryCode: string;   // 원본 코드 (KOR 등) — 필터링용
   time: number;           // 항상 number로 통일
-  match: number;
+  match?: number;
   emoji: string;
   bg: string;
   desc: string;

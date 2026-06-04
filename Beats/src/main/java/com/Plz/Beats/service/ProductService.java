@@ -287,6 +287,15 @@ public class ProductService {
     public void deleteMasterItem(Long id) {
 
         Item item = findMasterItemOrThrow(id);
+
+        entityManager.createQuery("DELETE FROM RecipeIngredient r WHERE r.item.id = :itemId")
+                .setParameter("itemId", id)
+                .executeUpdate();
+
+        entityManager.createQuery("DELETE FROM Storage_item s WHERE s.item.id = :itemId")
+                .setParameter("itemId", id)
+                .executeUpdate();
+
         itemRepository.delete(item);
     }
 

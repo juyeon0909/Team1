@@ -63,7 +63,6 @@ const RecipeRegister = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // axiosInstance가 토큰 자동 처리하므로 헤더 별도 설정 불필요
   useEffect(() => {
     if (!searchTarget || !searchTarget.keyword.trim()) return;
 
@@ -242,14 +241,16 @@ const RecipeRegister = () => {
           <input className="form-input" type="text" value={intro} onChange={(e) => setIntro(e.target.value)} placeholder="레시피를 한 줄로 소개해주세요" />
         </div>
 
+        {/* 필수 재료 영역 */}
         <div className="form-group">
-          <label className="form-label">필수 재료 및 용량 (g) *</label>
+          <label className="form-label">필수 재료 및 용량 *</label>
           {mustIngredients.map((item, index) => (
             <div
               key={index}
               ref={el => { dropdownRefs.current[index] = el; }}
               className="ingredient-row"
             >
+              {/* 식재료 자동완성 검색 인풋 */}
               <div className="relative-wrapper">
                 <input
                   className="form-input"
@@ -259,7 +260,9 @@ const RecipeRegister = () => {
                   placeholder="예: 두부"
                   autoComplete="off"
                 />
-                {item.showDropdown && item.searchResults.length > 0 && (
+
+                {/* 자동완성 드롭다운 리스트 */}
+                {item.showDropdown && item.searchResults && item.searchResults.length > 0 && (
                   <ul className="search-dropdown-list">
                     {item.searchResults.map((prod, pIdx) => {
                       const displayName = prod.itemName || prod.name || '이름 없음';
@@ -271,7 +274,9 @@ const RecipeRegister = () => {
                         >
                           <strong className="dropdown-item-name">{displayName}</strong>
                           {prod.category && (
-                            <span className="dropdown-item-category">{prod.category}</span>
+                            <span className="dropdown-item-category">
+                              {prod.category}
+                            </span>
                           )}
                         </li>
                       );
@@ -280,12 +285,13 @@ const RecipeRegister = () => {
                 )}
               </div>
 
+              {/* 수량/용량 인풋 */}
               <input
                 className="form-input"
                 type="text"
                 value={item.quantity}
                 onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)}
-                placeholder="숫자만 입력해주세요."
+                placeholder="예: 1모, 150g"
               />
               {mustIngredients.length > 1 && (
                 <button type="button" onClick={() => removeIngredientRow(index)} className="row-remove-btn">✕</button>

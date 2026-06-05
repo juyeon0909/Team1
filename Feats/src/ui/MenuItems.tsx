@@ -32,18 +32,19 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                      <Nav.Link onClick={() => navigate(`/`)} className="active">
                         홈
                      </Nav.Link>
-                     <Nav.Link onClick={() => navigate(`/ingredient/list`)}>재료 목록</Nav.Link>
+                     
+                     <Nav.Link onClick={() => navigate(`/admin/qna`)}>문의 관리</Nav.Link>
+
+                     <Nav.Link onClick={() => navigate(`/admin/recipe`)}>레시피 승인</Nav.Link>
+                     
                      <NavDropdown title={`레시피`}>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
-                        <NavDropdown.Item onClick={() => navigate(`/admin/recipe`)}>레시피 승인 관리</NavDropdown.Item>
                      </NavDropdown>
-                     
-
+                     <Nav.Link onClick={() => navigate(`/ingredient/list`)}>재료 목록</Nav.Link>
                   </Nav>
                   <NavDropdown className="nav-user" title={NAV_USER_LABEL}>
                      <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
-                     <NavDropdown.Item onClick={() => navigate(`/admin/qna`)}>문의 관리</NavDropdown.Item>
                      <NavDropdown.Item onClick={handleLogout}>로그아웃</NavDropdown.Item>
                   </NavDropdown>
                </>
@@ -90,13 +91,6 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
 
                      <Nav.Link onClick={() => navigate(`/member/login`)}>로그인</Nav.Link>
                   </Nav>
-                  <NavDropdown className="nav-user" title={NAV_USER_LABEL}>
-                     <NavDropdown.Item onClick={() => navigate(`/mypage/info`)}>내 정보</NavDropdown.Item>
-                     <NavDropdown.Item onClick={() => navigate(`/mypage/recipe`)}>내 레시피</NavDropdown.Item>
-                     <NavDropdown.Item onClick={() => navigate(`/mypage/like`)}>좋아요</NavDropdown.Item>
-                     <NavDropdown.Item onClick={handleLogout}>로그아웃</NavDropdown.Item>
-                  </NavDropdown>
-
                </>
             );
       }

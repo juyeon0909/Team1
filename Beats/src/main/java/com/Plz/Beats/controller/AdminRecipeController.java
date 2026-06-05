@@ -4,13 +4,15 @@ import com.Plz.Beats.dto.AdminRecipeDto;
 import com.Plz.Beats.service.RecipeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/recipes")
+@RequestMapping("/api/admin/recipes")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminRecipeController {
 
     private final RecipeService recipeService;

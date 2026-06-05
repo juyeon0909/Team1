@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import customAxios from './../api/axiosInstance';
-import { API_BASE_URL } from '../config/config';
 import '../components/MyPageRecipe.css';
 
 interface AdminRecipe {
@@ -31,7 +30,7 @@ function AdminRecipe() {
     const fetchPending = async () => {
         setLoading(true);
         try {
-            const res = await customAxios.get(`${API_BASE_URL}/admin/recipes/pending`);
+            const res = await customAxios.get('/admin/recipes/pending');
             setRecipes(res.data || []);
         } catch (e) {
             console.error('목록 불러오기 실패:', e);

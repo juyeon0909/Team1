@@ -84,7 +84,7 @@ function SignupPage() {
 
       if (response.status === 200) {
         alert("회원 가입 성공");
-        navigate("/");
+        navigate("/member/login");
       }
     } catch (error) {
       if (axiosLib.isAxiosError(error)) {

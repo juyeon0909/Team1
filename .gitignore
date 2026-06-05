@@ -35,3 +35,4 @@ Beats/.env
 
 ### local ###
 application-local.properties
+.claude/**

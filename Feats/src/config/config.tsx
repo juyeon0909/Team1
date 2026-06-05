@@ -16,7 +16,7 @@
 const API_HOST = import.meta.env.VITE_API_HOST || "localhost";
 const API_PORT = import.meta.env.VITE_API_PORT || "9000";
 
-export const API_BASE_URL = 
-  import.meta.env.MODE === 'production' 
-    ? '/api' // 배포 환경: 같은 도메인의 /api 경로 사용
-    : `http://${API_HOST}:${API_PORT}/api`; // 개발 환경: http://localhost:8081/api
+export const API_BASE_URL =
+  import.meta.env.MODE === 'production'
+    ? '/api' // 배포 환경: nginx가 /api/* → 백엔드로 프록시
+    : `http://${API_HOST}:${API_PORT}`; // 개발 환경: http://localhost:9000

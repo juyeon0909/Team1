@@ -22,7 +22,7 @@ div.ing-master-grid-container div.ing-master-item-box {
   border-radius: 10px !important;
   width: auto !important;
   box-sizing: border-box !important;
-  min-height: 125px; /* 버튼 배치 고정을 위해 카드 내부 높이 밸런싱 */
+  min-height: 125px; 
 }
 
 div.ing-master-grid-container div.ing-master-item-box:hover {

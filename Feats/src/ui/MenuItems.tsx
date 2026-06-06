@@ -1,7 +1,7 @@
 import "../components/MenuItems.css";
 import { NavDropdown, Navbar, Container, Nav } from "react-bootstrap";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import type { User } from "../types/User";
 
 /* ============================================================
@@ -19,6 +19,7 @@ type MenuItemsProps = {
 function App({ appName, user, handleLogout }: MenuItemsProps) {
    console.log('xxx 프롭스 : ' + appName);
    const navigate = useNavigate();
+   const location = useLocation();
    const USER_NAME = user?.name || "사용자";
    const NAV_USER_LABEL = user?.name?.slice(0, 2) || "사용자";
 
@@ -29,7 +30,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
             return (
                <>
                   <Nav className="nav-links">
-                     <Nav.Link onClick={() => navigate(`/`)} className="active">
+                     <Nav.Link onClick={() => navigate(`/`)} className={location.pathname === '/' ? 'active' : ''}>
                         홈
                      </Nav.Link>
                      <Nav.Link onClick={() => navigate(`/ingredient/list`)}>재료 목록</Nav.Link>
@@ -52,10 +53,10 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
             return (
                <>
                   <Nav className="nav-links">
-                     <Nav.Link onClick={() => navigate(`/`)} className="active">
+                     <Nav.Link onClick={() => navigate(`/`)} className={location.pathname === '/' ? 'active' : ''}>
                         홈
                      </Nav.Link>
-                     <Nav.Link onClick={() => navigate(`/product/insert`)}>냉장고</Nav.Link>
+                     <Nav.Link onClick={() => navigate(`/product/insert`)} className={location.pathname.startsWith('/product') ? 'active' : ''}>냉장고</Nav.Link>
                      
 
                      <NavDropdown title={`레시피`}>
@@ -63,7 +64,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
                      </NavDropdown>
 
-                     <Nav.Link onClick={() => navigate(`/recipeMain/clip`)}>스크랩</Nav.Link>
+                     <Nav.Link onClick={() => navigate(`/recipeMain/clip`)} className={location.pathname === '/recipeMain/clip' ? 'active' : ''}>스크랩</Nav.Link>
 
                   </Nav>
                   <NavDropdown className="nav-user" title={NAV_USER_LABEL}>
@@ -78,15 +79,15 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
             return (
                <>
                   <Nav className="nav-links">
-                     <Nav.Link onClick={() => navigate(`/`)} className="active">
+                     <Nav.Link onClick={() => navigate(`/`)} className={location.pathname === '/' ? 'active' : ''}>
                         홈
                      </Nav.Link>
-                     <Nav.Link onClick={() => navigate(`/product/insert`)}>냉장고</Nav.Link>
+                     <Nav.Link onClick={() => navigate(`/product/insert`)} className={location.pathname.startsWith('/product') ? 'active' : ''}>냉장고</Nav.Link>
                      <NavDropdown title={`레시피`}>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
                      </NavDropdown>
-                     <Nav.Link onClick={() => navigate(`/recipeMain/clip`)}>스크랩</Nav.Link>
+                     <Nav.Link onClick={() => navigate(`/recipeMain/clip`)} className={location.pathname === '/recipeMain/clip' ? 'active' : ''}>스크랩</Nav.Link>
 
                      <Nav.Link onClick={() => navigate(`/member/login`)}>로그인</Nav.Link>
                   </Nav>

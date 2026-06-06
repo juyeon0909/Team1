@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../api/axiosInstance'; 
+import axiosInstance from '../api/axiosInstance';
 import '../components/FridgeMain.css';
-import type { Ingredient } from '../types/Fridge.ts'; 
-import type { User } from '../types/User.ts'; 
+import type { Ingredient } from '../types/Fridge.ts';
+import type { User } from '../types/User.ts';
+import emptyFrozen from '../assets/empty-frozen.jpg';
+import emptyRefrigerated from '../assets/empty-refrigerated.jpg';
+import emptyRoom from '../assets/empty-room.jpg';
 
 const FridgeMain: React.FC = () => {
   const navigate = useNavigate();
@@ -57,7 +60,19 @@ const getExpiryClass = (urgency?: string, dDay?: number): string => {
 
 
 
-  const getShortCategory = (categoryStr?: string): string => {
+  const getRoomCountClass = (items: Ingredient[]): string => {
+    if (items.some(item => item.dDay !== undefined && item.dDay <= 0 || item.urgency === 'urgent')) return 'count-danger';
+    if (items.some(item => item.urgency === 'warning')) return 'count-warning';
+    return '';
+  };
+
+const formatDate = (dateStr?: string): string => {
+  if (!dateStr) return '';
+  const [year, month, day] = dateStr.split('-');
+  return `${year.slice(2)}.${month}.${day}`;
+};
+
+const getShortCategory = (categoryStr?: string): string => {
     if (!categoryStr) return '기'; 
     return categoryStr.trim().charAt(0);
   };
@@ -135,7 +150,7 @@ const expiredItems = sortIngredients(filteredIngredients.filter(item => {
           <span className="search-icon"></span>
           <input 
             type="text" 
-            placeholder={currentUser ? "보관 중인 재료를 검색해보세요" : "로그인 후 검색이 가능합니다"} 
+            placeholder={currentUser ? "나의 냉장고 속 재료를 검색해 보세요" : "로그인 후 검색이 가능합니다"} 
             value={searchTerm} 
             onChange={(e) => setSearchTerm(e.target.value)} 
             className="storage-search-input" 
@@ -153,7 +168,7 @@ const expiredItems = sortIngredients(filteredIngredients.filter(item => {
         {/* 냉동 보관실 */}
         <div className="storage-room-card">
           <div className="room-header frozen-theme room-header-flex">
-            <span className="room-emoji"></span><h3 className="room-title">냉동</h3><span className="room-count">{currentUser ? frozenItems.length : 0}</span>
+            <span className="room-emoji"></span><h3 className="room-title" data-tooltip="-18°C 이하">냉동</h3><span className={`room-count ${getRoomCountClass(frozenItems)}`}>{currentUser ? frozenItems.length : 0}</span>
             {renderSortSelect(froSort, setFroSort)}
           </div>
           <div className="room-list-scroll">
@@ -161,7 +176,10 @@ const expiredItems = sortIngredients(filteredIngredients.filter(item => {
             {!currentUser ? (
               <p className="empty-item-text" style={{ color: "#94a3b8", fontWeight: "700" }}>로그인 후 이용 가능합니다.</p>
             ) : frozenItems.length === 0 ? (
-              <p className="empty-item-text">재료가 없습니다.</p>
+              <div className="empty-item-container">
+                <p className="empty-item-text">냉동 재료를<br/>등록해보세요.</p>
+                <img src={emptyFrozen} alt="냉동 재료 없음" className="empty-item-image" />
+              </div>
             ) : frozenItems.map((item) => {
               const finalName = item.itemName || item.name || '이름 없음';
               return (
@@ -170,7 +188,7 @@ const expiredItems = sortIngredients(filteredIngredients.filter(item => {
                   <span className="item-badge-short">{getShortCategory(item.category)}</span>
                   <span className="item-quantity">{item.quantity}g</span>
                   {/* <span className="item-expiry item-expiry-wrapper">{item.expirationdate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span> */}
-                  <span className="item-expiry item-expiry-wrapper">{item.expirationDate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
+                  <span className="item-expiry item-expiry-wrapper">{formatDate(item.expirationDate)}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
                 </div>
               );
             })}
@@ -180,7 +198,7 @@ const expiredItems = sortIngredients(filteredIngredients.filter(item => {
         {/* 냉장 보관실 */}
         <div className="storage-room-card">
           <div className="room-header refrigerated-theme room-header-flex">
-            <span className="room-emoji"></span><h3 className="room-title">냉장</h3><span className="room-count">{currentUser ? refrigeratedItems.length : 0}</span>
+            <span className="room-emoji"></span><h3 className="room-title" data-tooltip="0~10°C">냉장</h3><span className={`room-count ${getRoomCountClass(refrigeratedItems)}`}>{currentUser ? refrigeratedItems.length : 0}</span>
             {renderSortSelect(refSort, setRefSort)}
           </div>
           <div className="room-list-scroll">
@@ -188,7 +206,10 @@ const expiredItems = sortIngredients(filteredIngredients.filter(item => {
             {!currentUser ? (
               <p className="empty-item-text" style={{ color: "#94a3b8", fontWeight: "700" }}>로그인 후 이용 가능합니다.</p>
             ) : refrigeratedItems.length === 0 ? (
-              <p className="empty-item-text">재료가 없습니다.</p>
+              <div className="empty-item-container">
+                <p className="empty-item-text">냉장 재료를<br/>등록해보세요.</p>
+                <img src={emptyRefrigerated} alt="냉장 재료 없음" className="empty-item-image" />
+              </div>
             ) : refrigeratedItems.map((item) => {
               const finalName = item.itemName || item.name || '이름 없음';
               return (
@@ -197,7 +218,7 @@ const expiredItems = sortIngredients(filteredIngredients.filter(item => {
                   <span className="item-badge-short">{getShortCategory(item.category)}</span>
                   <span className="item-quantity">{item.quantity}g</span>
                   {/* <span className="item-expiry item-expiry-wrapper">{item.expirationdate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span> */}
-                  <span className="item-expiry item-expiry-wrapper">{item.expirationDate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
+                  <span className="item-expiry item-expiry-wrapper">{formatDate(item.expirationDate)}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
                 </div>
               );
             })}
@@ -207,7 +228,7 @@ const expiredItems = sortIngredients(filteredIngredients.filter(item => {
         {/* 상온 보관실 */}
         <div className="storage-room-card">
           <div className="room-header room-theme room-header-flex">
-            <span className="room-emoji"></span><h3 className="room-title">상온</h3><span className="room-count">{currentUser ? roomItems.length : 0}</span>
+            <span className="room-emoji"></span><h3 className="room-title" data-tooltip="15~25°C">상온</h3><span className={`room-count ${getRoomCountClass(roomItems)}`}>{currentUser ? roomItems.length : 0}</span>
             {renderSortSelect(roomSort, setRoomSort)}
           </div>
           <div className="room-list-scroll">
@@ -215,7 +236,10 @@ const expiredItems = sortIngredients(filteredIngredients.filter(item => {
             {!currentUser ? (
               <p className="empty-item-text" style={{ color: "#94a3b8", fontWeight: "700" }}>로그인 후 이용 가능합니다.</p>
             ) : roomItems.length === 0 ? (
-              <p className="empty-item-text">재료가 없습니다.</p>
+              <div className="empty-item-container">
+                <p className="empty-item-text">상온 재료를<br/>등록해보세요.</p>
+                <img src={emptyRoom} alt="상온 재료 없음" className="empty-item-image" />
+              </div>
             ) : roomItems.map((item) => {
               const finalName = item.itemName || item.name || '이름 없음';
               return (
@@ -224,7 +248,7 @@ const expiredItems = sortIngredients(filteredIngredients.filter(item => {
                   <span className="item-badge-short">{getShortCategory(item.category)}</span>
                   <span className="item-quantity">{item.quantity}g</span>
                   {/* <span className="item-expiry item-expiry-wrapper">{item.expirationdate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span> */}
-                  <span className="item-expiry item-expiry-wrapper">{item.expirationDate}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
+                  <span className="item-expiry item-expiry-wrapper">{formatDate(item.expirationDate)}<button onClick={(e) => handleDelete(item.id, finalName, e)} className="btn-delete-small">✕</button></span>
                 </div>
               );
             })}

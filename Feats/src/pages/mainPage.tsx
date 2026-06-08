@@ -9,6 +9,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import M1 from '../assets/M1.jpg';
 import M2 from '../assets/M2.jpg';
 import M3 from '../assets/M3.jpg';
+import RecipeCard from '../pages/RecipeCard';
+
 
 
 const CATEGORIES = ["전체", "한식", "양식", "일식", "중식", "간식", "야식", "다이어트", "밀프랩"] as const;
@@ -24,10 +26,11 @@ interface HeroCardProps {
     urgentCount: number;
     recommendRecipe: number;
     popularRecipe?: any;
+    ScrapRecipe?: any;
     urgentRecipe?: any;
 }
 
-const HeroCard: React.FC<HeroCardProps> = ({ userName, popularRecipe, urgentRecipe }) => {
+const HeroCard: React.FC<HeroCardProps> = ({ userName, popularRecipe,ScrapRecipe, urgentRecipe }) => {
     const navigate = useNavigate();
     const detailView = (id: number) => navigate(`/recipeMain/${id}`);
 
@@ -47,36 +50,64 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, popularRecipe, urgentReci
                 </div>
             </Carousel.Item>
 
-            {/* 슬라이드 2: 가장 인기 많은 레시피 — 항상 렌더링, 데이터 있을 때만 내용 표시 */}
+            {/* 슬라이드 2: 가장 좋아요 많은 레시피 — 항상 렌더링, 데이터 있을 때만 내용 표시 */}
             <Carousel.Item
                 style={{ cursor: popularRecipe ? 'pointer' : 'default' }}
                 onClick={popularRecipe ? () => detailView(popularRecipe.id) : undefined}
-            >
-                {popularRecipe?.image ? (
-                    <img className="hero-slide-img" src={popularRecipe.image} alt={popularRecipe.title} />
-                ) : (
-                    <div className="hero-slide-bg hero-bg-popular" />
-                )}
+            >{popularRecipe?.image ? (
+                 <div className="hero-slide-bg hero-bg-greeting">
+                     <img className="hero-greeting-img" src={popularRecipe.image} alt={popularRecipe.title} />
+                 </div>
+             ) : (
+                 <div className="hero-slide-bg hero-bg-greeting" />
+             )}
                 {popularRecipe && (
                     <Carousel.Caption>
-                        <p className="hero-caption-label">지금 가장 인기 있는 레시피</p>
+                        <p className="hero-caption-label">지금 가장 좋아요 많은 레시피</p>
                         <h3>{popularRecipe.title}</h3>
                         <p>
                             {popularRecipe.description && <> &nbsp;·&nbsp; {truncate(popularRecipe.description)}</>}
+                        </p>
+
+
+                    </Carousel.Caption>
+                )}
+            </Carousel.Item>
+
+
+             {/* 슬라이드 : 가장 스크랩 많은 레시피 — 항상 렌더링, 데이터 있을 때만 내용 표시 */}
+            <Carousel.Item
+                style={{ cursor: ScrapRecipe ? 'pointer' : 'default' }}
+                onClick={ScrapRecipe ? () => detailView(ScrapRecipe.id) : undefined}
+            >{ScrapRecipe?.image ? (
+                 <div className="hero-slide-bg hero-bg-greeting">
+                     <img className="hero-greeting-img" src={ScrapRecipe.image} alt={ScrapRecipe.title} />
+                 </div>
+             ) : (
+                 <div className="hero-slide-bg hero-bg-greeting" />
+             )}
+                {ScrapRecipe && (
+                    <Carousel.Caption>
+                        <p className="hero-caption-label">지금 가장 스크랩 많은 레시피</p>
+                        <h3>{ScrapRecipe.title}</h3>
+                        <p>
+                            {ScrapRecipe.description && <> &nbsp;·&nbsp; {truncate(ScrapRecipe.description)}</>}
                         </p>
                     </Carousel.Caption>
                 )}
             </Carousel.Item>
 
-            {/* 슬라이드 3: 임박 재료 레시피 — 항상 렌더링, 데이터 있을 때만 내용 표시 */}
+            {/* 슬라이드 4: 임박 재료 레시피 — 항상 렌더링, 데이터 있을 때만 내용 표시 */}
             <Carousel.Item
                 style={{ cursor: urgentRecipe ? 'pointer' : 'default' }}
                 onClick={urgentRecipe ? () => detailView(urgentRecipe.id) : undefined}
             >
                 {urgentRecipe?.image ? (
-                    <img className="hero-slide-img" src={urgentRecipe.image} alt={urgentRecipe.title} />
+                    <div className="hero-slide-img hero-bg-greeting" >
+                    <img className="hero-greeting-img" src={urgentRecipe.image} alt={urgentRecipe.title} />
+                    </div>
                 ) : (
-                    <div className="hero-slide-bg hero-bg-urgent" />
+                    <div className="hero-slide-bg hero-bg-greeting" />
                 )}
                 {urgentRecipe && (
                     <Carousel.Caption>
@@ -89,6 +120,11 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, popularRecipe, urgentReci
         </Carousel>
     );
 };
+
+
+
+
+
 
 // ─── 하위 컴포넌트 2: 유통기한 알림 띠 바 ──────────────────────────────────────
 interface AlertBarProps {
@@ -511,6 +547,12 @@ const MainPage: React.FC = () => {
         ? [...recipes].sort((a, b) => (b.heart ?? b.likeCount ?? 0) - (a.heart ?? a.likeCount ?? 0))[0]
         : null;
 
+
+     const ScrapRecipe = recipes.length > 0
+        ? [...recipes].sort((a, b) => (b.scrap ?? b.scrapCount ?? 0) - (a.scrap ?? a.scrapCount ?? 0))[0]
+        : null;
+
+
     // 임박 재료 이름과 레시피 재료를 매칭해 찾은 레시피 1개
     const urgentIngredientNames = ingredients.map((i) =>
         (i.itemName || i.name || "").toLowerCase().trim()
@@ -536,6 +578,7 @@ const MainPage: React.FC = () => {
                     urgentCount={urgentCount}
                     recommendRecipe={recommendRecipe}
                     popularRecipe={popularRecipe}
+                    ScrapRecipe={ScrapRecipe}
                     urgentRecipe={urgentRecipe}
                 />
                 {isUser && (

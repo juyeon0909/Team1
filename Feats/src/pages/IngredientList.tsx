@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom"; 
 import axiosInstance from "../api/axiosInstance";
 import "../components/IngredientList.css"; 
@@ -59,6 +59,15 @@ const IngredientList: React.FC = () => {
         loadInitialData();
     }, [navigate]);
 
+
+    const unclassifiedItems = useMemo(() => {
+        return items.filter((item) => {
+            const hasNoCategory = !item.category || item.category.trim() === "" || item.category === "미분류";
+            const sType = (item.storageType || (item as any).type || "").toUpperCase();
+            const hasNoStorage = !sType || sType === "UNKNOWN" || sType === "";
+            return hasNoCategory || hasNoStorage;
+        });
+    }, [items]);
     
     const handleAdminRegister = (e: React.FormEvent) => { 
         e.preventDefault();
@@ -143,6 +152,63 @@ const IngredientList: React.FC = () => {
                     </div>
                 )}
 
+                {isAdmin && unclassifiedItems.length > 0 && (
+                    <div className="section-card" style={{ padding: "24px", backgroundColor: "#ffffff", borderRadius: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
+                        <div className="ing-master-header-margin" style={{ borderColor: "#e2e8f0" }}>
+                            <span style={{ fontSize: "20px", fontWeight: "800", color: "#000000" }}>
+                                카테고리 및 보관 방식 미지정 식재료 검토 필요 ({unclassifiedItems.length}종)
+                            </span>
+                        </div>
+                        
+                        {/* 하단 사전과 100% 동일한 그리드 및 !important 계층 스타일 주입 */}
+                        <div className="ing-master-grid-container" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "12px", width: "100%" }}>
+                            {unclassifiedItems.map((item) => {
+                                const isEditing = editingId === item.id;
+                                const currentName = item.itemName || item.name || "이름 없음";
+                                const sType = (item.storageType || (item as any).type || "").toUpperCase();
+
+                                return (
+                                    <div className="ing-master-item-box" key={item.id}>
+                                        {isEditing ? (
+                                            <div style={{ display: "flex", flexDirection: "column", gap: "6px", width: "100%" }}>
+                                                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} style={{ width: "100%", padding: "4px", fontSize: "13px", border: "1px solid #6fbc44", borderRadius: "4px" }} />
+                                                <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)} style={{ padding: "4px", fontSize: "12px", borderRadius: "4px" }}>
+                                                    {dbCategories.map((cat, idx) => <option key={idx} value={cat}>{cat}</option>)}
+                                                </select>
+                                                <select value={editStorage} onChange={(e) => setEditStorage(e.target.value)} style={{ padding: "4px", fontSize: "12px", borderRadius: "4px" }}>
+                                                    <option value="refrigerated">냉장</option>
+                                                    <option value="frozen">냉동</option>
+                                                    <option value="room">실온</option>
+                                                </select>
+                                                <div style={{ display: "flex", gap: "4px", marginTop: "4px" }}>
+                                                    <button onClick={() => handleUpdateSubmit(item.id)} style={{ flex: 1, backgroundColor: "#6fbc44", color: "#fff", border: "none", padding: "4px", borderRadius: "4px", fontSize: "11px", cursor: "pointer", fontWeight: "bold" }}>저장</button>
+                                                    <button onClick={() => setEditingId(null)} style={{ flex: 1, backgroundColor: "#94a3b8", color: "#fff", border: "none", padding: "4px", borderRadius: "4px", fontSize: "11px", cursor: "pointer", fontWeight: "bold" }}>취소</button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div className="ing-master-text-name">{currentName}</div>
+                                                <div className="ing-master-badge-row">
+                                                    <span className="ing-master-label cat" style={{ color: "#e11d48", borderColor: "#fecdd3", backgroundColor: "#fff5f5" }}>{item.category || "미분류"}</span>
+                                                    <span className="ing-master-label store">
+                                                        {sType === "ROOM_TEMP" || sType === "실온" ? "실온" : 
+                                                         sType === "FROZEN" || sType === "냉동" ? "냉동" : "냉장"}
+                                                    </span>
+                                                </div>
+                                                <div className="master-admin-action-row">
+                                                    <button onClick={() => startEdit(item)} className="master-action-btn-edit">분류하기</button>
+                                                    <button onClick={() => handleDeleteClick(item.id, currentName)} className="master-action-btn-delete">삭제</button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+
                 {/* 전체 식재료 사전 카드 영역 */}
                 <div className="section-card" style={{ padding: "24px", backgroundColor: "#ffffff", borderRadius: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
                     <div className="ing-master-header-margin">
@@ -184,7 +250,7 @@ const IngredientList: React.FC = () => {
                     <div className="ing-master-badge-row">
                         <span className="ing-master-label cat">{item.category || "미분류"}</span>
                         <span className="ing-master-label store">
-                            {/* 🟢 불필요한 한글/영어 혼용 조건문을 싹 밀어버리고 깔끔하게 매핑 */}
+                          
                             {sType === "ROOM_TEMP" || sType === "실온" ? "실온" : 
                              sType === "FROZEN" || sType === "냉동" ? "냉동" : "냉장"}
                         </span>

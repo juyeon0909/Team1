@@ -53,75 +53,70 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, popularRecipe,ScrapRecipe
             </Carousel.Item>
 
             {/* 슬라이드 2: 가장 좋아요 많은 레시피 — 항상 렌더링, 데이터 있을 때만 내용 표시 */}
-            <Carousel.Item
-                style={{ cursor: popularRecipe ? 'pointer' : 'default' }}
-                onClick={popularRecipe ? () => detailView(popularRecipe.id) : undefined}
-            >{popularRecipe?.image ? (
-                 <div className="hero-slide-bg hero-bg-greeting">
-                     <img className="hero-greeting-img" src={popularRecipe.image} alt={popularRecipe.title} />
-                 </div>
-             ) : (
-                 <div className="hero-slide-bg hero-bg-greeting" />
-             )}
-                {popularRecipe && (
-                    <Carousel.Caption>
-                        <p className="hero-caption-label">지금 가장 좋아요 많은 레시피</p>
-                        <h3>{popularRecipe.title}</h3>
-                        <p>
-                            {popularRecipe.description && <> &nbsp;·&nbsp; {truncate(popularRecipe.description)}</>}
-                        </p>
+                 <Carousel.Item
+                           style={{ cursor: popularRecipe ? 'pointer' : 'default' }}
+                           onClick={popularRecipe ? () => detailView(popularRecipe.id) : undefined}
+                       >
+                           {popularRecipe?.image ? (
+                               <img className="hero-slide-img" src={popularRecipe.image} alt={popularRecipe.title} />
+                           ) : (
+                               <div className="hero-slide-bg hero-bg-popular" />
+                           )}
+                           {popularRecipe && (
+                               <Carousel.Caption>
+                                   <p className="hero-caption-label">지금 가장 좋아요 많은 레시피</p>
+                                   <h3>{popularRecipe.title}</h3>
+                                   <p>
+                                       {popularRecipe.description && <> &nbsp;·&nbsp; {truncate(popularRecipe.description)}</>}
+                                   </p>
 
 
-                    </Carousel.Caption>
-                )}
-            </Carousel.Item>
-
+                               </Carousel.Caption>
+                           )}
+                       </Carousel.Item>
 
              {/* 슬라이드 : 가장 스크랩 많은 레시피 — 항상 렌더링, 데이터 있을 때만 내용 표시 */}
-            <Carousel.Item
-                style={{ cursor: ScrapRecipe ? 'pointer' : 'default' }}
-                onClick={ScrapRecipe ? () => detailView(ScrapRecipe.id) : undefined}
-            >{ScrapRecipe?.image ? (
-                 <div className="hero-slide-bg hero-bg-greeting">
-                     <img className="hero-greeting-img" src={ScrapRecipe.image} alt={ScrapRecipe.title} />
-                 </div>
-             ) : (
-                 <div className="hero-slide-bg hero-bg-greeting" />
-             )}
-                {ScrapRecipe && (
-                    <Carousel.Caption>
-                        <p className="hero-caption-label">지금 가장 스크랩 많은 레시피</p>
-                        <h3>{ScrapRecipe.title}</h3>
-                        <p>
-                            {ScrapRecipe.description && <> &nbsp;·&nbsp; {truncate(ScrapRecipe.description)}</>}
-                        </p>
-                    </Carousel.Caption>
-                )}
-            </Carousel.Item>
+                        <Carousel.Item
+                            style={{ cursor: ScrapRecipe ? 'pointer' : 'default' }}
+                            onClick={ScrapRecipe ? () => detailView(ScrapRecipe.id) : undefined}
+                        >
+                            {ScrapRecipe?.image ? (
+                                <img className="hero-slide-img" src={ScrapRecipe.image} alt={ScrapRecipe.title} />
+                            ) : (
+                                <div className="hero-slide-bg hero-bg-scrap" />
+                            )}
+                            {ScrapRecipe && (
+                                <Carousel.Caption>
+                                    <p className="hero-caption-label">지금 가장 스크랩 많은 레시피</p>
+                                    <h3>{ScrapRecipe.title}</h3>
+                                    <p>
+                                        {ScrapRecipe.description && <> &nbsp;·&nbsp; {truncate(ScrapRecipe.description)}</>}
+                                    </p>
+                                </Carousel.Caption>
+                            )}
+                        </Carousel.Item>
 {/*커밋   */}
             {/* 슬라이드 4: 임박 재료 레시피 — 항상 렌더링, 데이터 있을 때만 내용 표시 */}
-            <Carousel.Item
-                style={{ cursor: urgentRecipe ? 'pointer' : 'default' }}
-                onClick={urgentRecipe ? () => detailView(urgentRecipe.id) : undefined}
-            >
-                {urgentRecipe?.image ? (
-                    <div className="hero-slide-img hero-bg-greeting" >
-                    <img className="hero-greeting-img" src={urgentRecipe.image} alt={urgentRecipe.title} />
-                    </div>
-                ) : (
-                    <div className="hero-slide-bg hero-bg-greeting" />
-                )}
-                {urgentRecipe && (
-                    <Carousel.Caption>
-                        <p className="hero-caption-label">임박 재료로 만들 수 있어요</p>
-                        <h3>{urgentRecipe.title}</h3>
-                        <p>{truncate(urgentRecipe.description)}</p>
-                    </Carousel.Caption>
-                )}
-            </Carousel.Item>
-        </Carousel>
-    );
-};
+             <Carousel.Item
+                            style={{ cursor: urgentRecipe ? 'pointer' : 'default' }}
+                            onClick={urgentRecipe ? () => detailView(urgentRecipe.id) : undefined}
+                        >
+                            {urgentRecipe?.image ? (
+                                <img className="hero-slide-img" src={urgentRecipe.image} alt={urgentRecipe.title} />
+                            ) : (
+                                <div className="hero-slide-bg hero-bg-urgent" />
+                            )}
+                            {urgentRecipe && (
+                                <Carousel.Caption>
+                                    <p className="hero-caption-label">임박 재료로 만들 수 있어요</p>
+                                    <h3>{urgentRecipe.title}</h3>
+                                    <p>{truncate(urgentRecipe.description)}</p>
+                                </Carousel.Caption>
+                            )}
+                        </Carousel.Item>
+                    </Carousel>
+                );
+            };
 
 
 
@@ -465,7 +460,8 @@ const MainPage: React.FC = () => {
 
     useEffect(() => {
             const stored = localStorage.getItem("user");
-            if (!stored) return;
+            const token = localStorage.getItem("accessToken");
+            if (!stored || !token) return;
 
             let user: User;
             try {

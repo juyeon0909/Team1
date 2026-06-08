@@ -96,7 +96,7 @@ function AdminRecipeDetail() {
                 <div className="grid-two-columns">
                     <div>
                         <label className="form-label">카테고리</label>
-                        <input className="form-input" type="text" value={categoryReverseMap[recipe.category] || recipe.category} readOnly style={{ background: '#f8f8f8', cursor: 'default' }} />
+                        <input className="form-input" type="text" value={CATEGORY_DECODER[recipe.category] || recipe.category} readOnly style={{ background: '#f8f8f8', cursor: 'default' }} />
                     </div>
                     <div>
                         <label className="form-label">조리 시간 (단위 : 분)</label>

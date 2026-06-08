@@ -41,6 +41,8 @@
 .hero-greeting-title { font-size: 1.8rem; font-weight: 700;       line-height: 1.4; }
 .hero-greeting-desc  { font-size: 0.9rem; margin-top: 0.75rem;    opacity: 0.85; }
 .hero-caption-label  { font-size: 0.8rem; margin-bottom: 0.25rem; opacity: 0.9; }
+/*배너 이미지*/
+.hero-greeting-img { width:50%; height:60%; }
 
 /* ── ALERT BAR ── */
 .alert-bar {
@@ -107,6 +109,50 @@
 .recipe-match.match-rate { color: #6fbc44; font-weight: bold; }
 .recipe-match.heart-count { color: #ef4444; }
 
+/* Admin Qna, Recipe 부분  */
+.admin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-top: 32px;
+}
+
+@media (max-width: 960px) {
+  .bottom-grid,
+  .admin-grid { grid-template-columns: 1fr; }
+}
+
+.qna-item,
+.admin-recipe-item {
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+  background: var(--green-pale); border-radius: 14px;
+  border: 1px solid var(--green-light); transition: transform 0.15s;
+  cursor: pointer;}
+.qna-item:hover,
+.admin-recipe-item:hover { transform: translateX(3px); }
+.admin-qna-list,
+.admin-recipe-list { display: flex; flex-direction: column; gap: 14px; }
+.qna-info,
+.admin-recipe-item .recipe-info { flex: 1; }
+.qna-title,
+.admin-recipe-item .recipe-title {
+  font-size: 15px; font-weight: 700; color: var(--text-dark);
+}
+.qna-sub,
+.admin-recipe-item .recipe-sub {
+  font-size: 12.5px; font-weight: 400; color: var(--text-light); margin-top: 1px;
+}
+.status-badge {
+  font-size: 11px; font-weight: 700; border-radius: 8px;
+  padding: 3px 9px; flex-shrink: 0;
+}
+.status-badge.waiting   { background: #fff3cd; color: #b8860b; }  /* 접수중 */
+.status-badge.completed { background: var(--green-light); color: var(--green-dark); }  /* 완료 */
+.admin-recipe-item .recipe-thumb {
+  width: 52px; height: 52px; border-radius: 14px;
+  object-fit: cover; flex-shrink: 0;
+}
+
 /* ── 빈 상태 메시지 ── */
 .empty-message { text-align: center; color: #999; padding: 1rem; }
 .empty-message.lg { padding: 2rem; }
@@ -130,3 +176,4 @@
   .imf-main .carousel-item { height: 260px; }
   .hero-greeting-title { font-size: 1.3rem; }
 }
+

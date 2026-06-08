@@ -140,7 +140,7 @@ function AdminRecipeDetail() {
                     />
                 </div>
 
-
+                
 
                 {/* 조리 방법 */}
                 {recipe.cookingMethod && (

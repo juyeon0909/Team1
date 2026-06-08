@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import axiosInstance from "../api/axiosInstance";
 import type { Ingredient } from "../types/Fridge.ts";
 import type { User } from "../types/User.ts";
+import { API_BASE_URL } from "../config/config";
 import "../components/mainPage.css";
 import Carousel from "react-bootstrap/esm/Carousel";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -425,7 +427,7 @@ const MainPage: React.FC = () => {
     useEffect(() => {
         const fetchMainRecipes = async () => {
             try {
-                const response = await axiosInstance.get<any[]>('/recipeMain');
+                const response = await axios.get<any[]>(`${API_BASE_URL}/recipeMain`);
                 let mapped = (response.data || []).map((r: any) => ({
                     ...r,
                     title: r.title || r.name || "이름 없는 레시피",

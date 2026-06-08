@@ -96,7 +96,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, popularRecipe,ScrapRecipe
                     </Carousel.Caption>
                 )}
             </Carousel.Item>
-
+{/*커밋   */}
             {/* 슬라이드 4: 임박 재료 레시피 — 항상 렌더링, 데이터 있을 때만 내용 표시 */}
             <Carousel.Item
                 style={{ cursor: urgentRecipe ? 'pointer' : 'default' }}

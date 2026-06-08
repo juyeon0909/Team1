@@ -33,18 +33,20 @@
   object-fit: cover;
 }
 
+
+/*배너 이미지*/
+.hero-greeting-img { width:50%; height:60%; }
+
 .hero-bg-greeting { background: linear-gradient(135deg, #6fbc44 0%, #3a8f1f 100%); }
-.hero-bg-popular  { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
-.hero-bg-urgent   { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+.hero-bg-urgent   { background: linear-gradient(135deg, #6fbc44 0%, #3a8f1f 100%); }
 
 .hero-greeting-sub   { font-size: 1rem;   margin-bottom: 0.5rem;  opacity: 0.9; }
 .hero-greeting-title { font-size: 1.8rem; font-weight: 700;       line-height: 1.4; }
 .hero-greeting-desc  { font-size: 0.9rem; margin-top: 0.75rem;    opacity: 0.85; }
-.hero-caption-label  { font-size: 0.8rem; margin-bottom: 0.25rem; opacity: 0.9; }
-/*배너 이미지*/
-.hero-greeting-img { width:50%; height:60%; }
+.hero-caption-label  { font-size: 2.2rem; font-weight: 450; margin-top: 0.75rem; opacity: 0.9; }
 
-/* ── ALERT BAR ── */
+
+/* ── ALERT BAR ── 커밋 */
 .alert-bar {
   background: #fff5f5; border: 1px solid #fdd; border-radius: 14px; padding: 12px 20px;
   display: flex; align-items: center; gap: 12px; font-size: 13.5px;

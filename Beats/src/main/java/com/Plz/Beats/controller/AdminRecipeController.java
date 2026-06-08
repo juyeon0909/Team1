@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/recipes")
+@RequestMapping("/api/admin/recipes")
 @RequiredArgsConstructor
 public class AdminRecipeController {
 

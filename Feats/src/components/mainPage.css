@@ -50,7 +50,7 @@
 }
 .alert-bar .label { color: var(--text-mid); font-weight: 500; white-space: nowrap; }
 .tags { display: flex; gap: 8px; flex-wrap: wrap; }
-.tag { border-radius: 20px; padding: 4px 12px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.tag { border-radius: 20px; padding: 4px 12px; font-size: 12.5px; font-weight: 400; white-space: nowrap; }
 .tag.d1 { background: #ffe0e0; color: #c0392b; }
 .tag.d5, .tag.d6 { background: #fff3cd; color: #b8860b; }
 .alert-link { margin-left: auto; color: var(--green-dark); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; cursor: pointer; }
@@ -76,11 +76,11 @@
   background: var(--green-pale); border-radius: 14px; border: 1px solid var(--green-light); transition: transform 0.15s;
 }
 .ingredient-item:hover { transform: translateX(3px); }
-.dday-badge { font-size: 11px; font-weight: 700; border-radius: 8px; padding: 3px 9px; flex-shrink: 0; }
+.dday-badge { font-size: 11px; font-weight: 400; border-radius: 8px; padding: 3px 9px; flex-shrink: 0; }
 .dday-badge.urgent { background: #ffe0e0; color: #c0392b; }
 .dday-badge.warning { background: #fff3cd; color: #b8860b; }
 .ingredient-info { flex: 1; }
-.ingredient-name { font-size: 15px; font-weight: 700; color: var(--text-dark); }
+.ingredient-name { font-size: 15px; font-weight: 400; color: var(--text-dark); }
 .ingredient-qty { font-size: 12.5px; font-weight: 400; color: var(--text-light); margin-top: 1px; }
 .ingredient-where { font-size: 12px; color: var(--text-light); background: white; border: 1px solid var(--border); border-radius: 8px; padding: 2px 8px; flex-shrink: 0; }
 
@@ -100,11 +100,11 @@
 .recipe-item:hover { border-color: var(--green); box-shadow: 0 2px 12px rgba(100, 180, 100, 0.15); transform: translateY(-1px); }
 .recipe-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
 .recipe-info { flex: 1; }
-.recipe-name { font-size: 14.5px; font-weight: 700; color: var(--text-dark); margin-bottom: 3px; }
+.recipe-name { font-size: 14.5px; font-weight: 400; color: var(--text-dark); margin-bottom: 3px; }
 .recipe-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .recipe-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--green-light); color: var(--green-dark); }
 .recipe-match { font-size: 12px; font-weight: 700; color: var(--green-dark); background: var(--green-light); border-radius: 8px; padding: 4px 10px; flex-shrink: 0; }
-.recipe-match.match-rate { color: #6fbc44; font-weight: bold; }
+.recipe-match.match-rate { color: #6fbc44; font-weight: 400; }
 .recipe-match.heart-count { color: #ef4444; }
 
 /* ── 빈 상태 메시지 ── */

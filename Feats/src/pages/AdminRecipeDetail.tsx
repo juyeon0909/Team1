@@ -1,26 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import customAxios from './../api/axiosInstance';
+import { API_BASE_URL } from '../config/config';
+import { CATEGORY_DECODER } from '../types/Recipe';
+import type { AdminRecipeDetailData } from '../types/Admin';
 import '../components/RecipeRegister.css';
 
-interface AdminRecipeDetailData {
-    id: number;
-    title: string;
-    category: string;
-    cookingTime: number;
-    description: string;
-    authorName: string;
-    authorEmail: string;
-     ingredients: { name: string; quantity: string }[];
-    registeredAt: string;
-    image?: string;
-    cookingMethod?: string;
-}
-
-const categoryReverseMap: Record<string, string> = {
-    KOR: '한식', YANG: '양식', JAN: '일식', CHN: '중식',
-    GAN: '간식', YA: '야식', DIET: '다이어트', RAP: '밀프랩'
-};
 
 function AdminRecipeDetail() {
     const { id } = useParams<{ id: string }>();
@@ -32,7 +17,7 @@ function AdminRecipeDetail() {
     useEffect(() => {
         const fetchDetail = async () => {
             try {
-                const res = await customAxios.get(`/admin/recipes/${id}`);
+                const res = await customAxios.get(`${API_BASE_URL}/admin/recipes/${id}`);
                 setRecipe(res.data);
             } catch (e) {
                 console.error('레시피 불러오기 실패:', e);
@@ -49,7 +34,7 @@ function AdminRecipeDetail() {
         if (!window.confirm('이 레시피를 승인하시겠습니까?')) return;
         setSubmitting(true);
         try {
-            await customAxios.post(`/admin/recipes/${id}/approve`);
+            await customAxios.post(`${API_BASE_URL}/admin/recipes/${id}/approve`);
             alert('승인되었습니다.');
             navigate('/admin/recipe');
         } catch {
@@ -63,7 +48,7 @@ function AdminRecipeDetail() {
         if (!window.confirm('이 레시피를 거절하시겠습니까?')) return;
         setSubmitting(true);
         try {
-            await customAxios.post(`/admin/recipes/${id}/reject`);
+            await customAxios.post(`${API_BASE_URL}/admin/recipes/${id}/reject`);
             alert('거절되었습니다.');
             navigate('/admin/recipe');
         } catch {

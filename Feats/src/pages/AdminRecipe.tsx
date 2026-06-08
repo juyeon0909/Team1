@@ -2,25 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import customAxios from './../api/axiosInstance';
+import { API_BASE_URL } from '../config/config';
+import { CATEGORY_DECODER } from '../types/Recipe';
+import type { AdminRecipe } from '../types/Admin';
 import '../components/MyPageRecipe.css';
 
-interface AdminRecipe {
-    id: number;
-    title: string;
-    category: string;
-    cookingTime: number;
-    description: string;
-    authorName: string;
-    authorEmail: string;
-    ingredients: string[];
-    registeredAt: string;
-    image?: string;
-}
-
-const categoryLabel: Record<string, string> = {
-    KOR: '한식', YANG: '양식', JAN: '일식', CHN: '중식',
-    GAN: '간식', YA: '야식', DIET: '다이어트', RAP: '밀프랩'
-};
 
 function AdminRecipe() {
     const navigate = useNavigate();
@@ -30,7 +16,7 @@ function AdminRecipe() {
     const fetchPending = async () => {
         setLoading(true);
         try {
-            const res = await customAxios.get('/admin/recipes/pending');
+            const res = await customAxios.get(`${API_BASE_URL}/admin/recipes/pending`);
             setRecipes(res.data || []);
         } catch (e) {
             console.error('목록 불러오기 실패:', e);
@@ -72,7 +58,7 @@ function AdminRecipe() {
 
                             <div className="recipe-card-content">
                                 <span className="recipe-card-category">
-                                    {categoryLabel[recipe.category] || recipe.category}
+                                    {CATEGORY_DECODER[recipe.category] || recipe.category}
                                 </span>
                                 <h3 className="recipe-card-title-text">{recipe.title}</h3>
                                 <p className="recipe-card-desc-text">{recipe.description}</p>

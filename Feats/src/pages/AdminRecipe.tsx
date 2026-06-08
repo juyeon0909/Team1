@@ -4,13 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import customAxios from './../api/axiosInstance';
 import { API_BASE_URL } from '../config/config';
 import { CATEGORY_DECODER } from '../types/Recipe';
-import type { AdminRecipe } from '../types/Admin';
+import type { AdminRecipe as AdminRecipeItem } from '../types/Admin';
 import '../components/MyPageRecipe.css';
 
 
 function AdminRecipe() {
     const navigate = useNavigate();
-    const [recipes, setRecipes] = useState<AdminRecipe[]>([]);
+    const [recipes, setRecipes] = useState<AdminRecipeItem[]>([]);
     const [loading, setLoading] = useState(false);
 
     const fetchPending = async () => {

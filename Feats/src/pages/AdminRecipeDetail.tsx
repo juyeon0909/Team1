@@ -17,7 +17,7 @@ function AdminRecipeDetail() {
     useEffect(() => {
         const fetchDetail = async () => {
             try {
-                const res = await customAxios.get(`${API_BASE_URL}/admin/recipes/${id}`);
+                const res = await customAxios.get(`/admin/recipes/${id}`);
                 setRecipe(res.data);
             } catch (e) {
                 console.error('레시피 불러오기 실패:', e);
@@ -34,7 +34,7 @@ function AdminRecipeDetail() {
         if (!window.confirm('이 레시피를 승인하시겠습니까?')) return;
         setSubmitting(true);
         try {
-            await customAxios.post(`${API_BASE_URL}/admin/recipes/${id}/approve`);
+            await customAxios.post(`/admin/recipes/${id}/approve`);
             alert('승인되었습니다.');
             navigate('/admin/recipe');
         } catch {
@@ -48,7 +48,7 @@ function AdminRecipeDetail() {
         if (!window.confirm('이 레시피를 거절하시겠습니까?')) return;
         setSubmitting(true);
         try {
-            await customAxios.post(`${API_BASE_URL}/admin/recipes/${id}/reject`);
+            await customAxios.post(`/admin/recipes/${id}/reject`);
             alert('거절되었습니다.');
             navigate('/admin/recipe');
         } catch {

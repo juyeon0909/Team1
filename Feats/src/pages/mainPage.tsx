@@ -379,7 +379,11 @@ const RecommendedRecipes: React.FC<RecommendedRecipesProps> = ({ recipes, isLogg
                             style={{ cursor: "pointer" }}
                         >
                             <div className="recipe-icon" style={{ background: recipe.iconBg || "#f1f5f9" }}>
-                                {recipe.icon || "🍽️"}
+                                {recipe.image ? (
+                                    <img src={recipe.image} alt={recipe.title} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }} />
+                                ) : (
+                                    <span>🍽️</span>
+                                )}
                             </div>
                             <div className="recipe-info">
                                 <div className="recipe-name">{recipe.title}</div>

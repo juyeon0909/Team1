@@ -67,9 +67,9 @@
     /* 글자 세로 꺾임 방지 */
 }
 
-.nav-logo .carrot {
-    font-size: 28px;
-    line-height: 1;
+.nav-logo img {
+    height: 100%;
+    height: 36px;
 }
 
 /* 로고 텍스트 (현재 <Nav.Link>로 렌더되어 .nav-link가 붙음).

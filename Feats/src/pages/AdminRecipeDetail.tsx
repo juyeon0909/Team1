@@ -2,26 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import customAxios from './../api/axiosInstance';
 import { API_BASE_URL } from '../config/config';
+import { CATEGORY_DECODER } from '../types/Recipe';
+import type { AdminRecipeDetailData } from '../types/Admin';
 import '../components/RecipeRegister.css';
 
-interface AdminRecipeDetailData {
-    id: number;
-    title: string;
-    category: string;
-    cookingTime: number;
-    description: string;
-    authorName: string;
-    authorEmail: string;
-     ingredients: { name: string; quantity: string }[];
-    registeredAt: string;
-    image?: string;
-    cookingMethod?: string;
-}
-
-const categoryReverseMap: Record<string, string> = {
-    KOR: '한식', YANG: '양식', JAN: '일식', CHN: '중식',
-    GAN: '간식', YA: '야식', DIET: '다이어트', RAP: '밀프랩'
-};
 
 function AdminRecipeDetail() {
     const { id } = useParams<{ id: string }>();
@@ -112,7 +96,7 @@ function AdminRecipeDetail() {
                 <div className="grid-two-columns">
                     <div>
                         <label className="form-label">카테고리</label>
-                        <input className="form-input" type="text" value={categoryReverseMap[recipe.category] || recipe.category} readOnly style={{ background: '#f8f8f8', cursor: 'default' }} />
+                        <input className="form-input" type="text" value={CATEGORY_DECODER[recipe.category] || recipe.category} readOnly style={{ background: '#f8f8f8', cursor: 'default' }} />
                     </div>
                     <div>
                         <label className="form-label">조리 시간 (단위 : 분)</label>

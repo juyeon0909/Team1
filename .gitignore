@@ -34,4 +34,5 @@ build/
 Beats/.env
 
 ### local ###
-**/application-local.properties
+application-local.properties
+.claude/**

@@ -26,6 +26,7 @@ export interface RecipeDto {
   scrapped: boolean;       // 로그인 유저의 스크랩 여부
   scrappedAt?: string; // 스크랩 날짜 (선택적)
   urgent?: boolean; // 임박 재료 활용 여부 (선택적)
+
 }
 
 // 레시피 상세 응답 인터페이스 (RecipeDto와 동일 구조로 대응)
@@ -41,6 +42,7 @@ export const CATEGORY_DECODER: { [key: string]: string } = {
   YA: "야식",
   DIET: "다이어트",
   RAP: "밀프랩",
+
 };
 
 export interface RecipeView {
@@ -66,4 +68,5 @@ export interface RecipeView {
   steps: string[];
   selectIngredients: (string | { name: string; quantity: string | number })[];
   missingIngredients: (string | { name: string; quantity: string | number })[];
+  
 }

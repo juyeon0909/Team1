@@ -37,7 +37,10 @@
 /*배너 이미지*/
 .hero-greeting-img { width:50%; height:60%; }
 
+
 .hero-bg-greeting { background: linear-gradient(135deg, #6fbc44 0%, #3a8f1f 100%); }
+.hero-bg-popular  { background: linear-gradient(135deg, #6fbc44 0%, #3a8f1f 100%); }
+.hero-bg-scrap  { background: linear-gradient(135deg, #6fbc44 0%, #3a8f1f 100%); }
 .hero-bg-urgent   { background: linear-gradient(135deg, #6fbc44 0%, #3a8f1f 100%); }
 
 .hero-greeting-sub   { font-size: 1rem;   margin-bottom: 0.5rem;  opacity: 0.9; }

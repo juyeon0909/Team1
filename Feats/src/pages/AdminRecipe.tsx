@@ -16,7 +16,7 @@ function AdminRecipe() {
     const fetchPending = async () => {
         setLoading(true);
         try {
-            const res = await customAxios.get(`${API_BASE_URL}/admin/recipes/pending`);
+            const res = await customAxios.get(`/admin/recipes/pending`);
             setRecipes(res.data || []);
         } catch (e) {
             console.error('목록 불러오기 실패:', e);

@@ -1,10 +1,9 @@
 import './App.css';
 
-// 외부 컴포넌트 import하기
-// import 컴포넌트이름 from '경로와 파일명';
 import MyPageLike from './pages/MyPageLike';
 import MenuItems from './ui/MenuItems';
 import AppRoutes from './routes/AppRoutes';
+import AlertModal from './ui/AlertModal';
 import React, { useEffect, useState } from 'react';
 import type { User } from './types/User';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -81,6 +80,7 @@ const hideNav = ['/member/login', '/member/signup'].includes(location.pathname);
 
   return (
     <>
+      <AlertModal />
       {!hideNav && <MenuItems appName={appName} user={user} handleLogout={handleLogout} />}
       <AppRoutes user={user} handleLoginSuccess={handleLoginSuccess} setUser={setUser} />
 

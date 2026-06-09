@@ -1,19 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import customAxios from './../api/axiosInstance';
-
-interface AdminQnaItem {
-    id: number;
-    memberName: string;
-    memberEmail: string;
-    qnaType: string;
-    title: string;
-    content: string;
-    status: string;
-    answer: string | null;
-    createdAt: string;
-    answeredAt: string | null;
-}
+import type { AdminQnaItem } from '../types/Admin';
 
 export default function AdminQna() {
     const [qnas, setQnas] = useState<AdminQnaItem[]>([]);

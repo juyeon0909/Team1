@@ -7,6 +7,7 @@
 
 import axios from "axios";
 import { API_BASE_URL } from "../config/config";
+import { triggerAlert } from "../utils/alertEvent";
 
 // withCredentials: true 항목은 세션 방식 설정이므로 jwt를 사용하면 삭제하도록 합니다.
 const axiosInstance = axios.create({
@@ -43,13 +44,28 @@ axiosInstance.interceptors.response.use(
     (error) => {
 
         const isLoginRequest = error.config?.url?.includes("/member/login");
+        const status = error.response?.status;
 
-        if (error.response?.status === 401 && !isLoginRequest) {
-            localStorage.removeItem("accessToken");
-
-            // window.location.href 사용시 React Router 사용 중이면 
-            // 페이지 전체 리로드 발생할 수 있으므로 replace() 메소드 사용 바람
-            window.location.replace("/member/login");
+        if (status === 401 && !isLoginRequest) {
+            const token = localStorage.getItem("accessToken");
+            if (token) {
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("user");
+                triggerAlert("로그인 세션이 만료되었습니다.\n다시 로그인해주세요.", "warning", "세션 만료");
+                setTimeout(() => window.location.replace("/member/login"), 1500);
+            }
+        } else if (status === 403) {
+            triggerAlert("접근 권한이 없습니다.", "error", "권한 오류");
+        } else if (status === 404) {
+            triggerAlert("요청한 데이터를 찾을 수 없습니다.", "warning", "데이터 없음");
+        } else if (status === 409) {
+            const msg = error.response?.data?.message || error.response?.data || "이미 존재하는 데이터입니다.";
+            triggerAlert(String(msg), "warning", "중복 오류");
+        } else if (status >= 500) {
+            triggerAlert("서버 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.", "error", "서버 오류");
+        } else if (!error.response) {
+            // 네트워크 단절 또는 서버 무응답
+            triggerAlert("서버에 연결할 수 없습니다.\n네트워크 상태를 확인해주세요.", "error", "연결 오류");
         }
 
         return Promise.reject(error);

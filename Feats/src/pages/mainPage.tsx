@@ -1,11 +1,19 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import axiosInstance from "../api/axiosInstance";
 import type { Ingredient } from "../types/Fridge.ts";
 import type { User } from "../types/User.ts";
+import { API_BASE_URL } from "../config/config";
 import "../components/mainPage.css";
 import Carousel from "react-bootstrap/esm/Carousel";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import M2 from '../assets/M2.jpg';
+import M3 from '../assets/M3.jpg';
+import RecipeCard from '../pages/RecipeCard';
+import FridgeIntro from "./Fridgeintro.tsx";
+
+
 
 const CATEGORIES = ["전체", "한식", "양식", "일식", "중식", "간식", "야식", "다이어트", "밀프랩"] as const;
 
@@ -20,29 +28,26 @@ interface HeroCardProps {
     urgentCount: number;
     recommendRecipe: number;
     popularRecipe?: any;
+    ScrapRecipe?: any;
     urgentRecipe?: any;
 }
 
-const HeroCard: React.FC<HeroCardProps> = ({ userName, popularRecipe, urgentRecipe }) => {
+const HeroCard: React.FC<HeroCardProps> = ({ userName, popularRecipe, ScrapRecipe, urgentRecipe }) => {
     const navigate = useNavigate();
     const detailView = (id: number) => navigate(`/recipeMain/${id}`);
 
+    const [activeIndex, setActiveIndex] = useState(0);
+
     return (
-        <Carousel>
-            {/* 슬라이드 1: 인사 배너 */}
+        <Carousel activeIndex={activeIndex} onSelect={(selectedIndex: number) => setActiveIndex(selectedIndex)} interval={8800}>
+            {/* 슬라이드 1: 냉장고 인트로 애니메이션 */}
             <Carousel.Item>
                 <div className="hero-slide-bg hero-bg-greeting">
-                    <p className="hero-greeting-sub">안녕하세요, {userName}님</p>
-                    <h1 className="hero-greeting-title">
-                        냉장고 속 재료로<br />무엇을 만들어볼까요?
-                    </h1>
-                    <p className="hero-greeting-desc">
-                        냉장고 속 재료를 최대한 활용한 맞춤형 레시피를 추천해드려요.
-                    </p>
+                    <FridgeIntro isActive={activeIndex === 0} userName={userName} />
                 </div>
             </Carousel.Item>
 
-            {/* 슬라이드 2: 가장 인기 많은 레시피 — 항상 렌더링, 데이터 있을 때만 내용 표시 */}
+            {/* 슬라이드 2: 가장 좋아요 많은 레시피 */}
             <Carousel.Item
                 style={{ cursor: popularRecipe ? 'pointer' : 'default' }}
                 onClick={popularRecipe ? () => detailView(popularRecipe.id) : undefined}
@@ -54,7 +59,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, popularRecipe, urgentReci
                 )}
                 {popularRecipe && (
                     <Carousel.Caption>
-                        <p className="hero-caption-label">지금 가장 인기 있는 레시피</p>
+                        <p className="hero-caption-label">지금 가장 좋아요 많은 레시피</p>
                         <h3>{popularRecipe.title}</h3>
                         <p>
                             {popularRecipe.description && <> &nbsp;·&nbsp; {truncate(popularRecipe.description)}</>}
@@ -63,27 +68,53 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, popularRecipe, urgentReci
                 )}
             </Carousel.Item>
 
-            {/* 슬라이드 3: 임박 재료 레시피 — 항상 렌더링, 데이터 있을 때만 내용 표시 */}
+            {/* 슬라이드 3: 가장 스크랩 많은 레시피 */}
             <Carousel.Item
-                style={{ cursor: urgentRecipe ? 'pointer' : 'default' }}
-                onClick={urgentRecipe ? () => detailView(urgentRecipe.id) : undefined}
+                style={{ cursor: ScrapRecipe ? 'pointer' : 'default' }}
+                onClick={ScrapRecipe ? () => detailView(ScrapRecipe.id) : undefined}
             >
-                {urgentRecipe?.image ? (
-                    <img className="hero-slide-img" src={urgentRecipe.image} alt={urgentRecipe.title} />
+                {ScrapRecipe?.image ? (
+                    <img className="hero-slide-img" src={ScrapRecipe.image} alt={ScrapRecipe.title} />
                 ) : (
-                    <div className="hero-slide-bg hero-bg-urgent" />
+                    <div className="hero-slide-bg hero-bg-scrap" />
                 )}
-                {urgentRecipe && (
+                {ScrapRecipe && (
+                    <Carousel.Caption>
+                        <p className="hero-caption-label">지금 가장 스크랩 많은 레시피</p>
+                        <h3>{ScrapRecipe.title}</h3>
+                        <p>
+                            {ScrapRecipe.description && <> &nbsp;·&nbsp; {truncate(ScrapRecipe.description)}</>}
+                        </p>
+                    </Carousel.Caption>
+                )}
+            </Carousel.Item>
+
+            {/* 슬라이드 4: 임박 재료 레시피 — 임박 재료가 없으면 슬라이드 자체를 숨김 */}
+            {urgentRecipe && (
+                <Carousel.Item
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => detailView(urgentRecipe.id)}
+                >
+                    {urgentRecipe.image ? (
+                        <img className="hero-slide-img" src={urgentRecipe.image} alt={urgentRecipe.title} />
+                    ) : (
+                        <div className="hero-slide-bg hero-bg-urgent" />
+                    )}
                     <Carousel.Caption>
                         <p className="hero-caption-label">임박 재료로 만들 수 있어요</p>
                         <h3>{urgentRecipe.title}</h3>
                         <p>{truncate(urgentRecipe.description)}</p>
                     </Carousel.Caption>
-                )}
-            </Carousel.Item>
+                </Carousel.Item>
+            )}
         </Carousel>
     );
 };
+
+
+
+
+
 
 // ─── 하위 컴포넌트 2: 유통기한 알림 띠 바 ──────────────────────────────────────
 interface AlertBarProps {
@@ -124,6 +155,105 @@ const AlertBar: React.FC<AlertBarProps> = ({ ingredients, isLoggedIn }) => {
             >
                 관련 레시피 보기 →
             </span>
+        </div>
+    );
+};
+/*----- Qna, 레시피 승인 ------- (관리자만) */
+interface AdminQnaItem {
+    id: number;
+    memberName: string;
+    qnaType: string;
+    title: string;
+    status: string;
+}
+
+interface AdminQnaProps {
+    qnas: AdminQnaItem[];
+    isLoggedIn: boolean;
+}
+
+interface AdminRecipeItem {
+    id: number;
+    title: string;
+    category: string;
+    registeredAt: string;
+    image?: string;
+}
+
+interface AdminRecipeProps {
+    recipes: AdminRecipeItem[];
+    isLoggedIn: boolean;
+}
+
+// 글로벌 카테고리 맵 (RecommendedRecipes와 중복되지 않도록 파일 최상단에 배치 권장)
+const ADMIN_CATEGORY_MAP: Record<string, string> = {
+    "한식": "KOR", "일식": "JAN", "중식": "CHN", "양식": "YANG",
+    "간식": "GAN", "야식": "YA", "다이어트": "DIET", "밀프랩": "RAP",
+};
+
+const AdminQna: React.FC<AdminQnaProps> = ({ qnas, isLoggedIn }) => {
+    const navigate = useNavigate();
+
+    return (
+        <div className="section-card">
+            <div className="section-header">
+                <span className="section-title">1:1 문의 내역</span>
+                <button className="section-more" type="button" onClick={() => navigate("/admin/qna")}>
+                    전체 보기
+                </button>
+            </div>
+            <div className="admin-qna-list">
+                {!isLoggedIn ? (
+                    <p className="empty-message">관리자 로그인 후 사용 가능합니다.</p>
+                ) : qnas.length === 0 ? (
+                    <p className="empty-message">문의 내역이 없습니다.</p>
+                ) : (
+
+                    qnas.map((item) => (
+                        <div className="qna-item" key={item.id} onClick={() => navigate(`/admin/qna`)}>
+                            <span className={`status-badge ${item.status === '접수중' ? 'waiting' : 'completed'}`}>
+                                {item.status}
+                            </span>
+                            <div className="qna-info">
+                                <div className="qna-title">{item.title}</div>
+                                <div className="qna-sub">{item.memberName} | {item.qnaType}</div>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+};
+
+const AdminRecipe: React.FC<AdminRecipeProps> = ({ recipes, isLoggedIn }) => {
+    const navigate = useNavigate();
+
+    return (
+        <div className="section-card">
+            <div className="section-header">
+                <span className="section-title">레시피 승인 관리</span>
+                <button className="section-more" type="button" onClick={() => navigate("/admin/recipe")}>
+                    전체 보기
+                </button>
+            </div>
+            <div className="admin-recipe-list">
+                {!isLoggedIn ? (
+                    <p className="empty-message">관리자 로그인 후 사용 가능합니다.</p>
+                ) : recipes.length === 0 ? (
+                    <p className="empty-message">승인 처리할 레시피가 없습니다.</p>
+                ) : (
+                    recipes.map((item) => (
+                        <div className="admin-recipe-item" key={item.id} onClick={() => navigate(`/admin/recipes/${item.id}`)}>
+                            {item.image && <img src={item.image} alt={item.title} className="recipe-thumb" />}
+                            <div className="recipe-info">
+                                <div className="recipe-title">{item.title}</div>
+                                <div className="recipe-sub">{item.category} | {item.registeredAt}</div>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
         </div>
     );
 };
@@ -242,7 +372,11 @@ const RecommendedRecipes: React.FC<RecommendedRecipesProps> = ({ recipes, isLogg
                             style={{ cursor: "pointer" }}
                         >
                             <div className="recipe-icon" style={{ background: recipe.iconBg || "#f1f5f9" }}>
-                                {recipe.icon || "🍽️"}
+                                {recipe.image ? (
+                                    <img src={recipe.image} alt={recipe.title} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }} />
+                                ) : (
+                                    <span>🍽️</span>
+                                )}
                             </div>
                             <div className="recipe-info">
                                 <div className="recipe-name">{recipe.title}</div>
@@ -267,6 +401,12 @@ const RecommendedRecipes: React.FC<RecommendedRecipesProps> = ({ recipes, isLogg
 
 // ─── 메인 컴포넌트 ───────────────────────────────────────────────────────────────
 const MainPage: React.FC = () => {
+
+     const [qnas, setQnas] = useState<AdminQnaItem[]>([]);
+     const [adminRecipes, setAdminRecipes] = useState<AdminRecipeItem[]>([]);
+     const [isAdmin, setIsAdmin] = useState(false);
+     const [isUser, setIsUser] =useState(false);
+
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [recipes, setRecipes] = useState<any[]>([]);
     const [userName, setUserName] = useState("사용자");
@@ -275,10 +415,11 @@ const MainPage: React.FC = () => {
     const [urgentCount, setUrgentCount] = useState(0);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+
     useEffect(() => {
         const fetchMainRecipes = async () => {
             try {
-                const response = await axiosInstance.get<any[]>('/recipeMain');
+                const response = await axios.get<any[]>(`${API_BASE_URL}/recipeMain`);
                 let mapped = (response.data || []).map((r: any) => ({
                     ...r,
                     title: r.title || r.name || "이름 없는 레시피",
@@ -315,60 +456,97 @@ const MainPage: React.FC = () => {
     }, [isLoggedIn]);
 
     useEffect(() => {
-        const stored = localStorage.getItem("user");
-        if (!stored) return;
+            const stored = localStorage.getItem("user");
+            const token = localStorage.getItem("accessToken");
+            if (!stored || !token) return;
 
-        let user: User;
-        try {
-            user = JSON.parse(stored);
-        } catch {
-            return;
-        }
+            let user: User;
+            try {
+                user = JSON.parse(stored);
+            } catch {
+                return;
+            }
 
-        if (user.name) setUserName(user.name);
-        setIsLoggedIn(true);
+            if (user.name) setUserName(user.name);
+            setIsLoggedIn(true);
 
-        axiosInstance.get<any[]>(`/product/list/${user.id}`)
-            .then((res) => {
-                const rawData = res.data || [];
-                setTotalCount(rawData.length);
+            // ── 관리자 판별 (role 기반) ──
+           if (user.role === "ADMIN") {
+               setIsAdmin(true);
 
-                const processed = rawData.map((item) => {
-                    const serverDday = item.dDay !== undefined ? item.dDay : item.dday;
-                    return {
-                        ...item,
-                        itemName: item.itemName || item.itemname || "이름 없음",
-                        storageType: item.storageType || item.storagetype || "REFRIGERATED",
-                        expirationDate: item.expirationDate || item.expirationdate,
-                        dDay: serverDday !== undefined ? serverDday : 999,
-                        urgency: item.urgency || "normal",
-                    };
-                });
+               axiosInstance.get<any>("/admin/qnas")
+                   .then((res) => {
+                       console.log("QnA 응답 ▶", res.data);   // ← 구조 확인
+                       const list = Array.isArray(res.data)
+                           ? res.data
+                           : (res.data.content || res.data.data || res.data.list || []);
+                       setQnas(list);
+                   })
+                   .catch((err) => console.error("문의 목록 로딩 실패:", err));
 
-                setUrgentCount(
-                    processed.filter((i) =>
-                        (i.urgency === "urgent" || i.urgency === "warning") &&
-                        i.dDay !== undefined && i.dDay >= 0
-                    ).length
-                );
+               axiosInstance.get<any>("/admin/recipes/pending")
+                   .then((res) => {
+                       console.log("Recipe 응답 ▶", res.data);  // ← 구조 확인
+                       const list = Array.isArray(res.data)
+                           ? res.data
+                           : (res.data.content || res.data.data || res.data.list || []);
+                       setAdminRecipes(list);
+                   })
+                   .catch((err) => console.error("레시피 승인 목록 로딩 실패:", err));
+           }
+  // ── 사용자 판별 (role 기반) ──
+            if (user.role === "USER") {
+                setIsUser(true);
 
-                const finalMainList = processed
-                    .filter((i) =>
-                        (i.urgency === "urgent" || i.urgency === "warning") &&
-                        i.dDay !== undefined && i.dDay >= 0
-                    )
-                    .sort((a, b) => (a.dDay ?? 0) - (b.dDay ?? 0))
-                    .slice(0, 5);
+            // ── 냉장고 재료 목록 ──
+            axiosInstance.get<any[]>(`/product/list/${user.id}`)
+                .then((res) => {
+                    const rawData = res.data || [];
+                    setTotalCount(rawData.length);
 
-                setIngredients(finalMainList);
-            })
-            .catch((err) => console.error("데이터 연동 실패:", err));
-    }, []);
+                    const processed = rawData.map((item) => {
+                        const serverDday = item.dDay !== undefined ? item.dDay : item.dday;
+                        return {
+                            ...item,
+                            itemName: item.itemName || item.itemname || "이름 없음",
+                            storageType: item.storageType || item.storagetype || "REFRIGERATED",
+                            expirationDate: item.expirationDate || item.expirationdate,
+                            dDay: serverDday !== undefined ? serverDday : 999,
+                            urgency: item.urgency || "normal",
+                        };
+                    });
+
+                    setUrgentCount(
+                        processed.filter((i) =>
+                            (i.urgency === "urgent" || i.urgency === "warning") &&
+                            i.dDay !== undefined && i.dDay >= 0
+                        ).length
+                    );
+
+                    const finalMainList = processed
+                        .filter((i) =>
+                            (i.urgency === "urgent" || i.urgency === "warning") &&
+                            i.dDay !== undefined && i.dDay >= 0
+                        )
+                        .sort((a, b) => (a.dDay ?? 0) - (b.dDay ?? 0))
+                        .slice(0, 5);
+
+                    setIngredients(finalMainList);
+                })
+                .catch((err) => console.error("데이터 연동 실패:", err));
+                }
+        }, []);
 
     // 가장 인기 많은 레시피 (heart 기준 상위 1개)
     const popularRecipe = recipes.length > 0
         ? [...recipes].sort((a, b) => (b.heart ?? b.likeCount ?? 0) - (a.heart ?? a.likeCount ?? 0))[0]
         : null;
+
+
+     const ScrapRecipe = recipes.length > 0
+        ? [...recipes].sort((a, b) => (b.scrap ?? b.scrapCount ?? 0) - (a.scrap ?? a.scrapCount ?? 0))[0]
+        : null;
+
 
     // 임박 재료 이름과 레시피 재료를 매칭해 찾은 레시피 1개
     const urgentIngredientNames = ingredients.map((i) =>
@@ -395,13 +573,25 @@ const MainPage: React.FC = () => {
                     urgentCount={urgentCount}
                     recommendRecipe={recommendRecipe}
                     popularRecipe={popularRecipe}
+                    ScrapRecipe={ScrapRecipe}
                     urgentRecipe={urgentRecipe}
                 />
+                {isUser && (
+                    <>
                 <AlertBar ingredients={ingredients} isLoggedIn={isLoggedIn} />
                 <div className="bottom-grid">
                     <ExpiringIngredients ingredients={ingredients} isLoggedIn={isLoggedIn} />
                     <RecommendedRecipes recipes={recipes} isLoggedIn={isLoggedIn} />
                 </div>
+                </>
+                )}
+
+            {isAdmin && (
+                <div className="admin-grid">
+                    <AdminQna qnas={qnas} isLoggedIn={isLoggedIn} />
+                    <AdminRecipe recipes={adminRecipes} isLoggedIn={isLoggedIn} />
+                </div>
+                )}
             </main>
             <footer className="imf-footer" />
         </div>
@@ -409,3 +599,5 @@ const MainPage: React.FC = () => {
 };
 
 export default MainPage;
+
+

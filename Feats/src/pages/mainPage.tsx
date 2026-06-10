@@ -21,7 +21,7 @@ const CATEGORIES = ["전체", "한식", "양식", "일식", "중식", "간식", 
 const truncate = (text?: string, max = 20) =>
     !text ? '' : text.length > max ? text.substring(0, max) + '...' : text;
 
-// ─── 하위 컴포넌트 1: 히어로 배너 캐러셀 ───────────────────────────────────────
+// ─ 하위 컴포넌트 1: 히어로 배너 캐러셀 ─
 interface HeroCardProps {
     userName: string;
     totalCount: number;
@@ -116,7 +116,7 @@ const HeroCard: React.FC<HeroCardProps> = ({ userName, popularRecipe, ScrapRecip
 
 
 
-// ─── 하위 컴포넌트 2: 유통기한 알림 띠 바 ──────────────────────────────────────
+// ─ 하위 컴포넌트 2: 유통기한 알림 띠 바 
 interface AlertBarProps {
     ingredients: Ingredient[];
     isLoggedIn: boolean;
@@ -258,7 +258,7 @@ const AdminRecipe: React.FC<AdminRecipeProps> = ({ recipes, isLoggedIn }) => {
     );
 };
 
-// ─── 하위 컴포넌트 3: 유통기한 임박 재료 리스트 ────────────────────────────────
+// ─ 하위 컴포넌트 3: 유통기한 임박 재료 리스트 
 interface ExpiringIngredientsProps {
     ingredients: Ingredient[];
     isLoggedIn: boolean;
@@ -300,7 +300,7 @@ const ExpiringIngredients: React.FC<ExpiringIngredientsProps> = ({ ingredients, 
     );
 };
 
-// ─── 하위 컴포넌트 4: 추천 레시피 ───────────────────────────────────────────────
+// ─ 하위 컴포넌트 4: 추천 레시피 ─
 interface RecommendedRecipesProps {
     recipes: any[];
     isLoggedIn: boolean;
@@ -399,7 +399,7 @@ const RecommendedRecipes: React.FC<RecommendedRecipesProps> = ({ recipes, isLogg
     );
 };
 
-// ─── 메인 컴포넌트 ───────────────────────────────────────────────────────────────
+// ─ 메인 컴포넌트 ─
 const MainPage: React.FC = () => {
 
      const [qnas, setQnas] = useState<AdminQnaItem[]>([]);
@@ -470,13 +470,13 @@ const MainPage: React.FC = () => {
             if (user.name) setUserName(user.name);
             setIsLoggedIn(true);
 
-            // ── 관리자 판별 (role 기반) ──
+            //  관리자 판별 (role 기반) 
            if (user.role === "ADMIN") {
                setIsAdmin(true);
 
                axiosInstance.get<any>("/admin/qnas")
                    .then((res) => {
-                       console.log("QnA 응답 ▶", res.data);   // ← 구조 확인
+                       console.log("QnA 응답 ▶", res.data); 
                        const list = Array.isArray(res.data)
                            ? res.data
                            : (res.data.content || res.data.data || res.data.list || []);
@@ -486,7 +486,7 @@ const MainPage: React.FC = () => {
 
                axiosInstance.get<any>("/admin/recipes/pending")
                    .then((res) => {
-                       console.log("Recipe 응답 ▶", res.data);  // ← 구조 확인
+                       console.log("Recipe 응답 ▶", res.data);
                        const list = Array.isArray(res.data)
                            ? res.data
                            : (res.data.content || res.data.data || res.data.list || []);
@@ -494,11 +494,11 @@ const MainPage: React.FC = () => {
                    })
                    .catch((err) => console.error("레시피 승인 목록 로딩 실패:", err));
            }
-  // ── 사용자 판별 (role 기반) ──
+  //  사용자 판별 (role 기반) 
             if (user.role === "USER") {
                 setIsUser(true);
 
-            // ── 냉장고 재료 목록 ──
+            //  냉장고 재료 목록 
             axiosInstance.get<any[]>(`/product/list/${user.id}`)
                 .then((res) => {
                     const rawData = res.data || [];

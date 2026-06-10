@@ -7,8 +7,6 @@ type Props = {
 }
 
 function App({paging, setPaging} : Props) {
-    console.log('자바스크립트 코딩 영역');
-
     return (
         // 페이징을 가운데로 오게 하기
         <Pagination className="justify-content-center mt-4">

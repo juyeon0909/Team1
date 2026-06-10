@@ -9,8 +9,6 @@ import type { User } from './types/User';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 function App() {
-  const appName = "냉장고를 지켜줘";
-
   const [user, setUser] = useState<User | null>(null);
   
   useEffect(() => {
@@ -65,7 +63,6 @@ const hideNav = ['/member/login', '/member/signup'].includes(location.pathname);
   const handleLoginSuccess = (userData: User) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
-    console.log('로그인 성공');
   };
   
 
@@ -81,11 +78,10 @@ const hideNav = ['/member/login', '/member/signup'].includes(location.pathname);
   return (
     <>
       <AlertModal />
-      {!hideNav && <MenuItems appName={appName} user={user} handleLogout={handleLogout} />}
+      {!hideNav && <MenuItems user={user} handleLogout={handleLogout} />}
       <AppRoutes user={user} handleLoginSuccess={handleLoginSuccess} setUser={setUser} />
 
       <footer className="bg-dark text-light text-center py-3 mt-5">
-        {/* <p>&copy; 2026 {appName} ICT 인재개발원</p> */}
       </footer>
     </>
   );

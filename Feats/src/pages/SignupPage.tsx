@@ -15,7 +15,7 @@ interface SignupErrors {
 }
 
 function SignupPage() {
-  // ── 원본과 동일한 state 구조 ──
+  //  원본과 동일한 state 구조 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +24,7 @@ function SignupPage() {
     name: "", email: "", password: "", address: "", general: "",
   });
 
-  // ── 추가: 비밀번호 확인 / UI 상태 ──
+  //  추가: 비밀번호 확인 / UI 상태 
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
@@ -36,7 +36,7 @@ function SignupPage() {
 
   const navigate = useNavigate();
 
-  /* ── 비밀번호 강도 체크 ── */
+  //  비밀번호 강도 체크  
   const checkStrength = (val: string) => {
     let score = 0;
     if (val.length >= 8) score++;
@@ -54,21 +54,21 @@ function SignupPage() {
     setPwStrength(map[score]);
   };
 
-  /* ── 비밀번호 일치 체크 ── */
+  //  비밀번호 일치 체크  
   const checkMatch = (pw: string, pw2: string) => {
     if (!pw2) { setMatchMsg({ text: "", color: "" }); return; }
     if (pw === pw2) setMatchMsg({ text: "비밀번호가 일치합니다", color: "#4caf50" });
     else setMatchMsg({ text: "비밀번호가 일치하지 않습니다", color: "#e53935" });
   };
 
-  /* ── 버튼 활성화 조건 ── */
+  //  버튼 활성화 조건  
   const isSubmittable =
     name.trim() !== "" &&
     email.trim() !== "" &&
     password.length >= 8 &&
     password === passwordConfirm;
 
-  /* ── 원본 로직 그대로 유지한 제출 핸들러 ── */
+  //  원본 로직 그대로 유지한 제출 핸들러  
   const SignupAction = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -103,7 +103,7 @@ function SignupPage() {
   return (
     <div className="signup-page-container">
 
-      {/* ── 왼쪽 브랜드 섹션 (로그인과 동일) ── */}
+       {/* 왼쪽 브랜드 섹션 (로그인과 동일)  */}
       <div className="signup-brand-section">
         <div className="brand-badge">냉장고 속 재료로 요리하기</div>
 
@@ -132,7 +132,7 @@ function SignupPage() {
         </div>
       </div>
 
-      {/* ── 오른쪽 폼 섹션 ── */}
+      {/*  오른쪽 폼 섹션  */}
       <div className="signup-form-section">
         <div className="signup-form-header">
           <h2>회원가입</h2>

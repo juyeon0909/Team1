@@ -84,14 +84,12 @@ function LoginPage({ onLogin }: Props) {
         );
         if (isApproved && !cancelledRef.current) {
           stopAll();
-          console.log("[패스워드리스] 승인 확인됨, 로그인 요청 시작");
           try {
             const { data } = await axios.post<LoginResponse>(
               "/passwordless/passwordless-login",
               null,
               { params: { email: currentEmail, randomValue: currentRandomValue } }
             );
-            console.log("[패스워드리스] 로그인 응답:", data);
             const { accessToken, ...userData } = data;
             localStorage.setItem("accessToken", accessToken);
             localStorage.setItem("user", JSON.stringify(userData));

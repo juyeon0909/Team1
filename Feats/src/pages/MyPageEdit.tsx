@@ -203,7 +203,6 @@ function MyPageEdit({ name, setName, triggerToast }: EditPageProps) {
         {editTab === 'name' && (
           <form onSubmit={handleNameSubmit} className="card">
             <div className="card-header">
-              <div className="icon">😊</div>
               <h2>이름 수정</h2>
             </div>
             <div className="card-body">
@@ -245,7 +244,6 @@ function MyPageEdit({ name, setName, triggerToast }: EditPageProps) {
         {editTab === 'password' && (
           <form onSubmit={handlePasswordSubmit} className="card">
             <div className="card-header">
-              <div className="icon">🔒</div>
               <h2>비밀번호 변경</h2>
             </div>
             <div className="card-body">

@@ -1,6 +1,6 @@
 import "../components/MenuItems.css";
 import { NavDropdown, Navbar, Container, Nav } from "react-bootstrap";
-
+import fridgeLogo from "../../public/fridge-logo.svg";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { User } from "../types/User";
 
@@ -88,8 +88,6 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain`)}>전체 레시피</NavDropdown.Item>
                         <NavDropdown.Item onClick={() => navigate(`/recipeMain/register`)}>레시피 등록</NavDropdown.Item>
                      </NavDropdown>
-                     <Nav.Link onClick={() => navigate(`/recipeMain/clip`)} className={location.pathname === '/recipeMain/clip' ? 'active' : ''}>스크랩</Nav.Link>
-
                      <Nav.Link onClick={() => navigate(`/member/login`)}>로그인</Nav.Link>
                   </Nav>
                </>
@@ -100,7 +98,7 @@ function App({ appName, user, handleLogout }: MenuItemsProps) {
    return (
       <Container fluid className="imf-nav me-auto">
          <div className="nav-logo" onClick={() => navigate(`/`)} style={{ cursor: "pointer" }}>
-            <span className="carrot">🥕</span>
+            <img src={fridgeLogo} alt="Logo" className="nav-logo" />
             <span className="nav-logo-text">잇츠 인 마이 냉장고</span>
          </div>
          <Navbar />

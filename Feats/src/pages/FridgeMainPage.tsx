@@ -182,7 +182,6 @@ const FridgeMain: React.FC = () => {
             ) : frozenItems.length === 0 ? (
               <div className="empty-item-container">
                 <p className="empty-item-text frozen-theme">냉동 재료를<br />등록해보세요.</p>
-                <img src={emptyFrozen} alt="냉동 재료 없음" className="empty-item-image" />
               </div>
             ) : frozenItems.map(renderItemRow)}
           </div>
@@ -203,7 +202,6 @@ const FridgeMain: React.FC = () => {
             ) : refrigeratedItems.length === 0 ? (
               <div className="empty-item-container">
                 <p className="empty-item-text refrigerated-theme">냉장 재료를<br />등록해보세요.</p>
-                <img src={emptyRefrigerated} alt="냉장 재료 없음" className="empty-item-image" />
               </div>
             ) : refrigeratedItems.map(renderItemRow)}
           </div>
@@ -224,7 +222,6 @@ const FridgeMain: React.FC = () => {
             ) : roomItems.length === 0 ? (
               <div className="empty-item-container">
                 <p className="empty-item-text room-theme">상온 재료를<br />등록해보세요.</p>
-                <img src={emptyRoom} alt="상온 재료 없음" className="empty-item-image" />
               </div>
             ) : roomItems.map(renderItemRow)}
           </div>

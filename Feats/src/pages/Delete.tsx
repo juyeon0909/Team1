@@ -4,8 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Delete() {
-  console.log('회원 탈퇴 컴포넌트 렌더링');
-
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

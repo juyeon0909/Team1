@@ -11,14 +11,12 @@ import type { User } from "../types/User";
    ============================================================ */
 
 type MenuItemsProps = {
-   appName: string;
-   user: User | null; // 이 데이터는 null일 수도 있습니다.
+   user: User | null;
    handleLogout: (event: React.MouseEvent<HTMLElement>) => void;
 };
 
-function App({ appName, user, handleLogout }: MenuItemsProps) {
-   console.log('xxx 프롭스 : ' + appName);
-   const navigate = useNavigate();
+function App({ user, handleLogout }: MenuItemsProps) {
+const navigate = useNavigate();
    const location = useLocation();
    const USER_NAME = user?.name || "사용자";
    const NAV_USER_LABEL = user?.name?.slice(0, 2) || "사용자";

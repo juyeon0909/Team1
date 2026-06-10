@@ -15,7 +15,7 @@ import java.util.Optional;
 public class MyPageService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder; // 👈 오타 해결 및 생성자 주입 자동 처리
+    private final PasswordEncoder passwordEncoder; 
 
     public Member findByEmail(String email){
         return memberRepository.findByEmail(email).orElse(null);

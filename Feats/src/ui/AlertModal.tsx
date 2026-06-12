@@ -4,10 +4,10 @@ import { registerAlertTrigger } from "../utils/alertEvent";
 import type { AlertType, AlertPayload } from "../utils/alertEvent";
 
 const TYPE_CONFIG: Record<AlertType, { icon: string; color: string; defaultTitle: string }> = {
-    success: { icon: "✅", color: "#1a9d60",  defaultTitle: "완료"   },
-    error:   { icon: "❌", color: "#dc3545",  defaultTitle: "오류"   },
-    warning: { icon: "⚠️", color: "#f59e0b", defaultTitle: "주의"   },
-    info:    { icon: "ℹ️", color: "#3b82f6", defaultTitle: "안내"   },
+    success: { icon: "", color: "#1a9d60", defaultTitle: "완료" },
+    error: { icon: "", color: "#dc3545", defaultTitle: "오류" },
+    warning: { icon: "", color: "#f59e0b", defaultTitle: "주의" },
+    info: { icon: "", color: "#3b82f6", defaultTitle: "안내" },
 };
 
 const AlertModal: React.FC = () => {

@@ -22,8 +22,6 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("accessToken"); // 로컬 저장소에 accessToken이라는 이름으로 만들어 놓음
-        console.log("interceptors.request 토큰 확인 : ", token);
-
         if (token) { // token가 undefined일 수 있으므로...
             config.headers = config.headers || {};
             // Bearer 단어 대소문자 주의 바람

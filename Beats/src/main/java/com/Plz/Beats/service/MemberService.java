@@ -16,7 +16,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class MemberService { // MemberService가 MemberRepository를 의존하고 있음
-    private final MemberRepository memberRepository; // 의존 + 무의미한 데이터여서 주입(injection)해야 함 + final로 변경
+    private final MemberRepository memberRepository; // final로 선언하여 불변성을 보장하고, @RequiredArgsConstructor로 생성자 자동 생성
 
     public Member findByEmail(String email){
         return memberRepository.findByEmail(email).orElse(null);
@@ -26,6 +26,7 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
     private PasswordEncoder passwordEncoder ;
 
 
+// 회원 가입
     public void insert(Member bean){
         // 회원 가입한 사용자의 역할과 등록 일자는 여기서 설정
         bean.setRole(Role.USER);
@@ -37,6 +38,7 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
         memberRepository.save(bean);
     }
 
+// 회원 정보 조회 (ID로)
     public Optional<Member> findMemberById(Long memberId){
         return this.memberRepository.findById(memberId);
     }
@@ -57,6 +59,7 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
         );
     }
 
+// 회원 프로필 이미지 업데이트
     @Transactional
     public void updateProfileImage(String email, String base64Image) {
         Member member = memberRepository.findByEmail(email).orElse(null);
@@ -66,6 +69,7 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
         member.setProfileimage(base64Image);
     }
 
+// 회원 강제 탈퇴
     @Transactional
     public void delete(Member member) {
         if (member == null) {

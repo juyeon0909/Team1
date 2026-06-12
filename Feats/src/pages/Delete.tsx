@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 
 function Delete() {
   const navigate = useNavigate();
@@ -15,16 +16,9 @@ function Delete() {
     }
 
     try {
-      const accessToken = localStorage.getItem('accessToken');
-
-      const response = await axios.post(
-        'http://localhost:9000/api/member/delete',
-        { email: email, password: password },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        }
+      const response = await axiosInstance.post(
+        '/member/delete',
+        { email, password }
       );
 
       if (response.status === 200 || response.status === 204) {
@@ -32,19 +26,15 @@ function Delete() {
         localStorage.clear();
         window.location.replace('/member/login');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('탈퇴 처리 중 에러 발생:', error);
 
-      if (error.response) {
-        if (error.response.status === 403) {
-          alert(error.response.data.message || '이메일 또는 비밀번호가 올바르지 않습니다.');
-        } else if (error.response.status === 401) {
-          alert('로그인이 필요합니다.');
-        } else {
-          alert(`탈퇴 실패: ${error.response.data.message || '서버 오류가 발생했습니다.'}`);
+      if (axios.isAxiosError(error) && error.response) {
+        const msg = error.response.data?.message;
+        if (error.response.status === 400) {
+          alert(msg || '이메일 또는 비밀번호가 올바르지 않습니다.');
         }
-      } else {
-        alert('서버와 연결할 수 없습니다. 네트워크 상태를 확인해주세요.');
+        // 401/403/500/네트워크 오류는 axiosInstance 인터셉터가 triggerAlert으로 처리
       }
     }
   };
@@ -98,7 +88,8 @@ function Delete() {
           lineHeight: '1.7'
         }}>
           • 탈퇴 후 동일한 이메일로 재가입이 제한될 수 있습니다.<br />
-          • 등록한 레시피 및 좋아요 내역이 모두 삭제됩니다.
+          • 레시피 좋아요 및 스크랩 내역이 모두 삭제됩니다.<br />
+          • 등록한 레시피는 홈페이지 내에 유지됩니다.
         </div>
 
         {/* 이메일 입력 */}

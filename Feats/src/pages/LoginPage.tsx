@@ -134,26 +134,7 @@ function LoginPage({ onLogin }: Props) {
     event.stopPropagation();
     setErrors("");
 
-    if (loginMode === "passwordless") {
-      if (isRequesting) return;
-      setIsRequesting(true);
-      try {
-        const { data } = await axios.post<{ randomValue: string; servicePassword: string }>(
-          "/passwordless/getSp", null, { params: { email } }
-        );
-
-        cancelledRef.current = false;
-        setRandomValue(data.randomValue);
-        setServicePassword(data.servicePassword);
-        setIsPolling(true);
-        startPolling(email, data.randomValue);
-      } catch (error: any) {
-        setErrors(error.response?.data || "패스워드리스 인증 요청에 실패했습니다.");
-      } finally {
-        setIsRequesting(false);
-      }
-      return;
-    }
+    
 
     try {
       const response = await axios.post<LoginResponse>(

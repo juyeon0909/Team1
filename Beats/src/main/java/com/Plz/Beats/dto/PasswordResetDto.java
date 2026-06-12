@@ -13,6 +13,11 @@ public class PasswordResetDto {
         @NotBlank private String name;
         @NotBlank @Email private String email;
     }
+    @Getter @NoArgsConstructor
+    public static class CodeCheckRequest {
+        @NotBlank @Email private String email;
+        @NotBlank private String code; // 리액트가 보낸 6자리 인증번호가 여기에 안착합니다.
+    }
 
     // 초기화 (확인 + 새 비번 한 번에)
     @Getter @NoArgsConstructor

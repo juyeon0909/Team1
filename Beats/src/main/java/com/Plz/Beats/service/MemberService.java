@@ -76,15 +76,15 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
             throw new IllegalArgumentException("삭제하려는 회원 정보가 null입니다.");
         }
 
-        System.out.println("회원 강제 탈퇴 로직 가동. ID: " + member.getId());
+        Long memberId = member.getId();
 
-        // 1. 자식 테이블(storage_items) 데이터 먼저 직접 강제 삭제!
-        memberRepository.deleteStorageItemsByMemberId(member.getId());
-        System.out.println("-> 자식 테이블(storage_items) 데이터 청소 완료.");
+        memberRepository.deleteRecipeLikesByMemberId(memberId);
+        memberRepository.deleteScrapsByMemberId(memberId);
+        memberRepository.deleteQnasByMemberId(memberId);
+        memberRepository.nullifyRecipeMemberByMemberId(memberId);
+        memberRepository.deleteStorageItemsByMemberId(memberId);
 
-        // 2. 부모 테이블(members) 데이터 최종 삭제!
         memberRepository.delete(member);
-        System.out.println("-> 부모 테이블(members) 회원 삭제 완료.");
     }
 
 }

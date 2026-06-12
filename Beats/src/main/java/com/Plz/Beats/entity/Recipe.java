@@ -31,8 +31,8 @@ public class Recipe {
     // 작성자
     // @JoinColumn이 있으면 무조건 fk
     // name은 참조하는 pk이름과 동일
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "member_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
     private Member member;
 
     // 카테고리

@@ -66,7 +66,7 @@ public class RecipeService {
         dto.setCookingTime(recipe.getCookingTime());
         dto.setDescription(recipe.getDescription());
         dto.setImage(recipe.getImage());
-        dto.setAuthor(recipe.getMember().getName());
+        dto.setAuthor(recipe.getMember() != null ? recipe.getMember().getName() : "탈퇴한 회원");
 
         if (recipe.getCookingMethod() != null) {
             dto.setSteps(Arrays.asList(recipe.getCookingMethod().split("\n")));
@@ -178,7 +178,7 @@ public class RecipeService {
 
         // 관리자가 아니면 본인만 수정 가능
         boolean isAdmin = requester.getRole() == Role.ADMIN;
-        if (!isAdmin && !recipe.getMember().getEmail().equals(username)) {
+        if (!isAdmin && (recipe.getMember() == null || !recipe.getMember().getEmail().equals(username))) {
             throw new IllegalArgumentException("본인이 등록한 레시피만 수정할 수 있습니다.");
         }
 
@@ -234,20 +234,21 @@ public class RecipeService {
                 .map(ing -> ing.getItem() != null ? ing.getItem().getName() : "")
                 .collect(java.util.stream.Collectors.joining(", "));
 
-        // 변경 알림 보내기 (수정 유무와 관계없이 무조건 발송)
-        // 여기는 알림이라 실제 작업은 XX
-        String to = recipe.getMember().getEmail();
-        String subject = "[레시피 수정 알림] \"" + dto.getTitle() + "\" 레시피가 수정되었습니다.";
-        String body = buildRecipeDiffMail(
-                recipe.getMember().getName(),
-                beforeTitle,    dto.getTitle(),
-                beforeCategory, afterCategory,
-                beforeTime,     dto.getCookingTime(),
-                beforeDesc,     dto.getDescription(),
-                beforeSteps,    afterSteps,
-                beforeIngredients, afterIngredients
-        );
-        mailService.sendMail(to, subject, body);
+        // 변경 알림 보내기 (작성자가 탈퇴하지 않은 경우에만 발송)
+        if (recipe.getMember() != null) {
+            String to = recipe.getMember().getEmail();
+            String subject = "[레시피 수정 알림] \"" + dto.getTitle() + "\" 레시피가 수정되었습니다.";
+            String body = buildRecipeDiffMail(
+                    recipe.getMember().getName(),
+                    beforeTitle,    dto.getTitle(),
+                    beforeCategory, afterCategory,
+                    beforeTime,     dto.getCookingTime(),
+                    beforeDesc,     dto.getDescription(),
+                    beforeSteps,    afterSteps,
+                    beforeIngredients, afterIngredients
+            );
+            mailService.sendMail(to, subject, body);
+        }
 
         dto.setId(recipe.getId());
         return dto;
@@ -352,12 +353,12 @@ public class RecipeService {
                         r.getCategory().getDescription(),
                         r.getCookingTime(),
                         r.getDescription(),
-                        r.getMember().getName(),
-                        r.getMember().getEmail(),
+                        r.getMember() != null ? r.getMember().getName() : "탈퇴한 회원",
+                        r.getMember() != null ? r.getMember().getEmail() : "",
                         r.getRecipeIngredients().stream()
                                 .map(ing -> new RecipeDto.MustIngredientDto(
                                         ing.getItem() != null ? ing.getItem().getName() : "",
-                                        ing.getQuantity() != null ? ing.getQuantity() : 0  // quantity 추가
+                                        ing.getQuantity() != null ? ing.getQuantity() : 0
                                 ))
                                 .collect(Collectors.toList()),
                         null,
@@ -377,12 +378,12 @@ public class RecipeService {
                 r.getCategory().getDescription(),
                 r.getCookingTime(),
                 r.getDescription(),
-                r.getMember().getName(),
-                r.getMember().getEmail(),
+                r.getMember() != null ? r.getMember().getName() : "탈퇴한 회원",
+                r.getMember() != null ? r.getMember().getEmail() : "",
                 r.getRecipeIngredients().stream()
                         .map(ing -> new RecipeDto.MustIngredientDto(
                                 ing.getItem() != null ? ing.getItem().getName() : "",
-                                ing.getQuantity() != null ? ing.getQuantity() : 0  // quantity 추가
+                                ing.getQuantity() != null ? ing.getQuantity() : 0
                         ))
                         .collect(Collectors.toList()),
                 null,
@@ -414,8 +415,8 @@ public class RecipeService {
         Recipe recipe = recipeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
 
-        if (!recipe.getMember().getEmail().equals(email)) {
-            throw new RuntimeException("본인이 등록한 레시피만 삭제할 수 있습니다.");
+        if (recipe.getMember() == null || !recipe.getMember().getEmail().equals(email)) {
+            throw new IllegalArgumentException("본인이 등록한 레시피만 삭제할 수 있습니다.");
         }
 
         recipeRepository.delete(recipe);

@@ -15,6 +15,26 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     @Modifying
     @Transactional
+    @Query(value = "DELETE FROM recipe_likes WHERE member_id = :memberId", nativeQuery = true)
+    void deleteRecipeLikesByMemberId(@Param("memberId") Long memberId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM scraps WHERE member_id = :memberId", nativeQuery = true)
+    void deleteScrapsByMemberId(@Param("memberId") Long memberId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM qnas WHERE member_id = :memberId", nativeQuery = true)
+    void deleteQnasByMemberId(@Param("memberId") Long memberId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE recipes SET member_id = NULL WHERE member_id = :memberId", nativeQuery = true)
+    void nullifyRecipeMemberByMemberId(@Param("memberId") Long memberId);
+
+    @Modifying
+    @Transactional
     @Query(value = "DELETE FROM storage_items WHERE member_id = :memberId", nativeQuery = true)
     void deleteStorageItemsByMemberId(@Param("memberId") Long memberId);
 

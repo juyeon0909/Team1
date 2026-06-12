@@ -96,7 +96,7 @@ public class MemberController {
 
         // 이메일 중복 체크
         Member member = memberService.findByEmail(bean.getEmail());
-        if (member != null) { // member가 null이 아니라는 것은 이미 존재하는 id(맴버)라는 것을 의미함
+        if (member != null) {
             // 이미 존재하는 이메일 주소
             return new ResponseEntity<>(Map.of("email", "이미 존재하는 이메일 주소입니다."),
                     HttpStatus.BAD_REQUEST);

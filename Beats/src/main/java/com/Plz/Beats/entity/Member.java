@@ -21,15 +21,15 @@ public class Member {
     @Id // 프라이머리 키
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 숫자 생성할때 AUTO로 생성하겠다.
 
-    @Column(name = "member_id") // pk 컬럼 이름 : 테이블단수명_id
+    @Column(name = "member_id")
     private Long id;
 
-    @NotBlank(message = "이름은 필수 입력 사항입니다.") // 빈칸으로 두면 안되게 설정하고 텍스트를 표시함(데이터베이스의 제약조건느낌)
+    @NotBlank(message = "이름은 필수 입력 사항입니다.")
     private String name;
 
-    @Column(unique = true, nullable = false) // 실질적인 프라이머리 키
-    @NotBlank(message = "이메일은 필수 입력 사항입니다.") // 빈칸으로 두면 안되게 설정하고 텍스트를 표시함(데이터베이스의 제약조건느낌)
-    @Email(message = "올바른 이메일 형식으로 입력해 주셔야 합니다.") // 이메일 형식인지 아닌지 검사하는 것 / 틀리면 메시지 출력
+    @Column(unique = true, nullable = false)
+    @NotBlank(message = "이메일은 필수 입력 사항입니다.")
+    @Email(message = "올바른 이메일 형식으로 입력해 주셔야 합니다.")
     private String email;
 
     @NotBlank(message = "비밀 번호는 필수 입력 사항입니다.")

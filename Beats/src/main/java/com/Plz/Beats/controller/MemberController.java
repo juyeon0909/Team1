@@ -24,7 +24,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+// [보안] CORS 정책은 CorsConfig 한 곳에서만 관리한다.
+// 컨트롤러에 @CrossOrigin 을 하드코딩하면 설정이 이중화되어 혼선을 준다.
 public class MemberController {
     private final MemberService memberService;
     private final MemberDetailsService memberDetailsServices;

@@ -20,9 +20,9 @@ function PasswordlessWithdrawalPage() {
     if (!isConfirm) return;
 
     try {
-      const response = await axios.post("/passwordless/withdrawal", null, {
-        params: { email }
-      });
+      // 해지 대상은 서버가 JWT 토큰에서 본인 이메일을 꺼내 판단한다.
+      // (email 파라미터는 더 이상 사용하지 않음 — 남의 계정 해지 방지)
+      const response = await axios.post("/passwordless/withdrawal", null);
 
       if (response.data === true) {
         alert("성공적으로 패스워드리스 연동이 해지되었습니다.");

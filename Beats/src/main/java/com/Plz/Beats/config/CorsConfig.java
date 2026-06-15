@@ -17,27 +17,28 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // 리액트의 포트 번호를 여기에 작성
+        // [보안] 허용 출처는 실제 사용하는 곳만 명시한다.
+        // - 원시 IP(54.180.0.163)와 미사용 출처(https://localhost:3000)는 제거.
+        // - localhost:5173 은 로컬 개발용(Vite). 운영만 쓸 거면 이 줄도 빼면 된다.
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "https://localhost:3000",
                 "https://eatsfridge.site",
-                "https://54.180.0.163"
-
+                "https://www.eatsfridge.site"
         ));
 
 
-        // 허용 HTTP 메소드
+        // 허용 HTTP 메소드 — 필요한 것만. allowCredentials(true) 와 함께 "*" 를 섞지 않는다.
         configuration.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH","*"
+                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
         ));
 
+        // 허용 헤더 — 실제 사용하는 헤더만. 와일드카드 "*" 제거.
         // Authorization은 axiosInstance.tsx 파일 참조
         // Content-Type은 LoginPage.tsx 파일 참조
         configuration.setAllowedHeaders(List.of(
                 "Authorization",
                 "Content-Type", // MIME 타입
-                "Accept",
-                "*"
+                "Accept"
         ));
 
         // 쿠키 Authorization 헤더 포함 요청 허용

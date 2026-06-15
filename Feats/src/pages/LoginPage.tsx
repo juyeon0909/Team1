@@ -134,7 +134,27 @@ function LoginPage({ onLogin }: Props) {
     event.stopPropagation();
     setErrors("");
 
-
+    if (loginMode === "passwordless") {
+      setIsRequesting(true);
+      try {
+        const { data } = await axios.post<{ randomValue: string; servicePassword: string }>(
+          "/passwordless/getSp",
+          null,
+          { params: { email } }
+        );
+        setRandomValue(data.randomValue);
+        setServicePassword(data.servicePassword);
+        cancelledRef.current = false;
+        setIsPolling(true);
+        startPolling(email, data.randomValue);
+      } catch (err: any) {
+        const msg = err.response?.data ?? "인증 요청 중 오류가 발생했습니다.";
+        setErrors(typeof msg === "string" ? msg : JSON.stringify(msg));
+      } finally {
+        setIsRequesting(false);
+      }
+      return;
+    }
 
     try {
       const response = await axios.post<LoginResponse>(
@@ -332,10 +352,6 @@ function LoginPage({ onLogin }: Props) {
                 <span>
                   패스워드리스
                   <Link to="/member/passwordless-register" className="login-link-highlight">등록</Link>
-                </span>
-                <span>
-                  등록
-                  <Link to="/member/reset-register" className="login-link-highlight">해지</Link>
                 </span>
               </div>
             )

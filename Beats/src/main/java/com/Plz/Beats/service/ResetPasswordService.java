@@ -46,7 +46,7 @@ public class ResetPasswordService {
         String randomCode = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
         String currentTime = String.valueOf(System.currentTimeMillis());
         verificationStorage.put(email, new String[]{randomCode, currentTime});
-        // 새 인증번호를 보낼 때마다 시도 횟수를 초기화하고, 이전 인증완료 증표는 폐기한다.
+        // 새 인증번호를 보낼 때마다 시도 횟수를 초기화하고, 이전 인증완료 증표는 폐기
         attemptStorage.put(email, MAX_ATTEMPTS);
         verifiedEmails.remove(email);
         String subject = "[잇츠 인 마이 냉장고] 비밀번호 재설정 인증번호입니다.";
@@ -67,7 +67,7 @@ public class ResetPasswordService {
         long sentTime = Long.parseLong(authData[1]); // 발급된 시간 정보 추출
         long currentTime = System.currentTimeMillis(); // 검증하는 지금 이 순간의 시간
 
-        // 🌟시간 검증
+        // 시간 검증
         if (currentTime - sentTime > EXPIRED_TIME) {
             verificationStorage.remove(email); // 만료되었으니 가방에서 폐기처리
             attemptStorage.remove(email);

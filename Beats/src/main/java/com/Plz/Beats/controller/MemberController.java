@@ -24,7 +24,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+// [보안] CORS 정책은 CorsConfig 한 곳에서만 관리한다.
+// 컨트롤러에 @CrossOrigin 을 하드코딩하면 설정이 이중화되어 혼선을 준다.
 public class MemberController {
     private final MemberService memberService;
     private final MemberDetailsService memberDetailsServices;
@@ -96,7 +97,7 @@ public class MemberController {
 
         // 이메일 중복 체크
         Member member = memberService.findByEmail(bean.getEmail());
-        if (member != null) { // member가 null이 아니라는 것은 이미 존재하는 id(맴버)라는 것을 의미함
+        if (member != null) {
             // 이미 존재하는 이메일 주소
             return new ResponseEntity<>(Map.of("email", "이미 존재하는 이메일 주소입니다."),
                     HttpStatus.BAD_REQUEST);

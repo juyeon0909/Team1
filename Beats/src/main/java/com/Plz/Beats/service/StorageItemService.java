@@ -37,9 +37,10 @@ public class StorageItemService {
     }
 
     // 사용자 전체 재료 목록 조회
+
     public List<StorageItemDto> getAllItems(Long memberId) {
         List<Storage_item> items = storageItemRepository.findAllByMemberId(memberId);
-        return toDto(items); // 내부 가공 툴 호출
+        return toDto(items);
     }
 
     // 재료 등록

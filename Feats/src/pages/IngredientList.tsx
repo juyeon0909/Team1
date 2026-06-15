@@ -160,7 +160,6 @@ const IngredientList: React.FC = () => {
                             </span>
                         </div>
                         
-                        {/* 하단 사전과 100% 동일한 그리드 및 !important 계층 스타일 주입 */}
                         <div className="ing-master-grid-container" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "12px", width: "100%" }}>
                             {unclassifiedItems.map((item) => {
                                 const isEditing = editingId === item.id;

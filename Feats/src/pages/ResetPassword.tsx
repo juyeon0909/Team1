@@ -10,8 +10,10 @@ function ResetPassword() {
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isCodeSent, setIsCodeSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
 
   const [pwStrength, setPwStrength] = useState<PwStrength>({
@@ -21,6 +23,9 @@ function ResetPassword() {
 
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
 
+
+
+
   // 1. 이름 + 이메일 확인
   const handleVerify = async () => {
     if (!name || !email) {
@@ -28,18 +33,32 @@ function ResetPassword() {
       return;
     }
     try {
-      await axios.post('/member/reset-password/verify', { name, email });
-      alert('본인 확인이 완료되었습니다. 새 비밀번호를 입력해주세요.');
-      setIsVerified(true);
+      await axios.post('/member/reset-password/send', { name, email });
+      alert('입력하신 이메일로 인증번호 6자리가 발송되었습니다. 메일함을 확인해주세요.');
+      setIsCodeSent(true); 
     } catch (error: any) {
-      handleAxiosError(error, '본인 확인에 실패했습니다.');
+      handleAxiosError(error, '본인 확인 및 이메일 발송에 실패했습니다.');
+    }
+  };
+  const handleVerifyCode = async () => {
+    if (!code || code.trim().length !== 6) {
+      alert('인증번호 6자리를 정확히 입력해주세요.');
+      return;
+    }
+    try {
+      // 백엔드 2단계 엔드포인트(/verify-code) 호출
+      await axios.post('/member/reset-password/verify-code', { email, code });
+      alert('이메일 인증이 완료되었습니다. 새 비밀번호를 설정해주세요.');
+      setIsVerified(true); // 새 비밀번호 창 스위치 On!
+    } catch (error: any) {
+      handleAxiosError(error, '인증번호가 올바르지 않거나 만료되었습니다.');
     }
   };
 
   // 2. 초기화
   const handleReset = async () => {
     if (!isVerified) {
-      alert('본인 확인을 먼저 완료해주세요.');
+      alert('이메일 인증을 먼저 완료해주세요.');
       return;
     }
     if (!newPassword || !confirmPassword) {
@@ -56,7 +75,7 @@ function ResetPassword() {
     }
     try {
       await axios.post('/member/reset-password/reset', { name, email, newPassword });
-      alert('비밀번호가 변경되었습니다. 다시 로그인해주세요.');
+      alert('비밀번호가 안전하게 재설정되었습니다. 다시 로그인해주세요.');
       navigate('/member/login');
     } catch (error: any) {
       handleAxiosError(error, '비밀번호 변경에 실패했습니다.');
@@ -92,6 +111,7 @@ function ResetPassword() {
   const isSubmittable =
     name.trim() !== '' &&
     email.trim() !== '' &&
+    code.trim().length === 6 &&
     newPassword.length >= 8 &&
     newPassword === confirmPassword;
 
@@ -147,7 +167,7 @@ function ResetPassword() {
         padding: '32px', background: '#fff'
       }}>
         <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '24px' }}>
-          가입 시 입력한 이름과 이메일을 확인한 뒤 새 비밀번호를 설정할 수 있습니다.
+          가입 시 입력한 이름과 이메일로 인증한 뒤 새 비밀번호를 설정할 수 있습니다.
         </p>
 
         {/* 이름 */}
@@ -159,7 +179,7 @@ function ResetPassword() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="가입 시 입력한 이름"
-            disabled={isVerified}
+            disabled={isCodeSent}
           />
         </div>
 
@@ -172,12 +192,12 @@ function ResetPassword() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="예: aaa@aaa.com"
-            disabled={isVerified}
+            disabled={isCodeSent}
           />
         </div>
 
         {/* 본인 확인 버튼 (확인 전에만) */}
-        {!isVerified && (
+        {!isCodeSent && (
           <button
             type="button"
             onClick={handleVerify}
@@ -189,6 +209,32 @@ function ResetPassword() {
           >
             본인 확인
           </button>
+        )}
+        {isCodeSent && !isVerified && (
+          <div style={{ marginBottom: '16px', padding: '12px', background: '#f8fafc', borderRadius: '6px', border: '1px dashed #cbd5e1' }}>
+            <div style={labelStyle}>이메일 인증번호 6자리</div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                style={{ ...inputStyle, flex: 2 }}
+                type="text"
+                maxLength={6}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="숫자 6자리 입력"
+              />
+              <button
+                type="button"
+                onClick={handleVerifyCode}
+                style={{
+                  flex: 1, padding: '9px', fontSize: '12px', borderRadius: '6px',
+                  cursor: 'pointer', border: 'none', background: '#1e293b', color: '#fff',
+                  fontWeight: 500
+                }}
+              >
+                인증 확인
+              </button>
+            </div>
+          </div>
         )}
 
         {/* 인증 완료 후 새 비밀번호 */}

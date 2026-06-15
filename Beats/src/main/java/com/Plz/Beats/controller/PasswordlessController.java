@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Map;
 
 @RestController
@@ -100,10 +101,20 @@ public class PasswordlessController {
 
     /**
      * 7. 패스워드리스 해지 API
+     *
+     * [보안] 이메일을 파라미터로 받지 않고, 로그인된 사용자의 토큰에서 이메일을 꺼낸다.
+     * 이렇게 하지 않으면 공격자가 남의 이메일을 넣어 임의로 패스워드리스(2차 보호)를
+     * 해지시킬 수 있다(계정 보안 강제 약화).
      */
     @PostMapping("/withdrawal")
-    public ResponseEntity<Boolean> withdrawAp(@RequestParam String email) {
-        boolean isWithdrawn = passwordlessService.withdrawAp(email);
+    public ResponseEntity<?> withdrawAp(Principal principal) {
+        // principal 은 JWT 인증을 통과한 경우에만 채워진다. 없으면 비로그인 → 거부.
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "로그인이 필요합니다."));
+        }
+        // principal.getName() = 토큰 subject = 본인 이메일. 즉 본인 것만 해지 가능.
+        boolean isWithdrawn = passwordlessService.withdrawAp(principal.getName());
         return ResponseEntity.ok(isWithdrawn);
     }
 }

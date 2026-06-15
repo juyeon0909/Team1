@@ -1,6 +1,6 @@
 import "../components/MenuItems.css";
 import { NavDropdown, Navbar, Container, Nav } from "react-bootstrap";
-import fridgeLogo from "../../public/fridge-logo.svg";
+// import fridgeLogo from "../../public/fridge-logo.svg";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { User } from "../types/User";
 
@@ -96,7 +96,7 @@ const navigate = useNavigate();
    return (
       <Container fluid className="imf-nav me-auto">
          <div className="nav-logo" onClick={() => navigate(`/`)} style={{ cursor: "pointer" }}>
-            <img src={fridgeLogo} alt="Logo" className="nav-logo" />
+            <img src="/fridge-logo.svg" alt="냉장고 로고" />
             <span className="nav-logo-text">잇츠 인 마이 냉장고</span>
          </div>
          <Navbar />

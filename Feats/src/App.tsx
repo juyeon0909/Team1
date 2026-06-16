@@ -80,7 +80,7 @@ const hideNav = ['/member/login', '/member/signup'].includes(location.pathname);
     localStorage.removeItem('user');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
-    console.log('로그 아웃 성공성공');
+    console.log('로그 아웃 성공');
     navigate('/member/login');
   };
 

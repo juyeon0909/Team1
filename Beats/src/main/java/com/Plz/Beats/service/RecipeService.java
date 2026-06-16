@@ -389,7 +389,13 @@ public class RecipeService {
                                         ing.getQuantity() != null ? ing.getQuantity() : 0  // quantity 추가
                                 ))
                                 .collect(Collectors.toList()),
-                        null,
+                        r.getRecipeIngredients().stream()
+                                .filter(ing -> !ing.isRequired())
+                                .map(ing -> new RecipeDto.SelectIngredientDto(
+                                        ing.getItem() != null ? ing.getItem().getName() : "",
+                                        ing.getQuantity() != null ? ing.getQuantity() : 0
+                                ))
+                                .collect(Collectors.toList()),
                         r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : "",
                         r.getImage(),
                         r.getCookingMethod()
@@ -415,7 +421,13 @@ public class RecipeService {
                                 ing.getQuantity() != null ? ing.getQuantity() : 0  // quantity 추가
                         ))
                         .collect(Collectors.toList()),
-                null,
+                r.getRecipeIngredients().stream()
+                        .filter(ing -> !ing.isRequired())
+                        .map(ing -> new RecipeDto.SelectIngredientDto(
+                                ing.getItem() != null ? ing.getItem().getName() : "",
+                                ing.getQuantity() != null ? ing.getQuantity() : 0
+                        ))
+                        .collect(Collectors.toList()),
                 r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : "",
                 r.getImage(),
                 r.getCookingMethod()

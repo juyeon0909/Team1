@@ -8,14 +8,14 @@ import { notifyError } from '../utils/notifyError';
 
 const RecipeDetail = () => {
   const navigate = useNavigate();
-  
+
   const [recipe,          setRecipe]          = useState<RecipeView | null>(null);
   const [loading,         setLoading]         = useState(true);
   const [isModalOpen,     setIsModalOpen]     = useState(false);
   const [mustIngredients, setMustIngredients] = useState<{ name: string; quantity: string | number }[]>([]);
 
 
-  
+
   const { id } = useParams();
 
   // 로그인 가드

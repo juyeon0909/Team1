@@ -21,6 +21,11 @@ const KOR_TO_CODE: Record<string, string> = {
   간식: 'GAN', 야식: 'YA', 다이어트: 'DIET', 밀프랩: 'RAP',
 };
 
+// 설명(description)에서 "선택재료: ..." 부분을 찾아내는 정규식.
+// 괄호 유무, "선택재료"/"선택 재료" 띄어쓰기 유무, ":"/"：" 모두 허용하고
+// 그 지점부터 문자열 끝까지를 대상으로 한다.
+const OPT_IN_DESC = /[\s(]*선택\s*재료\s*[:：]\s*([\s\S]*?)\)?\s*$/;
+
 const RecipeEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -69,7 +74,22 @@ const RecipeEdit = () => {
         setTitle(data.title || '');
         setCategory(CODE_TO_KOR[data.category] || '한식');
         setCookingTime(data.cookingTime ? `${data.cookingTime}분` : '');
-        setIntro(data.description || '');
+
+        // 설명에서 "선택재료: ..." 부분을 분리한다.
+        //  - 그 앞부분만 순수 소개(intro)로 남기고,
+        //  - 거기 적혀 있던 재료들은 선택 재료 입력칸으로 옮긴다(쉼표로 구분).
+        const rawDesc = data.description || '';
+        const matched = rawDesc.match(OPT_IN_DESC);
+        const cleanedIntro = matched ? rawDesc.slice(0, matched.index ?? 0).trim() : rawDesc.trim();
+        const extractedOpt = matched
+          ? (matched[1] || '').split(',').map(s => s.trim()).filter(Boolean)
+          : [];
+        setIntro(cleanedIntro);
+
+        // 선택 재료 입력칸: 1순위 DB의 selectIngredients, 없으면 설명에서 추출한 값.
+        const fromField = (data.selectIngredients || []).map(ing => ing.name).filter(Boolean);
+        setOptIngredients((fromField.length > 0 ? fromField : extractedOpt).join(', '));
+
         setMethod(data.steps ? data.steps.join('\n') : '');
         setImagePreview(data.image || '');
 
@@ -194,18 +214,25 @@ const RecipeEdit = () => {
 
     const numericTime = parseInt(cookingTime.replace(/[^0-9]/g, ''), 10) || 15;
     const stepsArray = method ? method.split('\n').map(s => s.trim()).filter(Boolean) : [];
-    const finalDescription = optIngredients.trim()
-      ? `${intro || title} (선택 재료: ${optIngredients})`
-      : intro || `${title} 레시피입니다.`;
+    // 선택 재료는 설명(description)에 붙이지 않고, 등록 화면과 동일하게 별도 필드로 전송한다.
+    const selectIngredientsList = optIngredients
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .map(name => ({ name, quantity: 0 }));
+
+    // 혹시라도 소개에 "선택재료: ..."가 남아 있으면 한 번 더 제거해 깨끗한 설명만 저장한다.
+    const cleanDescription = (intro || '').replace(OPT_IN_DESC, '').trim();
 
     const recipePayload = {
       title,
       dishName: title,
       category: KOR_TO_CODE[category] || 'KOR',
       cookingTime: numericTime,
-      description: finalDescription,
+      description: cleanDescription || `${title} 레시피입니다.`,
       image: imagePreview || '',
       mustIngredients: filteredMustIngredients,
+      selectIngredients: selectIngredientsList,
       steps: stepsArray,
     };
 

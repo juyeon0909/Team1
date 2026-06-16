@@ -254,6 +254,25 @@ public class RecipeService {
             }
         }
 
+        // 선택 재료도 동일하게 다시 추가한다(수정 시 선택 재료가 사라지지 않도록).
+        if (dto.getSelectIngredients() != null) {
+            for (RecipeDto.SelectIngredientDto ingDto : dto.getSelectIngredients()) {
+                RecipeIngredient ingredient = new RecipeIngredient();
+                Item item = itemRepository.findByName(ingDto.getName().trim())
+                        .orElseGet(() -> {
+                            Item newItem = new Item();
+                            newItem.setName(ingDto.getName().trim());
+                            return itemRepository.save(newItem);
+                        });
+                ingredient.setItem(item);
+                ingredient.setQuantity(ingDto.getQuantity());
+                ingredient.setUnit("g");
+                ingredient.setRequired(false);
+                ingredient.setRecipe(recipe);
+                recipe.getRecipeIngredients().add(ingredient);
+            }
+        }
+
         // 수정 후 현재 값 저장하기
         String afterCategory = Category.valueOf(dto.getCategory()).getDescription(); // 한글
         String afterSteps    = recipe.getCookingMethod();
@@ -390,7 +409,13 @@ public class RecipeService {
                                         ing.getQuantity() != null ? ing.getQuantity() : 0
                                 ))
                                 .collect(Collectors.toList()),
-                        null,
+                        r.getRecipeIngredients().stream()
+                                .filter(ing -> !ing.isRequired())
+                                .map(ing -> new RecipeDto.SelectIngredientDto(
+                                        ing.getItem() != null ? ing.getItem().getName() : "",
+                                        ing.getQuantity() != null ? ing.getQuantity() : 0
+                                ))
+                                .collect(Collectors.toList()),
                         r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : "",
                         r.getImage(),
                         r.getCookingMethod()
@@ -416,7 +441,13 @@ public class RecipeService {
                                 ing.getQuantity() != null ? ing.getQuantity() : 0
                         ))
                         .collect(Collectors.toList()),
-                null,
+                r.getRecipeIngredients().stream()
+                        .filter(ing -> !ing.isRequired())
+                        .map(ing -> new RecipeDto.SelectIngredientDto(
+                                ing.getItem() != null ? ing.getItem().getName() : "",
+                                ing.getQuantity() != null ? ing.getQuantity() : 0
+                        ))
+                        .collect(Collectors.toList()),
                 r.getUpdatedAt() != null ? r.getUpdatedAt().toLocalDate().toString() : "",
                 r.getImage(),
                 r.getCookingMethod()

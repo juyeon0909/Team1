@@ -73,12 +73,22 @@ public class RecipeService {
         }
 
         List<RecipeDto.MustIngredientDto> ingDtos = recipe.getRecipeIngredients().stream()
+                .filter(ing -> ing.isRequired())
                 .map(ing -> new RecipeDto.MustIngredientDto(
                         ing.getItem() != null ? ing.getItem().getName() : "알 수 없는 재료",
                         ing.getQuantity()
                 ))
                 .collect(Collectors.toList());
         dto.setMustIngredients(ingDtos);
+
+        List<RecipeDto.SelectIngredientDto> selectDtos = recipe.getRecipeIngredients().stream()
+                .filter(ing -> !ing.isRequired())
+                .map(ing -> new RecipeDto.SelectIngredientDto(
+                        ing.getItem() != null ? ing.getItem().getName() : "알 수 없는 재료",
+                        ing.getQuantity()
+                ))
+                .collect(Collectors.toList());
+        dto.setSelectIngredients(selectDtos);
 
         dto.setLikeCount(recipeLikeRepository.countByRecipe(recipe));
         dto.setScrapCount(scrapRepository.countByRecipe(recipe));
@@ -153,6 +163,23 @@ public class RecipeService {
                 ingredient.setQuantity(ingDto.getQuantity());
                 ingredient.setUnit("g");
                 ingredient.setRequired(true);
+                ingredient.setRecipe(recipe);
+                recipe.getRecipeIngredients().add(ingredient);
+            }
+        }
+        if (dto.getSelectIngredients() != null) {
+            for (RecipeDto.SelectIngredientDto ingDto : dto.getSelectIngredients()) {
+                RecipeIngredient ingredient = new RecipeIngredient();
+                Item item = itemRepository.findByName(ingDto.getName().trim())
+                        .orElseGet(() -> {
+                            Item newItem = new Item();
+                            newItem.setName(ingDto.getName().trim());
+                            return itemRepository.save(newItem);
+                        });
+                ingredient.setItem(item);
+                ingredient.setQuantity(ingDto.getQuantity());
+                ingredient.setUnit("g");
+                ingredient.setRequired(false);
                 ingredient.setRecipe(recipe);
                 recipe.getRecipeIngredients().add(ingredient);
             }

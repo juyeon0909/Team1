@@ -196,7 +196,10 @@ const RecipeDetail = () => {
               <div style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>선택 재료</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', fontSize: '13px' }}>
                 {recipe.selectIngredients.map((ing, idx) => (
-                  <div key={idx}>• {typeof ing === 'string' ? ing : ing.name}</div>
+                  <div key={idx}> 
+                  • {typeof ing === 'string'
+                  ? ing
+                  : `${ing.name}${ing.quantity != null && ing.quantity !== 0 ? ` ${ing.quantity}g` : ''}`}</div>
                 ))}
               </div>
             </div>

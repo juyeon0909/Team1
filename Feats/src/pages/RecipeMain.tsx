@@ -8,6 +8,7 @@ import { toRecipeView } from '../types/recipeMapper';
 import '../components/RecipeMain.css';
 import type { User } from "../types/User";
 import RecipeCard from '../pages/RecipeCard';
+import { notifyError } from '../utils/notifyError';
 
 type RecipeProps = {
   user: User | null;
@@ -57,7 +58,7 @@ function RecipeMain({ user }: RecipeProps) {
           setRecipes([]);
         }
       } catch (error) {
-        console.error('서버 데이터 로딩 실패:', error);
+        notifyError(error, '레시피 목록을 불러오지 못했습니다.');
         setRecipes([]);
       } finally {
         setLoading(false);
@@ -84,7 +85,7 @@ function RecipeMain({ user }: RecipeProps) {
       await axiosInstance.post(`/mypage/${id}/like`);
     } catch (err) {
       setRecipes(prev => prev.map(r => r.id === id ? original : r));
-      console.error('좋아요 처리 실패:', err);
+      notifyError(err, '좋아요 처리에 실패했습니다.');
     }
   };
 
@@ -101,7 +102,7 @@ function RecipeMain({ user }: RecipeProps) {
       await axiosInstance.post(`/recipeMain/${id}/clip`);
     } catch (err) {
       setRecipes(prev => prev.map(r => r.id === id ? original : r));
-      console.error('스크랩 처리 실패:', err);
+      notifyError(err, '스크랩 처리에 실패했습니다.');
     }
   };
 

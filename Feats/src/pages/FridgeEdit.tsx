@@ -4,6 +4,7 @@ import axiosInstance from '../api/axiosInstance';
 import '../components/FridgeRegister.css';
 import type { SearchItem } from '../types/Fridge.ts'; 
 import type {User } from '../types/User.ts';
+import { notifyError } from '../utils/notifyError';
 
 const FridgeEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>(); 
@@ -65,7 +66,7 @@ const FridgeEdit: React.FC = () => {
             else setStoragetype('REFRIGERATED');
           }
         })
-        .catch((err) => console.error("기존 재료 조회 실패:", err));
+        .catch((err) => notifyError(err, "기존 재료 정보를 불러오지 못했습니다."));
     }
   }, [id]);
 

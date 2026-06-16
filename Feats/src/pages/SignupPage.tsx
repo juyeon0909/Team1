@@ -270,7 +270,7 @@ function SignupPage() {
               이미 계정이 있으신가요?
               <Link to="/member/login" className="login-link-highlight">로그인</Link>
             </span>
-            <Link to="/member/reset-password" className="login-link-highlight">비밀번호 초기화</Link>
+            
           </div>
 
         </form>

@@ -3,6 +3,7 @@ package com.Plz.Beats.controller;
 import com.Plz.Beats.config.JwtTokenProvider;
 import com.Plz.Beats.entity.Member;
 import com.Plz.Beats.repository.MemberRepository;
+import com.Plz.Beats.service.MemberService;
 import com.Plz.Beats.service.PasswordlessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ public class PasswordlessController {
     private final PasswordlessService passwordlessService;
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
+    private final MemberService memberService;
 
     /**
      * 1. 사용자 등록 여부 확인 API
@@ -79,10 +81,14 @@ public class PasswordlessController {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
 
-        String token = jwtTokenProvider.createToken(member);
+        // access + refresh 토큰 발급. refresh token은 서버(DB)에도 저장한다.
+        String accessToken = jwtTokenProvider.createAccessToken(member);
+        String refreshToken = jwtTokenProvider.createRefreshToken(member);
+        memberService.updateRefreshToken(member.getEmail(), refreshToken);
 
         return ResponseEntity.ok(Map.of(
-                "accessToken", token,
+                "accessToken", accessToken,
+                "refreshToken", refreshToken,
                 "id", member.getId(),
                 "name", member.getName(),
                 "email", member.getEmail(),

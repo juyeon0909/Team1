@@ -4,15 +4,19 @@ import axiosInstance from '../api/axiosInstance';
 import type { RecipeView, RecipeDto } from '../types/Recipe';
 import { toRecipeView } from '../types/recipeMapper';
 import '../components/RecipeMain.css';
+import { notifyError } from '../utils/notifyError';
 
 const RecipeDetail = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
-
+  
   const [recipe,          setRecipe]          = useState<RecipeView | null>(null);
   const [loading,         setLoading]         = useState(true);
   const [isModalOpen,     setIsModalOpen]     = useState(false);
   const [mustIngredients, setMustIngredients] = useState<{ name: string; quantity: string | number }[]>([]);
+
+
+  
+  const { id } = useParams();
 
   // 로그인 가드
   useEffect(() => {
@@ -40,7 +44,7 @@ const RecipeDetail = () => {
             .map(i => ({ ...i }))
         );
       } catch (error) {
-        console.error('레시피 로딩 실패:', error);
+        notifyError(error, '레시피 정보를 불러오지 못했습니다.');
         setRecipe(null);
       } finally {
         setLoading(false);
@@ -62,7 +66,7 @@ const RecipeDetail = () => {
       await axiosInstance.post(`/mypage/${recipe.id}/like`);
     } catch (err) {
       setRecipe(original);
-      console.error('좋아요 처리 실패:', err);
+      notifyError(err, '좋아요 처리에 실패했습니다.');
     }
   };
 
@@ -79,7 +83,7 @@ const RecipeDetail = () => {
       await axiosInstance.post(`/recipeMain/${recipe.id}/clip`);
     } catch (err) {
       setRecipe(original);
-      console.error('스크랩 처리 실패:', err);
+      notifyError(err, '스크랩 처리에 실패했습니다.');
     }
   };
 
@@ -192,7 +196,10 @@ const RecipeDetail = () => {
               <div style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>선택 재료</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', fontSize: '13px' }}>
                 {recipe.selectIngredients.map((ing, idx) => (
-                  <div key={idx}>• {typeof ing === 'string' ? ing : ing.name}</div>
+                  <div key={idx}> 
+                  • {typeof ing === 'string'
+                  ? ing
+                  : `${ing.name}${ing.quantity != null && ing.quantity !== 0 ? ` ${ing.quantity}g` : ''}`}</div>
                 ))}
               </div>
             </div>

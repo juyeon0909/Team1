@@ -5,6 +5,7 @@ import type { RecipeView, RecipeDto } from '../types/Recipe';
 import { toRecipeView } from '../types/recipeMapper';
 import RecipeCard from '../pages/RecipeCard';
 import '../components/RecipeMainClip.css';
+import { notifyError } from '../utils/notifyError';
 
 const SORT_OPTIONS = ['최신 스크랩순', '좋아요순'];
 const CATEGORIES = ['전체', '한식', '일식', '중식', '양식', '간식', '야식', '다이어트', '밀프랩'];
@@ -52,7 +53,7 @@ const RecipeMainClip = () => {
         }, 300);
       }
     } catch (e) {
-      console.error('스크랩 취소 실패:', e);
+      notifyError(e, '스크랩 취소에 실패했습니다.');
     }
   };
 
@@ -70,7 +71,7 @@ const RecipeMainClip = () => {
       await axiosInstance.post(`/mypage/${id}/like`);
     } catch (err) {
       setRecipes(prev => prev.map(r => r.id === id ? original : r));
-      console.error('좋아요 처리 실패:', err);
+      notifyError(err, '좋아요 처리에 실패했습니다.');
     }
   };
 

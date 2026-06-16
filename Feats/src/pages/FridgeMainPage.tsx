@@ -7,6 +7,7 @@ import type { User } from '../types/User.ts';
 import emptyFrozen from '../assets/empty-frozen2.jpg';
 import emptyRefrigerated from '../assets/empty-refrigerated.jpg';
 import emptyRoom from '../assets/empty-room.jpg';
+import { notifyError } from '../utils/notifyError';
 
 const FridgeMain: React.FC = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const FridgeMain: React.FC = () => {
     axiosInstance
       .get<Ingredient[]>(`/product/list/${userId}`)
       .then((res) => setIngredients(res.data || []))
-      .catch((error) => console.error('냉장고 데이터를 가져오는 중 오류 발생:', error));
+      .catch((error) => notifyError(error, '냉장고 데이터를 불러오지 못했습니다.'));
   };
 
   useEffect(() => {

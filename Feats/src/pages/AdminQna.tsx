@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import customAxios from './../api/axiosInstance';
 import type { AdminQnaItem } from '../types/Admin';
+import { notifyError } from '../utils/notifyError';
 
 export default function AdminQna() {
     const [qnas, setQnas] = useState<AdminQnaItem[]>([]);
@@ -14,7 +15,7 @@ export default function AdminQna() {
             const res = await customAxios.get('/admin/qnas');
             setQnas(res.data || []);
         } catch (e) {
-            console.error('Q&A 목록 불러오기 실패:', e);
+            notifyError(e, 'Q&A 목록을 불러오지 못했습니다.');
         }
     };
 

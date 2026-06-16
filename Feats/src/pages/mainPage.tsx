@@ -12,6 +12,7 @@ import M2 from '../assets/M2.jpg';
 import M3 from '../assets/M3.jpg';
 import RecipeCard from '../pages/RecipeCard';
 import FridgeIntro from "./Fridgeintro.tsx";
+import { notifyError } from "../utils/notifyError";
 
 
 
@@ -405,7 +406,6 @@ const MainPage: React.FC = () => {
      const [qnas, setQnas] = useState<AdminQnaItem[]>([]);
      const [adminRecipes, setAdminRecipes] = useState<AdminRecipeItem[]>([]);
      const [isAdmin, setIsAdmin] = useState(false);
-     const [isUser, setIsUser] =useState(false);
 
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [recipes, setRecipes] = useState<any[]>([]);
@@ -438,17 +438,16 @@ const MainPage: React.FC = () => {
                             });
                         }
                     } catch (matchErr) {
+                        // 매칭률은 부가 정보이므로 실패해도 목록 표시는 계속한다(콘솔만 기록).
                         console.error('메인페이지 매칭률 연동 실패:', matchErr);
                     }
-                    mapped = [...mapped].sort((a, b) => (b.match || 0) - (a.match || 0));
-                } else {
-                    mapped = [...mapped].sort((a, b) => (b.heart || 0) - (a.heart || 0));
                 }
+                // 정렬은 아래 sortedRecipes(useMemo)에서 임박재료 -> 일치율 -> 인기순으로 일괄 처리한다.
 
                 setRecipes(mapped);
                 setRecommendRecipe(mapped.length);
             } catch (error) {
-                console.error('메인페이지 레시피 로딩 실패:', error);
+                notifyError(error, '추천 레시피를 불러오지 못했습니다.');
             }
         };
 
@@ -482,7 +481,7 @@ const MainPage: React.FC = () => {
                            : (res.data.content || res.data.data || res.data.list || []);
                        setQnas(list);
                    })
-                   .catch((err) => console.error("문의 목록 로딩 실패:", err));
+                   .catch((err) => notifyError(err, "문의 목록을 불러오지 못했습니다."));
 
                axiosInstance.get<any>("/admin/recipes/pending")
                    .then((res) => {
@@ -492,13 +491,13 @@ const MainPage: React.FC = () => {
                            : (res.data.content || res.data.data || res.data.list || []);
                        setAdminRecipes(list);
                    })
-                   .catch((err) => console.error("레시피 승인 목록 로딩 실패:", err));
+                   .catch((err) => notifyError(err, "레시피 승인 목록을 불러오지 못했습니다."));
            }
+           
   //  사용자 판별 (role 기반) 
             if (user.role === "USER") {
-                setIsUser(true);
 
-            //  냉장고 재료 목록 
+            //  냉장고 재료 목록
             axiosInstance.get<any[]>(`/product/list/${user.id}`)
                 .then((res) => {
                     const rawData = res.data || [];
@@ -533,9 +532,51 @@ const MainPage: React.FC = () => {
 
                     setIngredients(finalMainList);
                 })
-                .catch((err) => console.error("데이터 연동 실패:", err));
+                .catch((err) => notifyError(err, "냉장고 재료 목록을 불러오지 못했습니다."));
                 }
         }, []);
+
+    // 임박 재료 이름 집합 (소문자/공백 정리) — 추천 레시피 1순위 정렬 기준
+    // ingredients가 바뀔 때만 다시 계산한다.
+    const urgentIngredientNameSet = useMemo(() => {
+        return new Set(
+            ingredients
+                .map((i) => (i.itemName || i.name || "").toLowerCase().trim())
+                .filter((name) => name.length > 0)
+        );
+    }, [ingredients]);
+
+    // 오늘의 추천 레시피 정렬: 1순위 임박재료 포함, 2순위 일치율(match), 3순위 인기순(heart)
+    const sortedRecipes = useMemo(() => {
+        // 임박 재료 포함 여부를 레시피마다 한 번만 계산해 둔다(정렬 비교 중 반복 계산 방지).
+        const usesUrgentIngredient = (r: any): boolean => {
+            if (urgentIngredientNameSet.size === 0) return false;
+            const allIngs: any[] = [...(r.mustIngredients || []), ...(r.selectIngredients || [])];
+            return allIngs.some((ing: any) => {
+                const ingName = (ing.name || "").toLowerCase().trim();
+                if (!ingName) return false;
+                for (const urgentName of urgentIngredientNameSet) {
+                    // 부분 일치도 허용 (예: "대파" vs "파")
+                    if (ingName.includes(urgentName) || urgentName.includes(ingName)) return true;
+                }
+                return false;
+            });
+        };
+
+        const flagged = recipes.map((r) => ({ recipe: r, urgent: usesUrgentIngredient(r) }));
+
+        flagged.sort((a, b) => {
+            // 1순위: 임박 재료를 포함한 레시피를 앞으로
+            if (a.urgent !== b.urgent) return a.urgent ? -1 : 1;
+            // 2순위: 일치율 높은 순 (비로그인/미계산 시 0)
+            const matchDiff = (b.recipe.match ?? 0) - (a.recipe.match ?? 0);
+            if (matchDiff !== 0) return matchDiff;
+            // 3순위: 인기(좋아요) 높은 순
+            return (b.recipe.heart ?? 0) - (a.recipe.heart ?? 0);
+        });
+
+        return flagged.map((x) => x.recipe);
+    }, [recipes, urgentIngredientNameSet]);
 
     // 가장 인기 많은 레시피 (heart 기준 상위 1개)
     const popularRecipe = recipes.length > 0
@@ -576,12 +617,12 @@ const MainPage: React.FC = () => {
                     ScrapRecipe={ScrapRecipe}
                     urgentRecipe={urgentRecipe}
                 />
-                {isUser && (
+                {!isAdmin && (
                     <>
                 <AlertBar ingredients={ingredients} isLoggedIn={isLoggedIn} />
                 <div className="bottom-grid">
                     <ExpiringIngredients ingredients={ingredients} isLoggedIn={isLoggedIn} />
-                    <RecommendedRecipes recipes={recipes} isLoggedIn={isLoggedIn} />
+                    <RecommendedRecipes recipes={sortedRecipes} isLoggedIn={isLoggedIn} />
                 </div>
                 </>
                 )}

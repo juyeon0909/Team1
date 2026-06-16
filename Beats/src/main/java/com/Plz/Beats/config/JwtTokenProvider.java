@@ -20,7 +20,7 @@ import java.util.Date;
  * 서버가 직접 확인해야 한다. 이 클래스가 그 역할을 수행한다.
  *
  * [흐름 요약]
- * 로그인 성공 → createToken() → 토큰을 클라이언트에 반환
+ * 로그인 성공 → createAccessToken()/createRefreshToken() → 토큰을 클라이언트에 반환
  * 이후 요청   → JwtAuthenticationFilter → validateToken() → getEmail()/getClaims() → 인증 완료
  */
 @Slf4j
@@ -42,6 +42,20 @@ public class JwtTokenProvider {
      */
     @Value("${jwt.expiration}")
     private long expiration;
+
+    /**
+     * Refresh token(재발급용 토큰)의 유효 기간. 단위: 밀리초(ms).
+     * application.properties의 jwt.refresh-expiration 값을 주입받는다. 예) 86400000 = 1일
+     * Access token보다 길게 잡아, access token이 만료돼도 사용자가 다시 로그인하지 않고
+     * 이 토큰으로 새 access token을 발급받게 한다.
+     */
+    @Value("${jwt.refresh-expiration}")
+    private long refreshExpiration;
+
+    /** 토큰 종류를 구분하기 위한 클레임 키와 값. access token을 refresh 용도로 악용하는 것을 막는다. */
+    private static final String CLAIM_TYPE = "type";
+    private static final String TYPE_ACCESS = "access";
+    private static final String TYPE_REFRESH = "refresh";
 
     /**
      * HMAC-SHA256 서명에 사용할 Key 객체.
@@ -85,16 +99,62 @@ public class JwtTokenProvider {
      * @param member 토큰에 식별 정보를 담을 회원 엔티티
      * @return 서명된 JWT 문자열 (클라이언트에 전달)
      */
-    public String createToken(Member member) {
+    public String createAccessToken(Member member) {
         Claims claims = Jwts.claims().setSubject(member.getEmail()); // subject = 사용자 식별자
-        claims.put("role", member.getRole().name()); // SecurityContext 권한 복원에 사용
+        claims.put("role", member.getRole().name());                // SecurityContext 권한 복원에 사용
+        claims.put(CLAIM_TYPE, TYPE_ACCESS);                        // 토큰 종류 표시
+        return buildToken(claims, expiration);
+    }
 
+    /**
+     * 재발급(refresh)용 JWT를 생성한다.
+     *
+     * [용도]
+     * access token이 만료됐을 때, 클라이언트가 이 토큰을 /api/member/refresh로 보내면
+     * 서버가 검증 후 새 access token을 발급한다. 그래서 access token보다 유효 기간이 길다.
+     *
+     * [담는 정보]
+     * role 같은 권한 정보는 넣지 않는다(재발급 시 DB에서 최신 권한을 다시 읽어오므로 불필요).
+     * subject(이메일)와 type(refresh)만 담는다.
+     *
+     * @param member 토큰 소유자
+     * @return 서명된 refresh JWT 문자열
+     */
+    public String createRefreshToken(Member member) {
+        Claims claims = Jwts.claims().setSubject(member.getEmail());
+        claims.put(CLAIM_TYPE, TYPE_REFRESH);
+        return buildToken(claims, refreshExpiration);
+    }
+
+    /**
+     * 공통 토큰 빌드 로직. claims와 유효 기간(ms)을 받아 서명된 JWT 문자열을 만든다.
+     * access/refresh 토큰 생성에서 중복되는 부분을 한곳으로 모은다.
+     */
+    private String buildToken(Claims claims, long ttlMillis) {
+        Date now = new Date();
         return Jwts.builder()
                 .setClaims(claims)
-                .setIssuedAt(new Date())                                             // 발급 시각
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))   // 만료 시각
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)                 // 서명
-                .compact(); // 최종 JWT 문자열로 직렬화
+                .setIssuedAt(now)                                  // 발급 시각
+                .setExpiration(new Date(now.getTime() + ttlMillis)) // 만료 시각
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256) // 서명
+                .compact();                                        // 최종 JWT 문자열로 직렬화
+    }
+
+    /**
+     * 전달된 토큰이 refresh 토큰인지 확인한다.
+     *
+     * [왜 필요한가]
+     * access token과 refresh token은 같은 서명 키로 만들어지므로, 누군가 refresh token을
+     * Authorization 헤더에 넣어 일반 API에 접근하려 할 수 있다. 인증 필터에서 이 메서드로
+     * refresh 토큰을 걸러내 그런 악용을 막는다.
+     *
+     * [주의] type 클레임이 없는 (구버전) 토큰은 false를 반환한다 → 기존 access token 호환 유지.
+     *
+     * @param token 검증이 끝난 JWT 문자열
+     * @return refresh 토큰이면 true
+     */
+    public boolean isRefreshToken(String token) {
+        return TYPE_REFRESH.equals(getClaims(token).get(CLAIM_TYPE, String.class));
     }
 
     /**

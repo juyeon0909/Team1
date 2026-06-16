@@ -19,4 +19,5 @@ export interface User {
 // 로그인한 사용자에게 토큰을 부여하는 것
 export interface LoginResponse extends User {
     accessToken: string;
+    refreshToken: string;
 }

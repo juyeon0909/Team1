@@ -5,6 +5,7 @@ import customAxios from './../api/axiosInstance';
 import { API_BASE_URL } from '../config/config';
 import { CATEGORY_DECODER } from '../types/Recipe';
 import type { AdminRecipe as AdminRecipeItem } from '../types/Admin';
+import { notifyError } from '../utils/notifyError';
 import '../components/MyPageRecipe.css';
 
 
@@ -19,7 +20,7 @@ function AdminRecipe() {
             const res = await customAxios.get(`/admin/recipes/pending`);
             setRecipes(res.data || []);
         } catch (e) {
-            console.error('목록 불러오기 실패:', e);
+            notifyError(e, '승인 대기 레시피 목록을 불러오지 못했습니다.');
         } finally {
             setLoading(false);
         }

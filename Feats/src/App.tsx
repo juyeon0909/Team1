@@ -7,10 +7,11 @@ import AlertModal from './ui/AlertModal';
 import React, { useEffect, useState } from 'react';
 import type { User } from './types/User';
 import { useNavigate, useLocation } from 'react-router-dom';
+import axiosInstance from './api/axiosInstance';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
-  
+
   useEffect(() => {
     const loginUser = localStorage.getItem('user');
 
@@ -25,7 +26,7 @@ function App() {
   const location = useLocation();
 useEffect(() => {
     if (!location) return; // location 객체가 아직 준비 안 되었을 때를 위한 방어 코드 (빨간줄 방지!)
-    
+
     const currentPath = location.pathname;
 
     switch (currentPath) {
@@ -45,18 +46,18 @@ useEffect(() => {
       case '/member/signup':
         document.title = "회원가입 - 냉장고를 지켜줘";
         break;
-        
+
       case '/recipeMain':
         document.title = "레시피 - 냉장고를 지켜줘";
         break;
-        
+
       case '/recipeMain/register':
         document.title = "레시피 등록 - 냉장고를 지켜줘";
         break;
-        
+
     }
   }, [location]);
-  
+
 const hideNav = ['/member/login', '/member/signup'].includes(location.pathname);
 
   // 로그인 성공시 처리해야 할 동작을 명시하는 함수
@@ -64,13 +65,21 @@ const hideNav = ['/member/login', '/member/signup'].includes(location.pathname);
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
   };
-  
+
 
  const handleLogout = (event: React.MouseEvent<HTMLElement>) => {
     event.preventDefault();
+
+    // 서버에 저장된 refresh token을 무효화한다(best-effort).
+    // 네트워크 실패 등으로 서버 호출이 실패해도 로컬 토큰 제거와 화면 이동은 계속 진행한다.
+    axiosInstance.post('/member/logout').catch(() => {
+      // 로그아웃 실패는 사용자 흐름을 막지 않는다(이미 떠나는 중).
+    });
+
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     console.log('로그 아웃 성공');
     navigate('/member/login');
   };

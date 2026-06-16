@@ -49,5 +49,11 @@ public class Member {
 
     @Column(columnDefinition = "LONGTEXT")
     private String profileimage;
+
+    // 로그인 시 발급한 refresh token을 저장한다.
+    // 서버가 이 값을 보관하므로, 로그아웃이나 탈취 의심 시 값을 비워(또는 교체해) 강제 무효화할 수 있다.
+    // JWT 문자열 길이를 고려해 512자로 잡는다. (ddl-auto=update가 컬럼을 자동 추가)
+    @Column(name = "refresh_token", length = 512)
+    private String refreshToken;
 }
 /* 커밋 체크 */

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,6 +8,26 @@ function Delete() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // 로그인한 본인 이메일을 자동으로 채우고, 입력칸은 수정하지 못하게 한다.
+  // 비로그인 상태로 접근하면 로그인 페이지로 돌려보낸다.
+  useEffect(() => {
+    const stored = localStorage.getItem('user');
+    if (!stored) {
+      navigate('/member/login');
+      return;
+    }
+    try {
+      const user = JSON.parse(stored);
+      if (user?.email) {
+        setEmail(user.email);
+      } else {
+        navigate('/member/login');
+      }
+    } catch {
+      navigate('/member/login');
+    }
+  }, [navigate]);
 
   const handleDelete = async () => {
     if (!email || !password) {
@@ -51,6 +71,14 @@ function Delete() {
     boxSizing: 'border-box' as const,
   };
 
+  // 이메일 칸 전용 스타일: 본인 계정 고정이라 수정 불가임을 시각적으로 보여준다.
+  const readOnlyInputStyle = {
+    ...inputStyle,
+    background: '#eeeeee',
+    color: '#666',
+    cursor: 'not-allowed' as const,
+  };
+
   return (
     <Container style={{ paddingTop: '50px', paddingBottom: '50px' }}>
 
@@ -92,17 +120,17 @@ function Delete() {
           • 등록한 레시피는 홈페이지 내에 유지됩니다.
         </div>
 
-        {/* 이메일 입력 */}
+        {/* 이메일 (본인 계정 자동 입력, 수정 불가) */}
         <div style={{ marginBottom: '16px' }}>
           <div style={{ fontSize: '12px', color: '#555', fontWeight: '500', marginBottom: '5px' }}>
-            이메일을 입력해주세요
+            이메일 (본인 계정, 수정 불가)
           </div>
           <input
-            style={inputStyle}
+            style={readOnlyInputStyle}
             type="text"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="예: aaa@aaa.com"
+            readOnly
+            tabIndex={-1}
           />
         </div>
 

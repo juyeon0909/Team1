@@ -57,7 +57,7 @@ function App() {
     const uploadProfileImage = async (base64Image: string) => {
         setErrors({ profileimage: '', general: '' });
         try {
-            const response = await customAxios.post('/mypage/update-profileimage', {
+            const response = await customAxios.put('/mypage/update-profileimage', {
                 profileimage: base64Image   // JSON으로 전송
             });
             setUser(prev => ({ ...prev, profileimage: response.data }));

@@ -24,14 +24,14 @@ public class MyPageController {
     //프로필 조회
     @GetMapping("/info")
     public ResponseEntity<MemberInfoDto> getMyInfo(Principal principal) {
-        System.out.println(">>> getMyInfo 컨트롤러 실행됨");
+        log.debug(">>> getMyInfo 컨트롤러 실행됨");
         String email = principal.getName();
         MemberInfoDto memberInfo = myPageService.getMemberInfo(email); // 오타 수정 완료
         return ResponseEntity.ok(memberInfo);
     }
 
     //프로필 이미지 변경
-    @PostMapping("/update-profileimage")
+    @PutMapping("/update-profileimage")
     public ResponseEntity<?> updateProfileImage(
             @RequestBody ProfileImageDto request,
             Principal principal) {
@@ -49,7 +49,7 @@ public class MyPageController {
     }
 
     //이름 변경
-    @PostMapping("/update-name")
+    @PutMapping("/update-name")
     public ResponseEntity<?> updateName(
             @RequestBody NameUpdateDto updateDto,
             Principal principal) {
@@ -59,7 +59,7 @@ public class MyPageController {
     }
 
     //비밀번호 변경
-    @PostMapping("/update-password") // 👈 중복 주소 제거하여 정확히 매핑
+    @PutMapping("/update-password") // 👈 중복 주소 제거하여 정확히 매핑
     public ResponseEntity<?> updatePassword(
             @RequestBody PasswordUpdateDto updateDto,
             Principal principal) {

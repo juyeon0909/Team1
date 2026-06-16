@@ -94,18 +94,6 @@ public class RecipeController {
         return ResponseEntity.ok(myRecipes);
     }
 
-    // 사용한 재료를 냉장고에서 차감
-    @PostMapping("/{id}/cook")
-    public ResponseEntity<?> cookRecipe(
-            @PathVariable Long id,
-            @RequestBody List<Map<String, String>> ingredients,
-            Principal principal) {
-        if (principal == null || "anonymousUser".equals(principal.getName())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-        }
-        storageItemService.deductIngredients(principal.getName(), ingredients);
-        return ResponseEntity.ok("재료 차감 완료");
-    }
 
     // 레시피 삭제 (관리자 전용)
     @DeleteMapping("/{id}")
@@ -136,6 +124,19 @@ public class RecipeController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요한 서비스입니다.");
         }
         return ResponseEntity.ok(recipeService.getRecipeDetail(id, principal.getName()));
+    }
+
+        // 사용한 재료를 냉장고에서 차감
+    @PostMapping("/{id}/cook")
+    public ResponseEntity<?> cookRecipe(
+            @PathVariable Long id,
+            @RequestBody List<Map<String, String>> ingredients,
+            Principal principal) {
+        if (principal == null || "anonymousUser".equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+        storageItemService.deductIngredients(principal.getName(), ingredients);
+        return ResponseEntity.ok("재료 차감 완료");
     }
 
     // 3. 레시피 수정 API (로그인 필수, 본인만)

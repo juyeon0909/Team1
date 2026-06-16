@@ -105,7 +105,7 @@ function MyPageEdit({ name, setName, triggerToast }: EditPageProps) {
     }
 
     try {
-      await customAxios.post('/mypage/update-name', { newName: formValues.newName });
+      await customAxios.put('/mypage/update-name', { newName: formValues.newName });
       setName(formValues.newName);
       triggerToast('이름이 변경되었습니다.');
       navigate('/mypage/info');
@@ -134,7 +134,7 @@ function MyPageEdit({ name, setName, triggerToast }: EditPageProps) {
     }
 
     try {
-      await customAxios.post('/mypage/update-password', {
+      await customAxios.put('/mypage/update-password', {
         currentPassword: formValues.currentPassword,
         newPassword: formValues.newPassword
       });

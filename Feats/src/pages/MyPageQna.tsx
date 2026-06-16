@@ -3,6 +3,7 @@ import { Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import customAxios from './../api/axiosInstance';
 import '../components/MyPage.css';
+import { notifyError } from '../utils/notifyError';
 
 interface Inquiry {
     id: number;
@@ -29,7 +30,7 @@ export default function MyPageQna() {
             const res = await customAxios.get('/mypage/qna');
             setInquiries(res.data || []);
         } catch (e) {
-            console.error('문의 내역 불러오기 실패:', e);
+            notifyError(e, '문의 내역을 불러오지 못했습니다.');
         } finally {
             setLoading(false);
         }

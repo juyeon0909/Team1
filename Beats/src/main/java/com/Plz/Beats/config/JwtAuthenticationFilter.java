@@ -101,6 +101,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtTokenProvider.validateToken(token)) {
                 // 토큰이 유효하다 → 사용자 식별 정보를 꺼내 인증 객체를 만든다.
 
+                // [보안] refresh 토큰을 일반 API 인증에 사용하려는 시도를 차단한다.
+                // access/refresh는 같은 키로 서명되므로, 종류(type)를 확인해 refresh면 거부한다.
+                if (jwtTokenProvider.isRefreshToken(token)) {
+                    SecurityContextHolder.clearContext();
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\":\"잘못된 토큰 종류입니다. 다시 로그인해주세요.\"}");
+                    return;
+                }
+
                 // 토큰의 subject(이메일)를 꺼낸다. SecurityContext의 principal로 사용된다.
                 String email = jwtTokenProvider.getEmail(token);
 

@@ -69,6 +69,28 @@ public class MemberService { // MemberService가 MemberRepository를 의존하�
         member.setProfileimage(base64Image);
     }
 
+    // refresh token 저장(로그인 시)
+    // 같은 회원이 다시 로그인하면 이전 refresh token은 덮어써져 무효가 된다.
+    @Transactional
+    public void updateRefreshToken(String email, String refreshToken) {
+        Member member = memberRepository.findByEmail(email).orElse(null);
+        if (member == null) {
+            throw new IllegalArgumentException("존재하지 않는 회원입니다. 이메일 : " + email);
+        }
+        member.setRefreshToken(refreshToken);
+    }
+
+    // refresh token 제거(로그아웃 시). 이후 이 회원의 기존 refresh token으로는 재발급이 불가능해진다.
+    @Transactional
+    public void clearRefreshToken(String email) {
+        Member member = memberRepository.findByEmail(email).orElse(null);
+        if (member == null) {
+            // 이미 없는 회원이면 조용히 종료(로그아웃은 실패로 처리할 필요가 없다).
+            return;
+        }
+        member.setRefreshToken(null);
+    }
+
 // 회원 강제 탈퇴
     @Transactional
     public void delete(Member member) {

@@ -24,6 +24,8 @@ function LoginPage({ onLogin }: Props) {
   const [randomValue, setRandomValue] = useState("");
   const [servicePassword, setServicePassword] = useState("");
   const [timeLeft, setTimeLeft] = useState(POLL_DURATION);
+  // 비밀번호 입력 중 Caps Lock(대문자 고정)이 켜져 있는지 여부
+  const [capsLockOn, setCapsLockOn] = useState(false);
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -40,6 +42,12 @@ function LoginPage({ onLogin }: Props) {
       setLoginMode("passwordless");
     }
   }, []);
+
+  // 키보드 이벤트에서 Caps Lock 상태를 읽어 표시 여부를 갱신한다.
+  // getModifierState("CapsLock")은 해당 키를 누른 시점의 Caps Lock on/off를 알려준다.
+  const detectCapsLock = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    setCapsLockOn(e.getModifierState("CapsLock"));
+  };
 
   // 모든 타이머 정지 및 초기화 함수
   const stopAll = () => {
@@ -90,8 +98,9 @@ function LoginPage({ onLogin }: Props) {
               null,
               { params: { email: currentEmail, randomValue: currentRandomValue } }
             );
-            const { accessToken, ...userData } = data;
+            const { accessToken, refreshToken, ...userData } = data;
             localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("refreshToken", refreshToken);
             localStorage.setItem("user", JSON.stringify(userData));
             onLogin(userData);
             navigate("/");
@@ -162,8 +171,9 @@ function LoginPage({ onLogin }: Props) {
         { email, password },
         { headers: { "Content-Type": "application/json" } }
       );
-      const { accessToken, ...userData } = response.data;
+      const { accessToken, refreshToken, ...userData } = response.data;
       localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
       localStorage.setItem("user", JSON.stringify(userData));
       onLogin(userData);
       navigate("/");
@@ -302,8 +312,19 @@ function LoginPage({ onLogin }: Props) {
                 placeholder="비밀번호를 입력하세요"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyUp={detectCapsLock}
+                onKeyDown={detectCapsLock}
+                onBlur={() => setCapsLockOn(false)}
                 required
               />
+              {capsLockOn && (
+                <p
+                  className="caps-lock-warning"
+                  style={{ color: "#cc3333", fontSize: "0.8rem", fontWeight: 600, marginTop: "6px", marginBottom: 0 }}
+                >
+                  Caps Lock이 켜져 있습니다.
+                </p>
+              )}
             </div>
           )}
           {loginMode === "passwordless" && !isPolling && (

@@ -4,6 +4,7 @@ import axiosInstance from "../api/axiosInstance";
 import "../components/IngredientList.css"; 
 import type { Ingredient } from "../types/Fridge.ts";
 import type { User } from "../types/User.ts";
+import { notifyError } from "../utils/notifyError";
 
 const IngredientList: React.FC = () => {
     const navigate = useNavigate(); 
@@ -33,7 +34,7 @@ const IngredientList: React.FC = () => {
             setDbCategories(catData);
             if (catData.length > 0 && !newCategory) setNewCategory(catData[0]);
         } catch (err) {
-            console.error("데이터 초기 수급 실패:", err);
+            notifyError(err, "식재료 데이터를 불러오지 못했습니다.");
         } finally {
             setLoading(false);
         }
@@ -111,7 +112,7 @@ const IngredientList: React.FC = () => {
                 setEditingId(null);
                 loadInitialData();
             })
-            .catch((err) => console.error(err));
+            .catch((err) => notifyError(err, "식재료 정보 수정에 실패했습니다."));
     };
 
     const handleDeleteClick = (id: number, name: string) => {
@@ -122,7 +123,7 @@ const IngredientList: React.FC = () => {
                 alert("성공적으로 영구 삭제되었습니다.");
                 loadInitialData();
             })
-            .catch((err) => console.error(err));
+            .catch((err) => notifyError(err, "식재료 삭제에 실패했습니다."));
     };
 
     if (!isAdmin) {

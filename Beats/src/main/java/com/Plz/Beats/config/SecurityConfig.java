@@ -90,6 +90,7 @@ public class SecurityConfig {
                 "/api/recipeMain/**",
                 "/api/member/signup",
                 "/api/member/login",
+                "/api/member/refresh",    // access token 재발급: 만료 상태에서 호출되므로 인증 없이 허용
                 "/product/**",
                 "/api/product/**",
                 "/first",
@@ -135,6 +136,7 @@ public class SecurityConfig {
                         .requestMatchers(permitUrls).permitAll()
                         .requestMatchers("/api/member/delete").permitAll()
                         .requestMatchers("/api/member/join").permitAll()
+                        .requestMatchers("/api/member/refresh").permitAll()
                         .requestMatchers("/api/member/reset-password").permitAll()
                         .requestMatchers("/api/member/reset-password/**").permitAll()
                         .requestMatchers("/api/recipeMain").permitAll()       // 레시피 목록 공개

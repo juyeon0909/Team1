@@ -167,21 +167,25 @@ const RecipeRegister = () => {
 
       const numericTime = parseInt(cookingTime.replace(/[^0-9]/g, "")) || 15;
       const stepsArray = method ? method.split('\n').map(s => s.trim()).filter(Boolean) : [];
-      const finalDescription = optIngredients.trim()
-        ? `${intro || title} (선택 재료: ${optIngredients})`
-        : intro || `${title} 레시피입니다.`;
+      const selectIngredientsList = optIngredients
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(name => ({ name, quantity: 0 }));
 
       const recipePayload = {
         title,
         dishName: title,
         category: categoryMapper[category] || "KOR",
         cookingTime: numericTime,
-        description: finalDescription,
+        description: intro || `${title} 레시피입니다.`,
         image: imageUrl,
         mustIngredients: filteredMustIngredients,
+        selectIngredients: selectIngredientsList,
         steps: stepsArray
       };
 
+      console.log("보내는 데이터:", JSON.stringify(recipePayload, null, 2));
       const response = await axiosInstance.post('/recipeMain/register', recipePayload);
 
       if (response.status === 200 || response.status === 201) {

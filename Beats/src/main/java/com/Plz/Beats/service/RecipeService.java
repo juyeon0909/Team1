@@ -374,7 +374,8 @@ public class RecipeService {
     // 관리자용 PENDING 레시피 목록 조회
     public List<AdminRecipeDto> getPendingRecipes() {
         return recipeRepository.findByApprovalStatus(ApprovalStatus.PENDING)
-                .stream().map(r -> new AdminRecipeDto(
+                .stream()
+                .map(r -> new AdminRecipeDto(
                         r.getId(),
                         r.getTitle(),
                         r.getCategory().getDescription(),
@@ -383,6 +384,7 @@ public class RecipeService {
                         r.getMember() != null ? r.getMember().getName() : "탈퇴한 회원",
                         r.getMember() != null ? r.getMember().getEmail() : "",
                         r.getRecipeIngredients().stream()
+                                .filter(ing -> ing.isRequired())
                                 .map(ing -> new RecipeDto.MustIngredientDto(
                                         ing.getItem() != null ? ing.getItem().getName() : "",
                                         ing.getQuantity() != null ? ing.getQuantity() : 0
@@ -408,6 +410,7 @@ public class RecipeService {
                 r.getMember() != null ? r.getMember().getName() : "탈퇴한 회원",
                 r.getMember() != null ? r.getMember().getEmail() : "",
                 r.getRecipeIngredients().stream()
+                        .filter(ing -> ing.isRequired())
                         .map(ing -> new RecipeDto.MustIngredientDto(
                                 ing.getItem() != null ? ing.getItem().getName() : "",
                                 ing.getQuantity() != null ? ing.getQuantity() : 0

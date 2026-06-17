@@ -185,7 +185,6 @@ const RecipeRegister = () => {
         steps: stepsArray
       };
 
-      console.log("보내는 데이터:", JSON.stringify(recipePayload, null, 2));
       const response = await axiosInstance.post('/recipeMain/register', recipePayload);
 
       if (response.status === 200 || response.status === 201) {

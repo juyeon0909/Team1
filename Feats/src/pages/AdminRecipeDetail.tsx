@@ -132,6 +132,7 @@ function AdminRecipeDetail() {
                         className="form-input"
                         type="text"
                         value={(recipe.selectIngredients ?? []).map(s => s.name).join(', ')}
+
                         readOnly
                         style={{ background: '#f8f8f8', cursor: 'default' }}
                         placeholder="선택 재료 없음"

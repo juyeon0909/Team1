@@ -148,6 +148,7 @@ const RecipeDetail = () => {
               <div style={{ fontSize: '13px', color: '#666', marginBottom: '14px' }}>{recipe.desc}</div>
               <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: '#666' }}>
                 <span>⏱️ {recipe.time}분</span>
+                <span>☉ {recipe.viewCount} 조회</span>
                 <span
                   onClick={toggleHeart}
                   style={{ cursor: 'pointer', color: recipe.isHearted ? '#E05D5D' : '#666' }}

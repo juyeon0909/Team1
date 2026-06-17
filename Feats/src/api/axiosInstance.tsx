@@ -72,6 +72,13 @@ axiosInstance.interceptors.response.use(
         const status = error.response?.status;
         const url: string = originalRequest?.url || "";
 
+        // 로그아웃은 best-effort 호출이다. 어떤 에러가 오더라도 사용자에게 알림을 띄우지 않는다.
+        // (토큰이 이미 만료됐거나, 리프레시 완료 후 새 토큰이 저장되는 타이밍 차이로
+        //  forceLogout 경로에 진입해 오류 모달이 뜨는 버그를 막기 위한 처리)
+        if (url.includes("/member/logout")) {
+            return Promise.reject(error);
+        }
+
         // 로그인/재발급 요청 자체의 401은 재발급 대상이 아니다(무한 루프 방지).
         const isAuthEndpoint = url.includes("/member/login") || url.includes("/member/refresh");
 

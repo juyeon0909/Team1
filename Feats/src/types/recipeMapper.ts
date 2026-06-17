@@ -16,6 +16,7 @@ export const toRecipeView = (dto: RecipeDto): RecipeView => {
     tags: [category, `${dto.cookingTime}분`],
     heart: dto.likeCount ?? 0,
     scrap: dto.scrapCount ?? 0,
+    viewCount: dto.viewCount ?? 0,
     urgent: dto.urgent ?? false,
     isHearted: dto.hearted ?? false,
     isScrapped: dto.scrapped ?? false,

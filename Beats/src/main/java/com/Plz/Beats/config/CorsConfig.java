@@ -32,32 +32,20 @@ public class CorsConfig {
                 "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
         ));
 
-        // 허용 헤더 — 실제 사용하는 헤더만. 와일드카드 "*" 제거.
-        // Authorization은 axiosInstance.tsx 파일 참조
-        // Content-Type은 LoginPage.tsx 파일 참조
         configuration.setAllowedHeaders(List.of(
                 "Authorization",
                 "Content-Type", // MIME 타입
                 "Accept"
         ));
 
-        // 쿠키 Authorization 헤더 포함 요청 허용
         configuration.setAllowCredentials(true);
 
-        // CorsConfigurationSource가 인터페이스여서 객체 생성 못함
-        // 그래서 구현체를 만들어서 객체 생성함
         UrlBasedCorsConfigurationSource source
                 = new UrlBasedCorsConfigurationSource();
 
-        // 설정 객체인 configuration을 구현체로 생성한 객체인 source에 할당함
-        // 모든 요청에 똑같이 위의 설정값들을 적용함 (**의 의미)
         source.registerCorsConfiguration("/**", configuration);
 
-        /* 어떤 요청에는 어떤 설정값을 적용할지 상세히 나눌 수도 있음
-        source.registerCorsConfiguration("/member/**", memberConfig);
-        source.registerCorsConfiguration("/product/**", productConfig);
-        source.registerCorsConfiguration("/cart/**", cartConfig);
-        */
+
 
         // 구현체를 리턴함
         return source ;

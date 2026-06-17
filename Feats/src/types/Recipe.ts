@@ -21,6 +21,7 @@ export interface RecipeDto {
   missingIngredients: IngredientDto[]; // 없는 재료 리스트
   likeCount: number;       // 좋아요 수
   scrapCount: number;      // 스크랩 수
+  viewCount?: number;      // 조회수
   hearted: boolean;        // 로그인 유저의 좋아요 여부
   author?: string;       // 작성자 이름 (선택적)
   scrapped: boolean;       // 로그인 유저의 스크랩 여부
@@ -58,6 +59,7 @@ export interface RecipeView {
   tags: string[];
   heart: number;
   scrap: number;
+  viewCount: number;
   urgent: boolean;
   isHearted: boolean;
   isScrapped: boolean;

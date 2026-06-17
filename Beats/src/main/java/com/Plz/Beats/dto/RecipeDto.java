@@ -25,6 +25,7 @@ public class RecipeDto {
 
     private long likeCount;
     private long scrapCount;
+    private long viewCount;
     private boolean hearted;
     private boolean scrapped;
     private boolean urgent;

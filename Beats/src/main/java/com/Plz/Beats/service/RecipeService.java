@@ -92,6 +92,7 @@ public class RecipeService {
 
         dto.setLikeCount(recipeLikeRepository.countByRecipe(recipe));
         dto.setScrapCount(scrapRepository.countByRecipe(recipe));
+        dto.setViewCount(recipe.getViewCount() != null ? recipe.getViewCount() : 0L);
 
         if (currentMember != null) {
             dto.setHearted(recipeLikeRepository.findByMemberAndRecipe(currentMember, recipe).isPresent());
@@ -360,9 +361,12 @@ public class RecipeService {
     }
 
     // 레시피 단건 상세 조회 (로그인 유저 기준 hearted/scrapped 판정)
+    @Transactional
     public RecipeDto getRecipeDetail(Long id, String username) {
         Recipe recipe = recipeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("레시피를 찾을 수 없습니다."));
+
+        recipe.setViewCount((recipe.getViewCount() != null ? recipe.getViewCount() : 0L) + 1L);
 
         Member member = null;
         if (username != null && !"GUEST".equals(username)) {

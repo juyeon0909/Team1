@@ -46,6 +46,14 @@ export const CATEGORY_DECODER: { [key: string]: string } = {
 
 };
 
+// 요리하기 모달에서 사용하는 재료 항목 타입
+// optional이 true면 선택 재료이며, 기본 수량은 항상 0g으로 시작한다.
+export type CookIngredient = {
+  name: string;
+  quantity: string | number;
+  optional?: boolean;
+};
+
 export interface RecipeView {
   id: number;
   title: string;          // name 말고 title로 통일

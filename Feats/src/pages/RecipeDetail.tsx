@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
-import type { RecipeView, RecipeDto } from '../types/Recipe';
+import type { RecipeView, RecipeDto, IngredientDto, CookIngredient } from '../types/Recipe';
 import { toRecipeView } from '../types/recipeMapper';
 import '../components/RecipeMain.css';
 import { notifyError } from '../utils/notifyError';
+
+// 선택재료/없는재료 항목은 string 또는 {name, quantity} 두 가지 형태로 올 수 있어
+// 이름만 안전하게 뽑아내기 위한 헬퍼
+const getIngredientName = (ingredient: string | IngredientDto): string =>
+  typeof ingredient === 'string' ? ingredient : ingredient.name;
 
 const RecipeDetail = () => {
   const navigate = useNavigate();
@@ -12,7 +17,10 @@ const RecipeDetail = () => {
   const [recipe,          setRecipe]          = useState<RecipeView | null>(null);
   const [loading,         setLoading]         = useState(true);
   const [isModalOpen,     setIsModalOpen]     = useState(false);
-  const [mustIngredients, setMustIngredients] = useState<{ name: string; quantity: string | number }[]>([]);
+  // 요리하기 모달에서 실제로 차감 대상이 되는 재료 목록
+  // 필수 재료는 레시피에 지정된 수량을 그대로 사용하고,
+  // 선택 재료는 무조건 0g을 기본값으로 시작해 사용자가 직접 수량을 입력해야 차감에 포함된다.
+  const [cookIngredients, setCookIngredients] = useState<CookIngredient[]>([]);
 
 
 
@@ -35,14 +43,22 @@ const RecipeDetail = () => {
         const res = await axiosInstance.get<RecipeDto>(`/recipeMain/${id}`);
         const view = toRecipeView(res.data);
         setRecipe(view);
+
         const missingNames = new Set(
-          view.missingIngredients.map(m => (typeof m === 'string' ? m : m.name))
+          view.missingIngredients.map(m => getIngredientName(m))
         );
-        setMustIngredients(
-          view.mustIngredients
-            .filter(i => !missingNames.has(i.name))
-            .map(i => ({ ...i }))
-        );
+
+        // 필수 재료: 없는 재료는 제외하고, 레시피에 지정된 수량을 그대로 사용
+        const availableMustIngredients: CookIngredient[] = view.mustIngredients
+          .filter(i => !missingNames.has(i.name))
+          .map(i => ({ ...i, optional: false }));
+
+        // 선택 재료: 없는 재료는 제외하고, 수량은 무조건 0g부터 시작
+        const availableSelectIngredients: CookIngredient[] = view.selectIngredients
+          .filter(i => !missingNames.has(getIngredientName(i)))
+          .map(i => ({ name: getIngredientName(i), quantity: 0, optional: true }));
+
+        setCookIngredients([...availableMustIngredients, ...availableSelectIngredients]);
       } catch (error) {
         notifyError(error, '레시피 정보를 불러오지 못했습니다.');
         setRecipe(null);
@@ -88,15 +104,15 @@ const RecipeDetail = () => {
   };
 
   const handleQuantityChange = (index: number, value: string) => {
-    const updated = [...mustIngredients];
+    const updated = [...cookIngredients];
     updated[index] = { ...updated[index], quantity: value };
-    setMustIngredients(updated);
+    setCookIngredients(updated);
   };
 
   const handleCookStart = async () => {
     if (!recipe) return;
     try {
-      const payload = mustIngredients.map(item => ({
+      const payload = cookIngredients.map(item => ({
         name: item.name,
         quantity: parseInt(String(item.quantity).replace(/[^0-9]/g, ''), 10) || 0,
       }));
@@ -197,7 +213,7 @@ const RecipeDetail = () => {
               <div style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>선택 재료</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', fontSize: '13px' }}>
                 {recipe.selectIngredients.map((ing, idx) => (
-                  <div key={idx}> 
+                  <div key={idx}>
                   • {typeof ing === 'string'
                   ? ing
                   : `${ing.name}${ing.quantity != null && ing.quantity !== 0 ? ` ${ing.quantity}g` : ''}`}</div>
@@ -210,10 +226,10 @@ const RecipeDetail = () => {
                 <div style={{ fontSize: '12px', fontWeight: 500, color: '#791F1F', marginBottom: '8px' }}>🛒 없는 재료</div>
                 <div style={{ fontSize: '12px', color: '#A32D2D' }}>
                   {recipe.missingIngredients.map((m, idx) => {
-                    const name = typeof m === 'string' ? m : m.name;
+                    const name = getIngredientName(m);
                     const qty = typeof m === 'string' ? '' : (m.quantity != null ? `${m.quantity}g` : '');
                     return <div key={idx}>• {name} {qty}</div>;
-                  })}                
+                  })}
                 </div>
               </div>
             )}
@@ -248,14 +264,22 @@ const RecipeDetail = () => {
               <div style={{ marginBottom: '12px', fontSize: '12px', color: '#C0392B' }}>
                 <div>없는 재료는 차감에서 제외됩니다.</div>
                 <div>
-                  ({recipe.missingIngredients.map(m => typeof m === 'string' ? m : m.name).join(', ')})
+                  ({recipe.missingIngredients.map(m => getIngredientName(m)).join(', ')})
                 </div>
               </div>
             )}
+            <div style={{ marginBottom: '8px', fontSize: '11px', color: '#999' }}>
+              선택 재료는 기본 수량이 0g입니다. 사용한 만큼 직접 수량을 입력해야 차감에 포함됩니다.
+            </div>
             <div className="modal-list">
-              {mustIngredients.map((item, index) => (
+              {cookIngredients.map((item, index) => (
                 <div key={index} className="modal-item">
-                  <span className="modal-item-name">• {item.name}</span>
+                  <span className="modal-item-name">
+                    • {item.name}
+                    {item.optional && (
+                      <span style={{ color: '#999', fontSize: '11px', marginLeft: '4px' }}>(선택)</span>
+                    )}
+                  </span>
                   <input
                     type="text"
                     value={item.quantity ?? ''}

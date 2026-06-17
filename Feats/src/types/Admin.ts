@@ -40,6 +40,7 @@ export interface AdminRecipeDetailData {
   authorName: string;
   authorEmail: string;
   ingredients: { name: string; quantity: string }[];
+  selectIngredients?: { name: string; quantity: number }[];
   registeredAt: string;
   image?: string;
   cookingMethod?: string;

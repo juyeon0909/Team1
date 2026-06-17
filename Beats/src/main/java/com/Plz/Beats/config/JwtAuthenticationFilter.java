@@ -15,70 +15,16 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * 모든 HTTP 요청에서 JWT 토큰을 추출·검증하고, 유효하면 인증 정보를 SecurityContext에 등록하는 필터.
- *
- * [왜 필요한가]
- * JWT 인증 방식에서는 서버가 세션을 저장하지 않는다.
- * 따라서 "이 요청을 보낸 사람이 누구인가"를 매 요청마다 토큰을 통해 확인해야 한다.
- * 이 필터가 컨트롤러보다 먼저 실행되어 인증 상태를 결정한다.
- *
- * [OncePerRequestFilter를 상속하는 이유]
- * Spring에서 필터 체인은 Forward/Include 등으로 같은 요청이 여러 번
- * 필터를 통과할 수 있다. OncePerRequestFilter는 요청당 정확히 한 번만
- * doFilterInternal()을 실행하도록 보장해 중복 인증 처리를 방지한다.
- *
- * [흐름]
- * HTTP 요청
- *   → doFilterInternal() 실행
- *   → Authorization 헤더에서 "Bearer <token>" 추출
- *   → JwtTokenProvider.validateToken()으로 검증
- *   → 유효하면 SecurityContextHolder에 인증 객체 등록
- *   → filterChain.doFilter()로 다음 필터(또는 컨트롤러)에 요청 전달
- */
+
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    /**
-     * JWT 토큰의 생성·검증 로직을 가진 컴포넌트.
-     * 이 필터는 @Component가 아니라 SecurityConfig에서 직접 new로 생성되기 때문에,
-     * Spring이 자동으로 의존성을 주입해 주지 않는다.
-     * 따라서 생성자를 통해 직접 주입받는다.
-     */
     private final JwtTokenProvider jwtTokenProvider;
 
-    /**
-     * SecurityConfig에서 이 필터를 등록할 때 JwtTokenProvider를 인자로 넘겨
-     * 의존성을 주입한다.
-     *
-     * [왜 생성자 주입인가]
-     * 필드 주입(@Autowired)은 Spring 컨테이너가 관리하는 Bean에서만 동작한다.
-     * 이 클래스는 new로 생성되므로 반드시 생성자로 주입해야 한다.
-     */
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    /**
-     * 매 HTTP 요청마다 실행되는 핵심 필터 로직.
-     *
-     * [언제 호출되는가]
-     * SecurityConfig에서 UsernamePasswordAuthenticationFilter 앞에 등록했기 때문에,
-     * Spring Security의 기본 인증 처리보다 먼저 실행된다.
-     *
-     * [처리 흐름]
-     * 1. Authorization 헤더에서 "Bearer " 접두사를 가진 값을 꺼낸다.
-     * 2. "Bearer " 이후의 순수 토큰 문자열을 추출한다.
-     * 3. JwtTokenProvider로 토큰 유효성을 검사한다.
-     *    - 유효하면: 이메일과 role을 꺼내 SecurityContext에 인증 객체를 등록한다.
-     *    - 유효하지 않으면(만료·위조): 401 응답을 즉시 반환하고 필터 체인을 중단한다.
-     * 4. Authorization 헤더가 없거나 "Bearer "로 시작하지 않으면 아무것도 하지 않고
-     *    다음 필터로 넘긴다 (비로그인 요청 → Security가 permitAll/authenticated 규칙으로 판단).
-     *
-     * @param request     클라이언트 HTTP 요청
-     * @param response    서버 HTTP 응답
-     * @param filterChain 다음 필터 또는 컨트롤러로 이어지는 체인
-     */
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
